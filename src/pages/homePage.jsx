@@ -38,7 +38,10 @@ const HomePage = () => {
         >
           HivvHib
         </Typography>
-        <Typography variant="body1" sx={{ fontFamily: "Orienta" }}>
+        <Typography
+          variant="body1"
+          sx={{ fontFamily: "Orienta", color: "#fff" }}
+        >
           Transform your ideas
         </Typography>
       </Box>
