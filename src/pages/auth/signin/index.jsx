@@ -66,7 +66,9 @@ const Signin = () => {
           fontFamily: "Open Sans",
         }}
       >
-        <Typography variant="h1">Signin</Typography>
+        <Typography variant="h1" sx={{ color: "#fff" }}>
+          Signin
+        </Typography>
         <Button
           variant="outlined"
           startIcon={<FcGoogle />}

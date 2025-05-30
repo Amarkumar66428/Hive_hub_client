@@ -1,5 +1,12 @@
 import React, { useState } from "react";
-import { Box, Button, CircularProgress, Divider, TextField, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  CircularProgress,
+  Divider,
+  TextField,
+  Typography,
+} from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
 import { FcGoogle } from "react-icons/fc";
 import CodeInput from "../../../components/CustomInput/codeInput";
@@ -51,7 +58,9 @@ const Signup = () => {
           fontFamily: "Open Sans",
         }}
       >
-        <Typography variant="h1">Signup</Typography>
+        <Typography variant="h1" sx={{ color: "#fff" }}>
+          Signup
+        </Typography>
         <Button
           variant="outlined"
           startIcon={<FcGoogle />}
