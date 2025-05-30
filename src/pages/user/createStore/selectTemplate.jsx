@@ -30,16 +30,22 @@ const templates = [
     id: 1,
     title: "E-Commerce",
     image: img2,
+    isPublished: true,
+    path: "/templates/e-commerce",
   },
   {
     id: 2,
     title: "Education",
     image: img3,
+    isPublished: false,
+    path: "/templates/education",
   },
   {
     id: 3,
-    title: "College",
+    title: "E-Commerce",
     image: img4,
+    isPublished: false,
+    path: "/templates/shop",
   },
   // add more as needed
 ];
@@ -195,6 +201,7 @@ const TemplateSelector = ({ onNext, setSelectedTemplate }) => {
                   flexGrow: 1,
                   display: "flex",
                   flexDirection: "column",
+                  justifyContent: "space-between",
                   p: 2,
                 }}
               >
@@ -217,23 +224,62 @@ const TemplateSelector = ({ onNext, setSelectedTemplate }) => {
                     py: 1,
                   }}
                 >
-                  <Typography variant="body1" color="text.primary">
+                  <Typography
+                    variant="body1"
+                    fontSize="1.2rem"
+                    color="text.primary"
+                  >
                     {template.title}
                   </Typography>
-                  <Button
-                    variant="text"
-                    color="error"
-                    onClick={() => {
-                      onNext();
-                      setSelectedTemplate({
-                        category: template.title,
-                        id: template.id,
-                      });
-                    }}
-                    sx={{ textTransform: "none", textDecoration: "underline" }}
-                  >
-                    Select
-                  </Button>
+                  <Box>
+                    <Button
+                      variant="text"
+                      sx={{
+                        py: 0,
+                        fontSize: "1.2rem",
+                        color: "green",
+                        textDecoration: "underline",
+                      }}
+                      onClick={() => {
+                        window.open(template.path, "_blank");
+                      }}
+                    >
+                      View
+                    </Button>
+                    {template.isPublished ? (
+                      <Button
+                        variant="text"
+                        color="error"
+                        onClick={() => {
+                          onNext();
+                          setSelectedTemplate({
+                            category: template.title,
+                            id: template.id,
+                          });
+                        }}
+                        sx={{
+                          py: 0,
+                          fontSize: "1.2rem",
+                          textTransform: "none",
+                          textDecoration: "underline",
+                        }}
+                      >
+                        Select
+                      </Button>
+                    ) : (
+                      <Typography
+                        variant="text"
+                        color="warning"
+                        sx={{
+                          fontSize: "1.2rem",
+                          textTransform: "none",
+                          textDecoration: "underline",
+                        }}
+                      >
+                        Coming Soon
+                      </Typography>
+                    )}
+                  </Box>
                 </Box>
               </Box>
             </Grid>
