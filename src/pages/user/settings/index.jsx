@@ -1,23 +1,25 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Avatar,
   Box,
   Button,
   Card,
   Container,
-  Grid,
   IconButton,
   TextField,
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/system";
 import EditIcon from "@mui/icons-material/Edit";
+import Cookies from "js-cookie";
+import { useNavigate } from "react-router-dom";
 
 const Input = styled("input")({
   display: "none",
 });
 
 const ProfileSettings = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -25,6 +27,25 @@ const ProfileSettings = () => {
     email: "",
     image: "",
   });
+
+  // Load user data from localStorage on mount
+  useEffect(() => {
+    const userData = localStorage.getItem("user");
+    if (userData) {
+      try {
+        const user = JSON.parse(userData);
+        setFormData({
+          firstName: user.firstName || "",
+          lastName: user.lastName || "",
+          phone: user.phone || "",
+          email: user.email || "",
+          image: user.image || "",
+        });
+      } catch {
+        // ignore JSON parse errors
+      }
+    }
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -39,21 +60,29 @@ const ProfileSettings = () => {
     }
   };
 
+  const logout = () => {
+    Cookies.remove("access_token");
+    localStorage.removeItem("user");
+    navigate("/auth/signin");
+  };
+
   return (
-    <Container maxWidth="xl">
+    <Container maxWidth="sm">
       <Box
         sx={{
           p: 4,
-          display: "flex",  
-          justifyContent: "center",
-          alignItems: "flex-start",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          minHeight: "100vh",
         }}
       >
         <Card
           sx={{
-            maxWidth: "800px",
+            width: "100%",
             backgroundColor: "#ffffff",
-            padding: { xs: 3, md: 5 },
+            padding: 4,
+            boxSizing: "border-box",
           }}
         >
           <Typography
@@ -105,66 +134,75 @@ const ProfileSettings = () => {
             </label>
           </Box>
 
-          <Grid container spacing={3}>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="First Name"
-                name="firstName"
-                value={formData.firstName}
-                onChange={handleChange}
-                variant="outlined"
-              />
-            </Grid>
+          <Box
+            component="form"
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 3,
+              maxWidth: 400,
+              mx: "auto",
+            }}
+          >
+            <TextField
+              fullWidth
+              label="First Name"
+              name="firstName"
+              value={formData.firstName}
+              onChange={handleChange}
+              variant="outlined"
+            />
 
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Last Name"
-                name="lastName"
-                value={formData.lastName}
-                onChange={handleChange}
-                variant="outlined"
-              />
-            </Grid>
+            <TextField
+              fullWidth
+              label="Last Name"
+              name="lastName"
+              value={formData.lastName}
+              onChange={handleChange}
+              variant="outlined"
+            />
 
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Email"
-                name="email"
-                type="email"
-                value={formData.email}
-                onChange={handleChange}
-                variant="outlined"
-              />
-            </Grid>
+            <TextField
+              fullWidth
+              label="Email"
+              name="email"
+              type="email"
+              value={formData.email}
+              onChange={handleChange}
+              variant="outlined"
+            />
 
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Phone"
-                name="phone"
-                type="tel"
-                value={formData.phone}
-                onChange={handleChange}
-                variant="outlined"
-              />
-            </Grid>
+            <TextField
+              fullWidth
+              label="Phone"
+              name="phone"
+              type="tel"
+              value={formData.phone}
+              onChange={handleChange}
+              variant="outlined"
+            />
 
-            <Grid item xs={12}>
-              <Button
-                fullWidth
-                variant="contained"
-                color="primary"
-                size="large"
-                sx={{ mt: 1, borderRadius: 2 }}
-                onClick={() => alert("Save logic here")}
-              >
-                Save Changes
-              </Button>
-            </Grid>
-          </Grid>
+            <Button
+              fullWidth
+              variant="contained"
+              color="primary"
+              size="large"
+              sx={{ borderRadius: 2 }}
+              onClick={() => alert("Save logic here")}
+            >
+              Save Changes
+            </Button>
+            <Button
+              fullWidth
+              variant="outlined"
+              color="error"
+              size="large"
+              sx={{ borderRadius: 2 }}
+              onClick={logout}
+            >
+              Logout
+            </Button>
+          </Box>
         </Card>
       </Box>
     </Container>

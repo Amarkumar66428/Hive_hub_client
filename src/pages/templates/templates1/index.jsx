@@ -37,8 +37,6 @@ import web from "../../../assets/svg/web.svg";
 import { Button } from "@mui/material";
 
 const Template = ({ projectConfig, items }) => {
-  console.log("projectConfig: ", projectConfig);
-  console.log("items: ", items);
   return (
     <div className="template">
       <div className="overlap-wrapper">
@@ -106,15 +104,55 @@ const Template = ({ projectConfig, items }) => {
                     </div>
                     <div className="frame-8">
                       <div className="frame-9">
-                        <div className="product-card">
-                          <img className="chemarro-about-a" src={feature1} />
-                        </div>
-                        <div className="product-card">
-                          <img className="chemarro-about-a" src={feature2} />
-                        </div>
-                        <div className="product-card">
-                          <img className="chemarro-about-a" src={feature3} />
-                        </div>
+                        {(() => {
+                          // Filter items with category 'shop' once
+                          const shopItems =
+                            items?.filter((item) => item.category === "shop") ||
+                            [];
+
+                          if (shopItems.length > 0) {
+                            // Show only first 3 items
+                            return shopItems.slice(0, 3).map((item) => (
+                              <div
+                                className="product-card"
+                                key={item.id || item.sku}
+                              >
+                                <img
+                                  className="chemarro-about-a"
+                                  src={item.images} // double-check if 'images' or 'image'
+                                  alt={item.title || "product"}
+                                />
+                              </div>
+                            ));
+                          }
+
+                          // Fallback default feature images
+                          return (
+                            <>
+                              <div className="product-card">
+                                <img
+                                  className="chemarro-about-a"
+                                  src={feature1}
+                                  alt="feature 1"
+                                />
+                              </div>
+                              <div className="product-card">
+                                <img
+                                  className="chemarro-about-a"
+                                  src={feature2}
+                                  alt="feature 2"
+                                />
+                              </div>
+                              <div className="product-card">
+                                <img
+                                  className="chemarro-about-a"
+                                  src={feature3}
+                                  alt="feature 3"
+                                />
+                              </div>
+                            </>
+                          );
+                        })()}
                       </div>
                       <div className="view-more">View More &gt;&gt;&gt;</div>
                     </div>
@@ -138,46 +176,68 @@ const Template = ({ projectConfig, items }) => {
               <div className="container">
                 <div className="div">
                   <div className="frame-11">
-                    <div className="overlap-group-wrapper">
-                      <div
-                        className="overlap-group"
-                        style={{
-                          backgroundImage: `url(${service1})`,
-                        }}
-                      >
-                        <div className="text-wrapper-6">Grooming</div>
-                      </div>
-                    </div>
-                    <div className="overlap-group-wrapper">
-                      <div
-                        className="overlap-2"
-                        style={{
-                          backgroundImage: `url(${service2})`,
-                        }}
-                      >
-                        <div className="text-wrapper-7">Boarding</div>
-                      </div>
-                    </div>
-                    <div className="overlap-group-wrapper">
-                      <div
-                        className="overlap-3"
-                        style={{
-                          backgroundImage: `url(${service3})`,
-                        }}
-                      >
-                        <div className="text-wrapper-8">Veterinary</div>
-                      </div>
-                    </div>
-                    <div className="overlap-group-wrapper">
-                      <div
-                        className="overlap-4"
-                        style={{
-                          backgroundImage: `url(${service4})`,
-                        }}
-                      >
-                        <div className="text-wrapper-9">Training</div>
-                      </div>
-                    </div>
+                    {(() => {
+                      const serviceItems =
+                        items?.filter((item) => item.category === "services") ||
+                        [];
+
+                      if (serviceItems.length > 0) {
+                        return serviceItems.slice(0, 4).map((item, idx) => (
+                          <div
+                            className="overlap-group-wrapper"
+                            key={item.id || item.sku || idx}
+                          >
+                            <div
+                              className="overlap-group"
+                              style={{
+                                backgroundImage: `url(${
+                                  item.images || item.image || ""
+                                })`,
+                              }}
+                            >
+                              <div className="text-wrapper-6">{item.title}</div>
+                            </div>
+                          </div>
+                        ));
+                      }
+
+                      return (
+                        <>
+                          <div className="overlap-group-wrapper">
+                            <div
+                              className="overlap-group"
+                              style={{ backgroundImage: `url(${service1})` }}
+                            >
+                              <div className="text-wrapper-6">Grooming</div>
+                            </div>
+                          </div>
+                          <div className="overlap-group-wrapper">
+                            <div
+                              className="overlap-2"
+                              style={{ backgroundImage: `url(${service2})` }}
+                            >
+                              <div className="text-wrapper-7">Boarding</div>
+                            </div>
+                          </div>
+                          <div className="overlap-group-wrapper">
+                            <div
+                              className="overlap-3"
+                              style={{ backgroundImage: `url(${service3})` }}
+                            >
+                              <div className="text-wrapper-8">Veterinary</div>
+                            </div>
+                          </div>
+                          <div className="overlap-group-wrapper">
+                            <div
+                              className="overlap-4"
+                              style={{ backgroundImage: `url(${service4})` }}
+                            >
+                              <div className="text-wrapper-9">Training</div>
+                            </div>
+                          </div>
+                        </>
+                      );
+                    })()}
                   </div>
                   <div className="frame-12">
                     <div

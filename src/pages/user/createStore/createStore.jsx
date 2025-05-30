@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Box } from "@mui/material";
 import Template from "../../templates/templates1";
 import ToolsPanel from "./toolpanel";
+import ItemList from "./itemList";
 
 const initialProjectConfig = {
   name: "",
@@ -17,7 +18,7 @@ const initialItem = {
   sku: "",
   category: "",
   tags: [],
-  image: null,
+  images: [],
 };
 
 const CreateStore = ({ previousStep }) => {
@@ -25,6 +26,8 @@ const CreateStore = ({ previousStep }) => {
   const [items, setItems] = useState([]);
   const [currentItem, setCurrentItem] = useState(initialItem);
   const [tagInput, setTagInput] = useState("");
+  const [isItemListOpen, setIsItemListOpen] = useState(false);
+
   return (
     <Box display="flex" flexDirection="row" height="100%" minHeight="100vh">
       {/* Tools Panel (4/12) */}
@@ -38,6 +41,8 @@ const CreateStore = ({ previousStep }) => {
         setCurrentItem={setCurrentItem}
         tagInput={tagInput}
         setTagInput={setTagInput}
+        isItemListOpen={isItemListOpen}
+        setIsItemListOpen={setIsItemListOpen}
       />
 
       {/* Preview Panel (8/12) */}
@@ -48,7 +53,11 @@ const CreateStore = ({ previousStep }) => {
           overflow: "auto",
         }}
       >
-        <Template projectConfig={projectConfig} items={items} />
+        {isItemListOpen ? (
+          <ItemList items={items} setItems={setItems} />
+        ) : (
+          <Template projectConfig={projectConfig} items={items} />
+        )}
       </Box>
     </Box>
   );

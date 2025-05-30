@@ -20,8 +20,8 @@ const Signin = () => {
   const { showSnackbar } = useSnackbar();
   const [isLoading, setIsLoading] = useState(false);
   const [form, setForm] = useState({
-    email: "testuser1@yopmail.com",
-    inviteCode: "UDDVAJ",
+    email: "",
+    inviteCode: "",
   });
 
   const handleSignIn = async () => {

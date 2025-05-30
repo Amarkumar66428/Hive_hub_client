@@ -4,6 +4,7 @@ import { authRouters, appRouters } from "./router.config";
 import ProtectedRoute from "./ProtectedRoutes";
 import AppLayout from "../layout";
 import { Box } from "@mui/material";
+import NotFoundPage from "../components/pageNotFound";
 
 const AppRouter = () => {
   return (
@@ -54,6 +55,7 @@ const AppRouter = () => {
           );
         }
       )}
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 };
