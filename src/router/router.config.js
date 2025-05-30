@@ -59,7 +59,7 @@ export const appRouters = [
   {
     path: "/admin/dashboard",
     component: asyncComponent(() =>
-      import("../pages/Admin/home/dashboard.jsx")
+      import("../pages/admin/home/dashboard.jsx")
     ),
     role: [SUPER_ADMIN],
     isLayout: true,
@@ -80,7 +80,7 @@ export const appRouters = [
     subMenuTitle: "sidebar.home",
     icon: React.createElement(Dashboard),
     component: asyncComponent(() =>
-      import("../pages/Admin/home/dashboard.jsx")
+      import("../pages/admin/home/dashboard.jsx")
     ),
     isLayout: true,
     showInSubMenu: true,
