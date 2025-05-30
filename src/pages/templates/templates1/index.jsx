@@ -36,7 +36,9 @@ import twitter from "../../../assets/svg/twitter.svg";
 import web from "../../../assets/svg/web.svg";
 import { Button } from "@mui/material";
 
-const Template = () => {
+const Template = ({ projectConfig, items }) => {
+  console.log("projectConfig: ", projectConfig);
+  console.log("items: ", items);
   return (
     <div className="template">
       <div className="overlap-wrapper">
@@ -54,11 +56,12 @@ const Template = () => {
                     Pawsitively Perfect: Where Every Pet&#39;s Dream Comes True!
                   </p>
                   <p className="welcome-to-paws-n">
-                    Welcome to Paws n’ Play, the ultimate destination for pet
+                    {projectConfig?.description ||
+                      `Welcome to {projectConfig?.name || "Paws n’ Play"}, the ultimate destination for pet
                     lovers! Explore a world of tail-wagging joy and furry
                     companionship with our wide range of products and services.
                     From pampering essentials to playful toys, we&#39;re here to
-                    make every moment with your pet pawsitively perfect!&#34;
+                    make every moment with your pet pawsitively perfect!&#34;`}
                   </p>
                 </div>
                 <button className="button">
@@ -207,12 +210,12 @@ const Template = () => {
                   <div className="flexcontainer">
                     <p className="span-wrapper">
                       <span className="span">
-                        At Paws n’ Play, our journey began with a simple yet
-                        profound love for animals. Inspired by the unwavering
-                        companionship and joy they bring to our lives, we
-                        embarked on a mission to create a haven where pets and
-                        their owners alike could experience unparalleled
-                        happiness and care.
+                        At {projectConfig?.name || "Paws n’ Play"}, our journey
+                        began with a simple yet profound love for animals.
+                        Inspired by the unwavering companionship and joy they
+                        bring to our lives, we embarked on a mission to create a
+                        haven where pets and their owners alike could experience
+                        unparalleled happiness and care.
                         <br />
                       </span>
                     </p>
@@ -241,12 +244,13 @@ const Template = () => {
                     </p>
                     <p className="span-wrapper">
                       <span className="span">
-                        At Paws n’ Play, customer satisfaction isn&#39;t just a
-                        goal – it&#39;s our guiding principle. We go above and
-                        beyond to ensure every interaction leaves tails wagging
-                        and hearts smiling. From personalized recommendations to
-                        attentive service, we&#39;re here to make your journey
-                        with your pet as joyful and fulfilling as possible.
+                        At {projectConfig?.name || "Paws n’ Play"}, customer
+                        satisfaction isn&#39;t just a goal – it&#39;s our
+                        guiding principle. We go above and beyond to ensure
+                        every interaction leaves tails wagging and hearts
+                        smiling. From personalized recommendations to attentive
+                        service, we&#39;re here to make your journey with your
+                        pet as joyful and fulfilling as possible.
                         <br />
                       </span>
                     </p>
@@ -254,7 +258,8 @@ const Template = () => {
                       <span className="span">
                         Join us in our mission to create a world where every pet
                         is cherished, every need is met, and every tail wags
-                        with happiness. Welcome to Paws n’ Play, where pets are
+                        with happiness. Welcome to{" "}
+                        {projectConfig?.name || "Paws n’ Play"}, where pets are
                         family, and love knows no bounds.
                       </span>
                     </p>
@@ -646,7 +651,9 @@ const Template = () => {
                     <div className="logo-and-supporting">
                       <div className="logo">
                         <img className="fluent-emoji-flat" src={paws} />
-                        <div className="text-wrapper-17">Paws n’ Play</div>
+                        <div className="text-wrapper-17">
+                          {projectConfig?.name || "Paws n’ Play"}
+                        </div>
                       </div>
                       <p className="supporting-text-3">
                         Where wagging tails and purring hearts reign supreme!
@@ -860,7 +867,8 @@ const Template = () => {
                   <div className="divider-2"></div>
                   <div className="content-6">
                     <p className="footer-text">
-                      © 2024 Paws n’ Play. All rights reserved.
+                      © 2024 {projectConfig?.name || "Paws n’ Play"}. All rights
+                      reserved.
                     </p>
                     <div className="social-icons-2">
                       <img className="img" src={linkedin} />
@@ -881,7 +889,9 @@ const Template = () => {
                 <div className="content-7">
                   <div className="logo">
                     <img className="fluent-emoji-flat" src={paws} />
-                    <div className="text-wrapper-17">Paws n’ Play</div>
+                    <div className="text-wrapper-17">
+                      {projectConfig?.name || "Paws n’ Play"}
+                    </div>
                   </div>
                   <div className="nav-menu">
                     <div className="dropdown-header">
