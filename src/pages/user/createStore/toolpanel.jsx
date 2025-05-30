@@ -10,6 +10,7 @@ import {
   AccordionSummary,
   AccordionDetails,
   CircularProgress,
+  MenuItem,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ArrowBack from "@mui/icons-material/ArrowBack";
@@ -126,12 +127,16 @@ const AddItemForm = ({
         onChange={(e) => handleItemChange("sku", e.target.value)}
       />
       <TextField
+        select
         label="Category"
         variant="outlined"
         fullWidth
         value={currentItem.category}
         onChange={(e) => handleItemChange("category", e.target.value)}
-      />
+      >
+        <MenuItem value="shop">Shop</MenuItem>
+        <MenuItem value="services">Services</MenuItem>
+      </TextField>
 
       <TextField
         label="Add Tags (press Enter or comma)"
@@ -163,9 +168,9 @@ const AddItemForm = ({
           onChange={handleImageChange}
         />
       </Button>
-      {currentItem.image && (
+      {currentItem.images && (
         <Typography variant="body2" sx={{ mt: 1 }}>
-          Selected file: {currentItem.image.name}
+          Selected file: {currentItem.images}
         </Typography>
       )}
 
@@ -192,15 +197,14 @@ const ToolsPanel = ({
   setCurrentItem,
   tagInput,
   setTagInput,
+  isItemListOpen,
+  setIsItemListOpen,
 }) => {
   const [expanded, setExpanded] = React.useState("projectConfig");
   const [publishing, setPublishing] = React.useState(false);
 
   const isProjectConfigValid =
-    projectConfig.name.trim() &&
-    projectConfig.description.trim() &&
-    projectConfig.subdomain.trim() &&
-    projectConfig.logo;
+    projectConfig.name.trim() && projectConfig.description.trim();
 
   const isPublishEnabled = isProjectConfigValid && items.length > 0;
 
@@ -231,7 +235,8 @@ const ToolsPanel = ({
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
-    handleItemChange("image", file);
+    const previewUrl = URL.createObjectURL(file);
+    handleItemChange("images", previewUrl);
   };
 
   const handleAddItem = () => {
@@ -247,7 +252,7 @@ const ToolsPanel = ({
       sku: "",
       category: "",
       tags: [],
-      image: null,
+      images: [],
     });
     setTagInput("");
   };
@@ -304,14 +309,23 @@ const ToolsPanel = ({
         flexDirection: "column",
       }}
     >
-      <Button
-        variant="text"
-        onClick={previousStep}
-        startIcon={<ArrowBack />}
-        sx={{ textTransform: "none", textDecoration: "underline", mb: 1 }}
-      >
-        Back
-      </Button>
+      <Box sx={{ display: "flex", justifyContent: "space-between", py: 1 }}>
+        <Button
+          variant="text"
+          onClick={previousStep}
+          startIcon={<ArrowBack />}
+          sx={{ textTransform: "none", textDecoration: "underline" }}
+        >
+          Back
+        </Button>
+        <Button
+          variant="contained"
+          onClick={() => setIsItemListOpen((prev) => !prev)}
+          sx={{ px: 2 }}
+        >
+          {isItemListOpen ? "Editor view" : "Item List"}
+        </Button>
+      </Box>
 
       <Box sx={{ flexGrow: 1 }}>
         <Accordion

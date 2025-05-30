@@ -6,9 +6,10 @@ import {
   Typography,
   Paper,
   TextField,
+  Grid,
 } from "@mui/material";
 import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useSnackbar } from "../../features/snackBar";
 
 const CARD_ELEMENT_OPTIONS = {
@@ -34,32 +35,63 @@ const StripePaymentForm = ({
   clientSecret,
   onPaymentSuccess,
   onPaymentError,
+  subscriptionPlan = {
+    name: "Premium Plan",
+    price: 999,
+    billingCycle: "month",
+    description: "Access all premium features with unlimited usage.",
+  },
 }) => {
   const stripe = useStripe();
   const elements = useElements();
   const navigate = useNavigate();
   const { showSnackbar } = useSnackbar();
 
+  const { state } = useLocation();
+  const { plan } = state || {};
 
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
   const [paymentSucceeded, setPaymentSucceeded] = useState(false);
 
   const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
+
   const [nameError, setNameError] = useState(false);
+  const [emailError, setEmailError] = useState(false);
+  const [phoneError, setPhoneError] = useState(false);
+
+  const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+  const validatePhone = (phone) => /^\+?[0-9\s-]{7,15}$/.test(phone);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     setErrorMessage(null);
-    localStorage.setItem("isSubscribed", true);
-    navigate("/user/home/dashboard");
-    showSnackbar("Payment successful", "success");
 
+    // Basic validation
+    let hasError = false;
     if (!name.trim()) {
       setNameError(true);
-      return;
+      hasError = true;
+    } else {
+      setNameError(false);
     }
-    setNameError(false);
+    if (!validateEmail(email)) {
+      setEmailError(true);
+      hasError = true;
+    } else {
+      setEmailError(false);
+    }
+    if (!validatePhone(phone)) {
+      setPhoneError(true);
+      hasError = true;
+    } else {
+      setPhoneError(false);
+    }
+    if (hasError) return;
 
     if (!stripe || !elements) {
       setErrorMessage("Stripe has not loaded yet.");
@@ -77,6 +109,13 @@ const StripePaymentForm = ({
           card: cardElement,
           billing_details: {
             name: name.trim(),
+            email: email.trim(),
+            phone: phone.trim(),
+            address: address.trim()
+              ? {
+                  line1: address.trim(),
+                }
+              : undefined,
           },
         },
       }
@@ -89,33 +128,110 @@ const StripePaymentForm = ({
     } else if (paymentIntent && paymentIntent.status === "succeeded") {
       setPaymentSucceeded(true);
       setLoading(false);
+      localStorage.setItem("isSubscribed", true);
+      navigate("/user/home/dashboard");
+      showSnackbar("Payment successful", "success");
       if (onPaymentSuccess) onPaymentSuccess(paymentIntent);
     }
   };
 
   return (
-    <Paper elevation={3} sx={{ p: 4 }}>
-      <Typography variant="h5" component="h1" gutterBottom>
+    <Paper elevation={3} sx={{ p: 4, maxWidth: 600, mx: "auto" }}>
+      <Typography
+        variant="h4"
+        component="h1"
+        gutterBottom
+        fontWeight="bold"
+        align="center"
+      >
         Payment Details
       </Typography>
 
+      {/* Subscription Info */}
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h6" gutterBottom>
+          Subscription Plan:
+        </Typography>
+        <Typography variant="body1" sx={{ mb: 1 }}>
+          <strong>{plan.tier}</strong> — ₹{plan.price} / {plan.type}
+        </Typography>
+        {plan.features.map((feature) => (
+          <Typography variant="body2" color="text.secondary" key={feature}>
+            {feature}
+          </Typography>
+        ))}
+      </Box>
+
       {paymentSucceeded ? (
-        <Typography variant="h6" color="success.main">
-          Payment successful! Thank you.
+        <Typography variant="h6" color="success.main" align="center">
+          Payment successful! Thank you for your purchase.
         </Typography>
       ) : (
         <Box component="form" onSubmit={handleSubmit} noValidate>
-          <TextField
-            label="Name on Card"
-            variant="outlined"
-            fullWidth
-            required
-            margin="normal"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            error={nameError}
-            helperText={nameError ? "Name is required" : ""}
-          />
+          <Typography variant="h6" gutterBottom>
+            Your Details
+          </Typography>
+          <Grid container spacing={2} sx={{ mb: 3 }}>
+            <Grid item xs={12}>
+              <TextField
+                label="Name on Card"
+                variant="outlined"
+                fullWidth
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                error={nameError}
+                helperText={nameError ? "Name is required" : ""}
+                autoComplete="name"
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Email Address"
+                variant="outlined"
+                fullWidth
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                error={emailError}
+                helperText={emailError ? "Valid email is required" : ""}
+                autoComplete="email"
+                type="email"
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Phone Number"
+                variant="outlined"
+                fullWidth
+                required
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                error={phoneError}
+                helperText={phoneError ? "Valid phone number is required" : ""}
+                autoComplete="tel"
+                type="tel"
+              />
+            </Grid>
+
+            <Grid item xs={12}>
+              <TextField
+                label="Billing Address"
+                variant="outlined"
+                fullWidth
+                multiline
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                autoComplete="street-address"
+              />
+            </Grid>
+          </Grid>
+
+          <Typography variant="h6" gutterBottom>
+            Card Details
+          </Typography>
 
           <Box
             sx={{
@@ -142,8 +258,9 @@ const StripePaymentForm = ({
             fullWidth
             disabled={!stripe || loading}
             startIcon={loading && <CircularProgress size={20} />}
+            sx={{ py: 1.5, fontWeight: "bold" }}
           >
-            {loading ? "Processing..." : "Pay Now"}
+            {loading ? "Processing..." : `Pay ₹${subscriptionPlan.price}`}
           </Button>
         </Box>
       )}
