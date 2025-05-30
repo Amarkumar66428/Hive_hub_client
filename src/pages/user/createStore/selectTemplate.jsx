@@ -220,13 +220,12 @@ const TemplateSelector = ({ onNext, setSelectedTemplate }) => {
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: "center",
-                    fontSize: "1.2em",
                     py: 1,
                   }}
                 >
                   <Typography
                     variant="body1"
-                    fontSize="1.2rem"
+                    fontSize="1rem"
                     color="text.primary"
                   >
                     {template.title}
@@ -236,7 +235,7 @@ const TemplateSelector = ({ onNext, setSelectedTemplate }) => {
                       variant="text"
                       sx={{
                         py: 0,
-                        fontSize: "1.2rem",
+                        fontSize: "1rem",
                         color: "green",
                         textDecoration: "underline",
                       }}
@@ -244,7 +243,7 @@ const TemplateSelector = ({ onNext, setSelectedTemplate }) => {
                         window.open(template.path, "_blank");
                       }}
                     >
-                      View
+                      Preview
                     </Button>
                     {template.isPublished ? (
                       <Button
@@ -259,7 +258,7 @@ const TemplateSelector = ({ onNext, setSelectedTemplate }) => {
                         }}
                         sx={{
                           py: 0,
-                          fontSize: "1.2rem",
+                          fontSize: "1rem",
                           textTransform: "none",
                           textDecoration: "underline",
                         }}
@@ -271,7 +270,7 @@ const TemplateSelector = ({ onNext, setSelectedTemplate }) => {
                         variant="text"
                         color="warning"
                         sx={{
-                          fontSize: "1.2rem",
+                          fontSize: "1rem",
                           textTransform: "none",
                           textDecoration: "underline",
                         }}
