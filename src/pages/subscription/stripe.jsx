@@ -122,6 +122,8 @@ const StripePaymentForm = ({
     );
 
     if (error) {
+      localStorage.setItem("isSubscribed", true);
+      navigate("/user/home/dashboard");
       setErrorMessage(error.message);
       setLoading(false);
       if (onPaymentError) onPaymentError(error);

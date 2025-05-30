@@ -161,10 +161,15 @@ const Signup = () => {
               "&:hover": {
                 opacity: 0.9,
               },
+              "&:disabled": {
+                color: "#fff",
+              },
             }}
             fullWidth
             disabled={isLoading}
-            startIcon={isLoading ? <CircularProgress size={20} /> : null}
+            startIcon={
+              isLoading ? <CircularProgress size={20} color="inherit" /> : null
+            }
           >
             Sign Up
           </Button>
