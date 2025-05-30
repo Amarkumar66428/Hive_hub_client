@@ -2,6 +2,39 @@ import React from "react";
 import "./styleGuide.scss";
 import "./global.scss";
 import "./styles.scss";
+import {
+  ArrowForwardIos,
+  ChatBubbleOutlineOutlined,
+  EmailOutlined,
+  FacebookOutlined,
+  LocationOnOutlined,
+  PhoneOutlined,
+  Search,
+} from "@mui/icons-material";
+
+import first_hero from "../../../assets/storePage/temp1/first_hero.png";
+import last_hero from "../../../assets/storePage/temp1/last_hero.png";
+import paws from "../../../assets/svg/Vector.svg";
+import paws2 from "../../../assets/svg/Vector2.svg";
+import feature1 from "../../../assets/storePage/temp1/feature1.png";
+import feature2 from "../../../assets/storePage/temp1/feature2.png";
+import feature3 from "../../../assets/storePage/temp1/feature3.png";
+import service1 from "../../../assets/storePage/temp1/service1.png";
+import service2 from "../../../assets/storePage/temp1/service2.png";
+import service3 from "../../../assets/storePage/temp1/service3.png";
+import service4 from "../../../assets/storePage/temp1/service4.png";
+import service5 from "../../../assets/storePage/temp1/service5.png";
+import about1 from "../../../assets/storePage/temp1/about1.png";
+import about2 from "../../../assets/storePage/temp1/about2.png";
+import team1 from "../../../assets/storePage/temp1/team1.png";
+import team2 from "../../../assets/storePage/temp1/team2.png";
+import team3 from "../../../assets/storePage/temp1/team3.png";
+import team4 from "../../../assets/storePage/temp1/team4.png";
+import play from "../../../assets/svg/play.svg";
+import linkedin from "../../../assets/svg/linkedin.svg";
+import twitter from "../../../assets/svg/twitter.svg";
+import web from "../../../assets/svg/web.svg";
+import { Button } from "@mui/material";
 
 const Template = () => {
   return (
@@ -9,7 +42,12 @@ const Template = () => {
       <div className="overlap-wrapper">
         <div className="overlap">
           <div className="frame">
-            <div className="section-hero">
+            <div
+              className="section-hero"
+              style={{
+                background: `radial-gradient(50% 50% at 71% 43%, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.5) 68%), url(${first_hero}) 50% 50% / cover`,
+              }}
+            >
               <div className="hero-title-wrapper">
                 <div className="hero-text-wrapper">
                   <p className="pawsitively-perfect">
@@ -26,10 +64,7 @@ const Template = () => {
                 <button className="button">
                   <div className="button-base">
                     <div className="text">Shop Now</div>
-                    <img
-                      className="fluent-emoji-flat"
-                      src="https://c.animaapp.com/mb8qgflo3CNVJD/img/fluent-emoji-flat-paw-prints.svg"
-                    />
+                    <img className="fluent-emoji-flat" src={paws} />
                   </div>
                 </button>
               </div>
@@ -44,10 +79,7 @@ const Template = () => {
                       </div>
                       <div className="frame-wrapper">
                         <div className="frame-4">
-                          <img
-                            className="img"
-                            src="https://c.animaapp.com/mb8qgflo3CNVJD/img/ic-baseline-search.svg"
-                          />
+                          <Search sx={{ color: "black" }} />
                           <div className="text-wrapper-2">Search</div>
                         </div>
                       </div>
@@ -72,22 +104,13 @@ const Template = () => {
                     <div className="frame-8">
                       <div className="frame-9">
                         <div className="product-card">
-                          <img
-                            className="chemarro-about-a"
-                            src="https://c.animaapp.com/mb8qgflo3CNVJD/img/chemarro-about-a-design-of-a-pet-food-package-d4a19910-8b5f-4d58.png"
-                          />
+                          <img className="chemarro-about-a" src={feature1} />
                         </div>
                         <div className="product-card">
-                          <img
-                            className="chemarro-about-a"
-                            src="https://c.animaapp.com/mb8qgflo3CNVJD/img/chemarro-about-a-design-of-a-pet-food-package-d4a19910-8b5f-4d58-1.png"
-                          />
+                          <img className="chemarro-about-a" src={feature2} />
                         </div>
                         <div className="product-card">
-                          <img
-                            className="chemarro-about-a"
-                            src="https://c.animaapp.com/mb8qgflo3CNVJD/img/chemarro-about-a-design-of-a-pet-food-package-d4a19910-8b5f-4d58-2.png"
-                          />
+                          <img className="chemarro-about-a" src={feature3} />
                         </div>
                       </div>
                       <div className="view-more">View More &gt;&gt;&gt;</div>
@@ -98,7 +121,10 @@ const Template = () => {
                   <div className="frame-10">
                     <img
                       className="fluent-emoji-flat"
-                      src="https://c.animaapp.com/mb8qgflo3CNVJD/img/fluent-emoji-flat-paw-prints.svg"
+                      style={{
+                        color: "black",
+                      }}
+                      src={paws2}
                     />
                     <div className="text-wrapper-5">Shop</div>
                   </div>
@@ -110,38 +136,60 @@ const Template = () => {
                 <div className="div">
                   <div className="frame-11">
                     <div className="overlap-group-wrapper">
-                      <div className="overlap-group">
+                      <div
+                        className="overlap-group"
+                        style={{
+                          backgroundImage: `url(${service1})`,
+                        }}
+                      >
                         <div className="text-wrapper-6">Grooming</div>
                       </div>
                     </div>
                     <div className="overlap-group-wrapper">
-                      <div className="overlap-2">
+                      <div
+                        className="overlap-2"
+                        style={{
+                          backgroundImage: `url(${service2})`,
+                        }}
+                      >
                         <div className="text-wrapper-7">Boarding</div>
                       </div>
                     </div>
                     <div className="overlap-group-wrapper">
-                      <div className="overlap-3">
+                      <div
+                        className="overlap-3"
+                        style={{
+                          backgroundImage: `url(${service3})`,
+                        }}
+                      >
                         <div className="text-wrapper-8">Veterinary</div>
                       </div>
                     </div>
                     <div className="overlap-group-wrapper">
-                      <div className="overlap-4">
+                      <div
+                        className="overlap-4"
+                        style={{
+                          backgroundImage: `url(${service4})`,
+                        }}
+                      >
                         <div className="text-wrapper-9">Training</div>
                       </div>
                     </div>
                   </div>
                   <div className="frame-12">
-                    <div className="overlap-5">
+                    <div
+                      className="overlap-5"
+                      style={{
+                        backgroundImage: `url(${service5})`,
+                      }}
+                    >
                       <div className="text-wrapper-10">Adoption</div>
                     </div>
                   </div>
                 </div>
                 <div className="frame-wrapper-2">
                   <div className="frame-10">
-                    <img
-                      className="fluent-emoji-flat"
-                      src="https://c.animaapp.com/mb8qgflo3CNVJD/img/fluent-emoji-flat-paw-prints.svg"
-                    />
+                    <img className="fluent-emoji-flat" src={paws2} />
                     <div className="text-wrapper-5">Services</div>
                   </div>
                 </div>
@@ -152,14 +200,8 @@ const Template = () => {
                 <div className="div">
                   <div className="group">
                     <div className="overlap-group-2">
-                      <img
-                        className="mask-group"
-                        src="https://c.animaapp.com/mb8qgflo3CNVJD/img/mask-group.png"
-                      />
-                      <img
-                        className="mask-group-2"
-                        src="https://c.animaapp.com/mb8qgflo3CNVJD/img/mask-group-1.png"
-                      />
+                      <img className="mask-group" src={about1} />
+                      <img className="mask-group-2" src={about2} />
                     </div>
                   </div>
                   <div className="flexcontainer">
@@ -220,10 +262,7 @@ const Template = () => {
                 </div>
                 <div className="frame-wrapper-2">
                   <div className="frame-10">
-                    <img
-                      className="fluent-emoji-flat"
-                      src="https://c.animaapp.com/mb8qgflo3CNVJD/img/fluent-emoji-flat-paw-prints.svg"
-                    />
+                    <img className="fluent-emoji-flat" src={paws2} />
                     <div className="text-wrapper-5">About Us</div>
                   </div>
                 </div>
@@ -232,20 +271,14 @@ const Template = () => {
             <div className="team-section">
               <div className="about-header">
                 <div className="frame-10">
-                  <img
-                    className="fluent-emoji-flat"
-                    src="https://c.animaapp.com/mb8qgflo3CNVJD/img/fluent-emoji-flat-paw-prints.svg"
-                  />
+                  <img className="fluent-emoji-flat" src={paws2} />
                   <div className="text-wrapper-5">Our Team</div>
                 </div>
               </div>
               <div className="content-wrapper">
                 <div className="div-2">
                   <div className="team-member">
-                    <img
-                      className="img-2"
-                      src="https://c.animaapp.com/mb8qgflo3CNVJD/img/unsplash-deqaybedrqe.png"
-                    />
+                    <img className="img-2" src={team1} />
                     <div className="div-3">
                       <div className="div-4">
                         <div className="name-and-role">
@@ -254,26 +287,14 @@ const Template = () => {
                         </div>
                       </div>
                       <div className="social-icons">
-                        <img
-                          className="img"
-                          src="https://c.animaapp.com/mb8qgflo3CNVJD/img/social-icon-7.svg"
-                        />
-                        <img
-                          className="img"
-                          src="https://c.animaapp.com/mb8qgflo3CNVJD/img/social-icon-1.svg"
-                        />
-                        <img
-                          className="img"
-                          src="https://c.animaapp.com/mb8qgflo3CNVJD/img/social-icon-6.svg"
-                        />
+                        <img className="img" src={linkedin} />
+                        <img className="img" src={twitter} />
+                        <img className="img" src={web} />
                       </div>
                     </div>
                   </div>
                   <div className="team-member">
-                    <img
-                      className="img-2"
-                      src="https://c.animaapp.com/mb8qgflo3CNVJD/img/unsplash-o13b7surg4a.png"
-                    />
+                    <img className="img-2" src={team2} />
                     <div className="div-3">
                       <div className="div-4">
                         <div className="name-and-role">
@@ -282,26 +303,14 @@ const Template = () => {
                         </div>
                       </div>
                       <div className="social-icons">
-                        <img
-                          className="img"
-                          src="https://c.animaapp.com/mb8qgflo3CNVJD/img/social-icon-7.svg"
-                        />
-                        <img
-                          className="img"
-                          src="https://c.animaapp.com/mb8qgflo3CNVJD/img/social-icon-1.svg"
-                        />
-                        <img
-                          className="img"
-                          src="https://c.animaapp.com/mb8qgflo3CNVJD/img/social-icon-6.svg"
-                        />
+                        <img className="img" src={linkedin} />
+                        <img className="img" src={twitter} />
+                        <img className="img" src={web} />
                       </div>
                     </div>
                   </div>
                   <div className="team-member">
-                    <img
-                      className="img-2"
-                      src="https://c.animaapp.com/mb8qgflo3CNVJD/img/unsplash-e6vo-4i-3xg.png"
-                    />
+                    <img className="img-2" src={team3} />
                     <div className="div-3">
                       <div className="div-4">
                         <div className="name-and-role">
@@ -310,26 +319,14 @@ const Template = () => {
                         </div>
                       </div>
                       <div className="social-icons">
-                        <img
-                          className="img"
-                          src="https://c.animaapp.com/mb8qgflo3CNVJD/img/social-icon-7.svg"
-                        />
-                        <img
-                          className="img"
-                          src="https://c.animaapp.com/mb8qgflo3CNVJD/img/social-icon-1.svg"
-                        />
-                        <img
-                          className="img"
-                          src="https://c.animaapp.com/mb8qgflo3CNVJD/img/social-icon-6.svg"
-                        />
+                        <img className="img" src={linkedin} />
+                        <img className="img" src={twitter} />
+                        <img className="img" src={web} />
                       </div>
                     </div>
                   </div>
                   <div className="team-member">
-                    <img
-                      className="unsplash"
-                      src="https://c.animaapp.com/mb8qgflo3CNVJD/img/unsplash-egbmotqxf04.png"
-                    />
+                    <img className="unsplash" src={team4} />
                     <div className="div-3">
                       <div className="div-4">
                         <div className="name-and-role">
@@ -338,18 +335,9 @@ const Template = () => {
                         </div>
                       </div>
                       <div className="social-icons">
-                        <img
-                          className="img"
-                          src="https://c.animaapp.com/mb8qgflo3CNVJD/img/social-icon-7.svg"
-                        />
-                        <img
-                          className="img"
-                          src="https://c.animaapp.com/mb8qgflo3CNVJD/img/social-icon-1.svg"
-                        />
-                        <img
-                          className="img"
-                          src="https://c.animaapp.com/mb8qgflo3CNVJD/img/social-icon-6.svg"
-                        />
+                        <img className="img" src={linkedin} />
+                        <img className="img" src={twitter} />
+                        <img className="img" src={web} />
                       </div>
                     </div>
                   </div>
@@ -359,10 +347,7 @@ const Template = () => {
             <div className="rich-text-section">
               <div className="about-header">
                 <div className="frame-10">
-                  <img
-                    className="fluent-emoji-flat"
-                    src="https://c.animaapp.com/mb8qgflo3CNVJD/img/fluent-emoji-flat-paw-prints.svg"
-                  />
+                  <img className="fluent-emoji-flat" src={paws2} />
                   <div className="text-wrapper-5">Blog</div>
                 </div>
               </div>
@@ -375,10 +360,7 @@ const Template = () => {
                   </div>
                   <div className="div-6">
                     <div className="div-6">
-                      <img
-                        className="divider"
-                        src="https://c.animaapp.com/mb8qgflo3CNVJD/img/divider.svg"
-                      />
+                      <img className="divider" src={last_hero} />
                       <p className="paragraph">
                         <span className="text-wrapper-11">
                           Eget quis mi enim, leo lacinia pharetra, semper. Eget
@@ -423,21 +405,20 @@ const Template = () => {
                     <div className="text-wrapper-13">Read more</div>
                   </div>
                 </div>
-                <div className="image">
-                  <img
-                    className="octicon-play"
-                    src="https://c.animaapp.com/mb8qgflo3CNVJD/img/octicon-play-24.svg"
-                  />
+                <div
+                  className="image"
+                  style={{
+                    background: `linear-gradient(0deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.3) 100%), url(${last_hero}) 50% 50% / cover`,
+                  }}
+                >
+                  <img className="octicon-play" src={play} />
                 </div>
               </div>
             </div>
             <div className="contact-sections">
               <div className="about-header-2">
                 <div className="frame-10">
-                  <img
-                    className="fluent-emoji-flat"
-                    src="https://c.animaapp.com/mb8qgflo3CNVJD/img/fluent-emoji-flat-paw-prints.svg"
-                  />
+                  <img className="fluent-emoji-flat" src={paws} />
                   <div className="text-wrapper-14">Get in touch</div>
                 </div>
               </div>
@@ -538,10 +519,17 @@ const Template = () => {
                     </div>
                     <div className="div-4">
                       <div className="button-base-wrapper">
-                        <img
-                          className="button-base-2"
-                          src="https://c.animaapp.com/mb8qgflo3CNVJD/img/-button-base.svg"
-                        />
+                        <Button
+                          fullWidth
+                          variant="contained"
+                          sx={{
+                            backgroundColor: "#101828",
+                            color: "white",
+                            fontSize: "1.2rem",
+                          }}
+                        >
+                          Send Message
+                        </Button>
                       </div>
                     </div>
                   </div>
@@ -549,10 +537,7 @@ const Template = () => {
                 <div className="content-3">
                   <div className="div-2">
                     <div className="div-9">
-                      <img
-                        className="img"
-                        src="https://c.animaapp.com/mb8qgflo3CNVJD/img/mail.svg"
-                      />
+                      <EmailOutlined sx={{ color: "white", fontSize: "2em" }} />
                       <div className="text-and-supporting">
                         <div className="text-4">Email</div>
                         <p className="supporting-text">
@@ -566,9 +551,8 @@ const Template = () => {
                       </button>
                     </div>
                     <div className="div-9">
-                      <img
-                        className="img"
-                        src="https://c.animaapp.com/mb8qgflo3CNVJD/img/message-circle.svg"
+                      <ChatBubbleOutlineOutlined
+                        sx={{ color: "white", fontSize: "2em" }}
                       />
                       <div className="text-and-supporting">
                         <div className="text-4">Live chat</div>
@@ -585,9 +569,8 @@ const Template = () => {
                   </div>
                   <div className="div-2">
                     <div className="div-9">
-                      <img
-                        className="img"
-                        src="https://c.animaapp.com/mb8qgflo3CNVJD/img/map-pin.svg"
+                      <LocationOnOutlined
+                        sx={{ color: "white", fontSize: "2em" }}
                       />
                       <div className="text-and-supporting">
                         <div className="text-4">Office</div>
@@ -604,10 +587,7 @@ const Template = () => {
                       </div>
                     </div>
                     <div className="div-9">
-                      <img
-                        className="img"
-                        src="https://c.animaapp.com/mb8qgflo3CNVJD/img/phone.svg"
-                      />
+                      <PhoneOutlined sx={{ color: "white", fontSize: "2em" }} />
                       <div className="text-and-supporting">
                         <div className="text-4">Phone</div>
                         <p className="supporting-text">
@@ -665,10 +645,7 @@ const Template = () => {
                   <div className="content-5">
                     <div className="logo-and-supporting">
                       <div className="logo">
-                        <img
-                          className="fluent-emoji-flat"
-                          src="https://c.animaapp.com/mb8qgflo3CNVJD/img/fluent-emoji-flat-paw-prints.svg"
-                        />
+                        <img className="fluent-emoji-flat" src={paws} />
                         <div className="text-wrapper-17">Paws n’ Play</div>
                       </div>
                       <p className="supporting-text-3">
@@ -886,29 +863,11 @@ const Template = () => {
                       © 2024 Paws n’ Play. All rights reserved.
                     </p>
                     <div className="social-icons-2">
-                      <img
-                        className="img"
-                        src="https://c.animaapp.com/mb8qgflo3CNVJD/img/social-icon-7.svg"
-                      />
-                      <img
-                        className="img"
-                        src="https://c.animaapp.com/mb8qgflo3CNVJD/img/social-icon-1.svg"
-                      />
-                      <img
-                        className="img"
-                        src="https://c.animaapp.com/mb8qgflo3CNVJD/img/social-icon-3.svg"
-                      />
-                      <img
-                        className="img"
-                        src="https://c.animaapp.com/mb8qgflo3CNVJD/img/social-icon.svg"
-                      />
-                      <img
-                        className="img"
-                        src="https://c.animaapp.com/mb8qgflo3CNVJD/img/social-icon-13.svg"
-                      />
-                      <img
-                        className="img"
-                        src="https://c.animaapp.com/mb8qgflo3CNVJD/img/social-icon-6.svg"
+                      <img className="img" src={linkedin} />
+                      <img className="img" src={twitter} />
+                      <img className="img" src={web} />
+                      <FacebookOutlined
+                        sx={{ color: "#98A2B3", fontSize: "2em" }}
                       />
                     </div>
                   </div>
@@ -921,10 +880,7 @@ const Template = () => {
               <div className="container-6">
                 <div className="content-7">
                   <div className="logo">
-                    <img
-                      className="fluent-emoji-flat"
-                      src="https://c.animaapp.com/mb8qgflo3CNVJD/img/fluent-emoji-flat-paw-prints.svg"
-                    />
+                    <img className="fluent-emoji-flat" src={paws} />
                     <div className="text-wrapper-17">Paws n’ Play</div>
                   </div>
                   <div className="nav-menu">
@@ -932,9 +888,12 @@ const Template = () => {
                       <button className="button-2">
                         <div className="button-base-3">
                           <div className="text-12">Shop</div>
-                          <img
-                            className="chevron-down"
-                            src="https://c.animaapp.com/mb8qgflo3CNVJD/img/chevron-down.svg"
+                          <ArrowForwardIos
+                            sx={{
+                              color: "white",
+                              transform: "rotate(90deg)",
+                              fontSize: "1.2rem",
+                            }}
                           />
                         </div>
                       </button>
@@ -943,9 +902,12 @@ const Template = () => {
                       <button className="button-2">
                         <div className="button-base-3">
                           <div className="text-12">Services</div>
-                          <img
-                            className="chevron-down"
-                            src="https://c.animaapp.com/mb8qgflo3CNVJD/img/chevron-down.svg"
+                          <ArrowForwardIos
+                            sx={{
+                              color: "white",
+                              transform: "rotate(90deg)",
+                              fontSize: "1.2rem",
+                            }}
                           />
                         </div>
                       </button>

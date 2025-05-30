@@ -30,7 +30,7 @@ export const authRouters = [
     showInMenu: false,
   },
   {
-    path: "/templates/paws-n-play",
+    path: "/templates/e-commerce",
     component: asyncComponent(() =>
       import("../pages/templates/templates1/index.jsx")
     ),
