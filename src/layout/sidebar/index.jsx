@@ -12,23 +12,22 @@ import { appRouters } from "../../router/router.config";
 import { useNavigate } from "react-router-dom";
 
 const SideBar = () => {
-  const [openMenus, setOpenMenus] = useState({});
-  const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user"));
-  // Preprocess router config once
+  const navigate = useNavigate();
+  const [openMenus, setOpenMenus] = useState({});
   const { menuItems, subMenuMap } = useMemo(() => {
     const menuItems = [];
     const subMenuMap = {};
 
     for (const item of appRouters) {
       if (item.showInMenu && !item.showInSubMenu) {
-        const titleKey = item.title?.split(".")[1] || "";
-        menuItems.push({ ...item, titleKey });
+        menuItems.push({ ...item, titleKey: item.title });
       } else if (item.showInSubMenu && item.subMenuTitle) {
-        const parentKey = item.subMenuTitle.split(".")[1];
+        const parentKey = item.subMenuTitle;
+
         if (!subMenuMap[parentKey]) subMenuMap[parentKey] = [];
-        const titleKey = item.title?.split(".")[1] || "";
-        subMenuMap[parentKey].push({ ...item, titleKey });
+
+        subMenuMap[parentKey].push({ ...item, titleKey: item.title });
       }
     }
 
@@ -69,20 +68,23 @@ const SideBar = () => {
           </ListSubheader>
         }
       >
-        {menuItems.map((item) => {
-          const hasSubMenu = item.subMenu;
-          const isOpen = openMenus[item.titleKey] || false;
+        {menuItems.map((parentItem) => {
+          const hasSubMenu = parentItem.subMenu;
+          const isOpen = openMenus[parentItem.titleKey] || false;
 
-          if (item.role?.length > 0 && !item.role.includes(user.role))
+          if (
+            parentItem.role?.length > 0 &&
+            !parentItem.role.includes(user.role)
+          )
             return null;
 
           return (
-            <div key={item.titleKey}>
+            <div key={parentItem.titleKey}>
               <ListItemButton
-                onClick={() => handleListItemClick(item)}
+                onClick={() => handleListItemClick(parentItem)}
                 sx={{
                   backgroundColor:
-                    window.location.pathname === item.path
+                    window.location.pathname === parentItem.path
                       ? "rgba(255, 255, 255, 0.1)"
                       : "transparent",
                   "&:hover": {
@@ -90,24 +92,24 @@ const SideBar = () => {
                   },
                 }}
               >
-                {item.icon && (
+                {parentItem.icon && (
                   <ListItemIcon
                     sx={(theme) => ({
                       color:
-                        window.location.pathname === item.path
+                        window.location.pathname === parentItem.path
                           ? "#fff"
                           : theme.palette.grey[700],
                     })}
                   >
-                    {item.icon}
+                    {parentItem.icon}
                   </ListItemIcon>
                 )}
                 <ListItemText
-                  primary={item.titleKey}
+                  primary={parentItem.titleKey}
                   sx={(theme) => ({
                     textTransform: "capitalize",
                     color:
-                      window.location.pathname === item.path
+                      window.location.pathname === parentItem.path
                         ? "#fff"
                         : theme.palette.grey[700],
                   })}
@@ -127,7 +129,7 @@ const SideBar = () => {
               {hasSubMenu && (
                 <Collapse in={isOpen} timeout="auto" unmountOnExit>
                   <List component="div" disablePadding>
-                    {(subMenuMap[item.titleKey] || []).map((subItem) => {
+                    {(subMenuMap[parentItem.titleKey] || []).map((subItem) => {
                       if (
                         subItem.role?.length > 0 &&
                         !subItem.role.includes(user.role)
@@ -136,13 +138,25 @@ const SideBar = () => {
                       return (
                         <ListItemButton
                           key={subItem.titleKey}
-                          sx={{ pl: 4 }}
+                          sx={{
+                            pl: 4,
+                            backgroundColor:
+                              window.location.pathname === subItem.path
+                                ? "rgba(255, 255, 255, 0.1)"
+                                : "transparent",
+                            "&:hover": {
+                              backgroundColor: "rgba(255, 255, 255, 0.1)",
+                            },
+                          }}
                           onClick={() => handleListItemClick(subItem)}
                         >
                           {subItem.icon && (
                             <ListItemIcon
                               sx={(theme) => ({
-                                color: theme.palette.grey[700],
+                                color:
+                                  window.location.pathname === subItem.path
+                                    ? "#fff"
+                                    : theme.palette.grey[700],
                               })}
                             >
                               {subItem.icon}
@@ -152,7 +166,10 @@ const SideBar = () => {
                             primary={subItem.titleKey}
                             sx={(theme) => ({
                               textTransform: "capitalize",
-                              color: theme.palette.grey[700],
+                              color:
+                                window.location.pathname === subItem.path
+                                  ? "#fff"
+                                  : theme.palette.grey[700],
                             })}
                           />
                         </ListItemButton>

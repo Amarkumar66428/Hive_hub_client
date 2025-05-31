@@ -1,5 +1,20 @@
 import api from "../utils/axios";
 
+export const getStores = async () => {
+  const response = await api.get("admin/getAllStores");
+  return response.data;
+};
+
+export const createPlan = async (planData) => {
+  const response = await api.post("/admin/createPlan", planData);
+  return response.data;
+};
+
+export const getPlans = async () => {
+  const response = await api.get("/user/getAllPlans");
+  return response.data;
+};
+
 export const createStore = async (storeData) => {
   const formData = new FormData();
   for (const key in storeData) {
@@ -18,8 +33,11 @@ export const createStore = async (storeData) => {
 
 export const addItem = async (items) => {
   const formData = new FormData();
-  const itemsWithoutImages = items.map(({ _, ...rest }) => rest);
+
+  const itemsWithoutImages = items.map(({ image, ...rest }) => rest);
+
   formData.append("items", JSON.stringify(itemsWithoutImages));
+
   items.forEach(({ image }, idx) => {
     if (image && image instanceof File) {
       formData.append(`itemImage${idx}`, image);

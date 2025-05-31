@@ -1,10 +1,13 @@
 import {
   Dashboard,
+  DataObject,
   DesignServicesRounded,
   Explore,
   HomeOutlined,
+  LocalOffer,
   NotificationsOutlined,
   SettingsOutlined,
+  Storefront,
 } from "@mui/icons-material";
 import { SUPER_ADMIN, STORE_OWNER } from "../constant/LookupConst.js";
 import asyncComponent from "../utils/asyncComponent.jsx";
@@ -14,6 +17,12 @@ export const authRouters = [
   {
     path: "/",
     component: asyncComponent(() => import("../pages/homePage.jsx")),
+    isLayout: false,
+    showInMenu: false,
+  },
+  {
+    path: "/admin/auth/signin",
+    component: asyncComponent(() => import("../pages/admin/auth/index.jsx")),
     isLayout: false,
     showInMenu: false,
   },
@@ -57,16 +66,7 @@ export const authRouters = [
 
 export const appRouters = [
   {
-    path: "/admin/dashboard",
-    component: asyncComponent(() =>
-      import("../pages/admin/home/dashboard.jsx")
-    ),
-    role: [SUPER_ADMIN],
-    isLayout: true,
-    showInMenu: false,
-  },
-  {
-    title: "sidebar.home",
+    title: "Home",
     role: [SUPER_ADMIN, STORE_OWNER],
     icon: React.createElement(HomeOutlined),
     isLayout: true,
@@ -76,8 +76,8 @@ export const appRouters = [
   {
     path: "/admin/home/dashboard",
     role: [SUPER_ADMIN],
-    title: "sidebar.dashboard",
-    subMenuTitle: "sidebar.home",
+    title: "Dashboard",
+    subMenuTitle: "Home",
     icon: React.createElement(Dashboard),
     component: asyncComponent(() =>
       import("../pages/admin/home/dashboard.jsx")
@@ -86,10 +86,40 @@ export const appRouters = [
     showInSubMenu: true,
   },
   {
+    path: "/admin/home/invite-code",
+    role: [SUPER_ADMIN],
+    title: "Invite Code",
+    subMenuTitle: "Home",
+    icon: React.createElement(DataObject),
+    component: asyncComponent(() =>
+      import("../pages/admin/inviteCode/index.jsx")
+    ),
+    isLayout: true,
+    showInSubMenu: true,
+  },
+  {
+    path: "/admin/manage-plans",
+    role: [SUPER_ADMIN],
+    title: "Manage Plans",
+    icon: React.createElement(LocalOffer),
+    component: asyncComponent(() => import("../pages/admin/plans/index.jsx")),
+    isLayout: true,
+    showInMenu: true,
+  },
+  {
+    path: "/admin/manage-stores",
+    role: [SUPER_ADMIN],
+    title: "Manage Stores",
+    icon: React.createElement(Storefront),
+    component: asyncComponent(() => import("../pages/admin/store/index.jsx")),
+    isLayout: true,
+    showInMenu: true,
+  },
+  {
     path: "/user/home/dashboard",
     role: [STORE_OWNER],
-    title: "sidebar.dashboard",
-    subMenuTitle: "sidebar.home",
+    title: "Dashboard",
+    subMenuTitle: "Home",
     icon: React.createElement(Dashboard),
     component: asyncComponent(() => import("../pages/user/home/index.jsx")),
     isLayout: true,
@@ -98,10 +128,12 @@ export const appRouters = [
   {
     path: "/user/home/create-store",
     role: [STORE_OWNER],
-    title: "sidebar.createStore",
-    subMenuTitle: "sidebar.home",
+    title: "Create Store",
+    subMenuTitle: "Home",
     icon: React.createElement(DesignServicesRounded),
-    component: asyncComponent(() => import("../pages/user/createStore/index.jsx")),
+    component: asyncComponent(() =>
+      import("../pages/user/createStore/index.jsx")
+    ),
     isLayout: true,
     showInSubMenu: true,
     subscriptionRequired: true,
@@ -109,18 +141,18 @@ export const appRouters = [
   {
     path: "/user/community",
     role: [STORE_OWNER],
-    title: "sidebar.community",
+    title: "Community",
     icon: React.createElement(Explore),
     component: asyncComponent(() =>
       import("../pages/user/community/index.jsx")
     ),
     isLayout: true,
-    showInMenu: true,
+    showInMenu: false,
   },
   {
     path: "/user/notifications",
     role: [STORE_OWNER],
-    title: "sidebar.notification",
+    title: "Notification",
     icon: React.createElement(NotificationsOutlined),
 
     component: asyncComponent(() =>
@@ -132,7 +164,7 @@ export const appRouters = [
   {
     path: "/user/settings",
     role: [STORE_OWNER],
-    title: "sidebar.settings",
+    title: "Settings",
     icon: React.createElement(SettingsOutlined),
     component: asyncComponent(() => import("../pages/user/settings/index.jsx")),
     isLayout: true,
@@ -141,7 +173,9 @@ export const appRouters = [
   {
     path: "/subscription/payment",
     role: [STORE_OWNER],
-    component: asyncComponent(() => import("../pages/subscription/payments.jsx")),
+    component: asyncComponent(() =>
+      import("../pages/subscription/payments.jsx")
+    ),
     isLayout: true,
     showInMenu: false,
   },

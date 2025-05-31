@@ -14,7 +14,7 @@ import {
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ArrowBack from "@mui/icons-material/ArrowBack";
-import { addItem, createStore } from "../../../services/stroeService";
+import { addItem, createStore } from "../../../services/storeService";
 
 const ProjectConfigForm = ({
   projectConfig,

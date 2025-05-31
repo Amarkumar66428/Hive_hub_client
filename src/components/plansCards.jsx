@@ -59,7 +59,7 @@ const PlanCard = ({ plan, selectPlan, setSelectPlan }) => {
             variant="h6"
             sx={{ fontSize: "1.2rem", textAlign: "center", color: "white" }}
           >
-            {plan.tier}
+            {plan.tier || "10K"}
           </Typography>
         </Box>
       </Box>
@@ -73,7 +73,11 @@ const PlanCard = ({ plan, selectPlan, setSelectPlan }) => {
         }}
       >
         <Checkbox
-          checked={selectPlan?.id === plan?.id}
+          checked={
+            selectPlan?.id
+              ? selectPlan?.id === plan?.id
+              : selectPlan?._id === plan?._id
+          }
           {...label}
           sx={{
             color: "white",
@@ -96,7 +100,7 @@ const PlanCard = ({ plan, selectPlan, setSelectPlan }) => {
           justifyContent: "center",
         }}
       >
-        ${plan.price}
+        ${plan.price || "10,000"}
       </Typography>
 
       {/* Features list */}
