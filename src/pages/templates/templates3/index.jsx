@@ -1,12 +1,44 @@
 import React from "react";
-import "./styleGuide.scss";
-import "./global.scss";
-import "./styles.scss";
-import { Box } from "@mui/material";
+import "./global.css";
+import { Box, IconButton, Rating } from "@mui/material";
+import {
+  FavoriteBorderOutlined,
+  MenuBookOutlined,
+  RemoveRedEyeOutlined,
+  SchoolOutlined,
+  ShoppingCartOutlined,
+  WorkspacePremiumOutlined,
+} from "@mui/icons-material";
+import first_hero from "../../../assets/storePage/temp3/first_hero.webp";
+import sec_hero from "../../../assets/storePage/temp3/sec_hero.webp";
+import vec1 from "../../../assets/storePage/temp3/vec1.svg";
+import vec2 from "../../../assets/storePage/temp3/vec2.svg";
+import rec1 from "../../../assets/storePage/temp3/rec1.svg";
+import rec2 from "../../../assets/storePage/temp3/rec2.svg";
+import rec3 from "../../../assets/storePage/temp3/rec3.svg";
+import img1 from "../../../assets/storePage/temp3/image 1.webp";
+import img3 from "../../../assets/storePage/temp3/image 3.webp";
+import exp1 from "../../../assets/storePage/temp3/exp1.webp";
+import exp2 from "../../../assets/storePage/temp3/exp2.webp";
+import exp3 from "../../../assets/storePage/temp3/exp3.webp";
+import crs1 from "../../../assets/storePage/temp3/crs1.webp";
+import crs2 from "../../../assets/storePage/temp3/crs2.webp";
+import crs3 from "../../../assets/storePage/temp3/crs3.webp";
+import crs4 from "../../../assets/storePage/temp3/crs4.webp";
+import cl1 from "../../../assets/storePage/temp3/cl1.webp";
+import cl2 from "../../../assets/storePage/temp3/cl2.webp";
 
 const Templates3 = () => {
   return (
-    <Box sx={{ width: "100%", display: "flex", justifyContent: "center", backgroundColor: "#F9F9F9" }}>
+    <Box
+      className="temp3"
+      sx={{
+        width: "100%",
+        display: "flex",
+        justifyContent: "center",
+        backgroundColor: "#F9F9F9",
+      }}
+    >
       <div className="template">
         <div className="header">
           <div className="overlap">
@@ -22,23 +54,11 @@ const Templates3 = () => {
                   <div className="overlap-wrapper">
                     <div className="overlap-2">
                       <div className="frame">
-                        <img
-                          className="img"
-                          src="https://c.animaapp.com/mb9pesf442tRSF/img/rectangle.png"
-                        />
+                        <img className="img" src={rec1} />
                       </div>
-                      <img
-                        className="vector"
-                        src="https://c.animaapp.com/mb9pesf442tRSF/img/vector.svg"
-                      />
-                      <img
-                        className="vector-2"
-                        src="https://c.animaapp.com/mb9pesf442tRSF/img/vector-1.svg"
-                      />
-                      <img
-                        className="placeholder"
-                        src="https://c.animaapp.com/mb9pesf442tRSF/img/placeholder.png"
-                      />
+                      <img className="vector" src={vec1} />
+                      <img className="vector-2" src={vec2} />
+                      <img className="placeholder" src={first_hero} />
                     </div>
                   </div>
                 </div>
@@ -116,10 +136,7 @@ const Templates3 = () => {
                 <div className="card-wrapper">
                   <div className="card">
                     <div className="circle-sec">
-                      <img
-                        className="icon-cool-icon"
-                        src="https://c.animaapp.com/mb9pesf442tRSF/img/icon-cool-icon-n8.svg"
-                      />
+                      <SchoolOutlined sx={{ color: "#fff", fontSize: "3em" }} />
                     </div>
                     <div className="text-wrapper-2">Expert instruction</div>
                     <div className="fixed-width-fixed"></div>
@@ -133,9 +150,8 @@ const Templates3 = () => {
                 <div className="col-md-3">
                   <div className="card">
                     <div className="circle-sec">
-                      <img
-                        className="icon-cool-icon"
-                        src="https://c.animaapp.com/mb9pesf442tRSF/img/icon-cool-icon-n11.svg"
+                      <WorkspacePremiumOutlined
+                        sx={{ color: "#fff", fontSize: "3em" }}
                       />
                     </div>
                     <div className="text-wrapper-2">Training Courses</div>
@@ -150,9 +166,8 @@ const Templates3 = () => {
                 <div className="col-md-3">
                   <div className="card">
                     <div className="circle-sec">
-                      <img
-                        className="icon-cool-icon"
-                        src="https://c.animaapp.com/mb9pesf442tRSF/img/icon-cool-icon-n13.svg"
+                      <MenuBookOutlined
+                        sx={{ color: "#fff", fontSize: "3em" }}
                       />
                     </div>
                     <div className="text-wrapper-2">Expert instruction</div>
@@ -216,31 +231,13 @@ const Templates3 = () => {
                 <div className="thumb-concept">
                   <div className="overlap-3">
                     <div className="overlap-group-2">
-                      <img
-                        className="rectangle-3"
-                        src="https://c.animaapp.com/mb9pesf442tRSF/img/rectangle-51.svg"
-                      />
-                      <img
-                        className="rectangle-4"
-                        src="https://c.animaapp.com/mb9pesf442tRSF/img/rectangle-53.svg"
-                      />
-                      <img
-                        className="technology"
-                        src="https://c.animaapp.com/mb9pesf442tRSF/img/technology-1.png"
-                      />
-                      <img
-                        className="image"
-                        src="https://c.animaapp.com/mb9pesf442tRSF/img/image-1.png"
-                      />
-                      <img
-                        className="image-2"
-                        src="https://c.animaapp.com/mb9pesf442tRSF/img/image-3.png"
-                      />
+                      <img className="rectangle-3" src={rec3} />
+                      <img className="rectangle-4" src={rec3} />
+                      <img className="technology" src={sec_hero} />
+                      <img className="image" src={img1} />
+                      <img className="image-2" src={img3} />
                     </div>
-                    <img
-                      className="rectangle-5"
-                      src="https://c.animaapp.com/mb9pesf442tRSF/img/rectangle-52.svg"
-                    />
+                    <img className="rectangle-5" src={rec2} />
                   </div>
                 </div>
               </div>
@@ -263,25 +260,34 @@ const Templates3 = () => {
             <div className="row-4">
               <div className="col-md-5">
                 <div className="product-card">
-                  <div className="fixed-height">
+                  <div
+                    className="fixed-height"
+                    style={{ background: `url(${exp1}) 50% 50% / cover` }}
+                  >
                     <div className="product-actions-sec">
                       <div className="icn-favorite-wrapper">
-                        <img
-                          className="icn-favorite"
-                          src="https://c.animaapp.com/mb9pesf442tRSF/img/icn-favorite-5.svg"
-                        />
+                        <IconButton sx={{ color: "white" }}>
+                          <FavoriteBorderOutlined
+                            sx={{ color: "#000" }}
+                            size="small"
+                          />
+                        </IconButton>
                       </div>
                       <div className="icn-favorite-wrapper">
-                        <img
-                          className="icn-favorite"
-                          src="https://c.animaapp.com/mb9pesf442tRSF/img/icn-favorite-2.svg"
-                        />
+                        <IconButton sx={{ color: "white" }}>
+                          <ShoppingCartOutlined
+                            sx={{ color: "#000" }}
+                            size="small"
+                          />
+                        </IconButton>
                       </div>
                       <div className="icn-favorite-wrapper">
-                        <img
-                          className="icn-favorite"
-                          src="https://c.animaapp.com/mb9pesf442tRSF/img/icn-favorite.svg"
-                        />
+                        <IconButton sx={{ color: "white" }}>
+                          <RemoveRedEyeOutlined
+                            sx={{ color: "#000" }}
+                            size="small"
+                          />
+                        </IconButton>
                       </div>
                     </div>
                     <div className="tag-sec">
@@ -330,25 +336,34 @@ const Templates3 = () => {
               </div>
               <div className="col-md-5">
                 <div className="product-card">
-                  <div className="fixed-height-2">
+                  <div
+                    className="fixed-height-2"
+                    style={{ background: `url(${exp2}) 50% 50% / cover` }}
+                  >
                     <div className="product-actions-sec">
                       <div className="icn-favorite-wrapper">
-                        <img
-                          className="icn-favorite"
-                          src="https://c.animaapp.com/mb9pesf442tRSF/img/icn-favorite-5.svg"
-                        />
+                        <IconButton sx={{ color: "white" }}>
+                          <FavoriteBorderOutlined
+                            sx={{ color: "#000" }}
+                            size="small"
+                          />
+                        </IconButton>
                       </div>
                       <div className="icn-favorite-wrapper">
-                        <img
-                          className="icn-favorite"
-                          src="https://c.animaapp.com/mb9pesf442tRSF/img/icn-favorite-2.svg"
-                        />
+                        <IconButton sx={{ color: "white" }}>
+                          <ShoppingCartOutlined
+                            sx={{ color: "#000" }}
+                            size="small"
+                          />
+                        </IconButton>
                       </div>
                       <div className="icn-favorite-wrapper">
-                        <img
-                          className="icn-favorite"
-                          src="https://c.animaapp.com/mb9pesf442tRSF/img/icn-favorite.svg"
-                        />
+                        <IconButton sx={{ color: "white" }}>
+                          <RemoveRedEyeOutlined
+                            sx={{ color: "#000" }}
+                            size="small"
+                          />
+                        </IconButton>
                       </div>
                     </div>
                     <div className="tag-sec">
@@ -399,25 +414,34 @@ const Templates3 = () => {
               </div>
               <div className="col-md-6">
                 <div className="product-card-2">
-                  <div className="fixed-height-3">
+                  <div
+                    className="fixed-height-3"
+                    style={{ background: `url(${exp3}) 50% 50% / cover` }}
+                  >
                     <div className="product-actions-sec">
                       <div className="icn-favorite-wrapper">
-                        <img
-                          className="icn-favorite"
-                          src="https://c.animaapp.com/mb9pesf442tRSF/img/icn-favorite-5.svg"
-                        />
+                        <IconButton sx={{ color: "white" }}>
+                          <FavoriteBorderOutlined
+                            sx={{ color: "#000" }}
+                            size="small"
+                          />
+                        </IconButton>
                       </div>
                       <div className="icn-favorite-wrapper">
-                        <img
-                          className="icn-favorite"
-                          src="https://c.animaapp.com/mb9pesf442tRSF/img/icn-favorite-1.svg"
-                        />
+                        <IconButton sx={{ color: "white" }}>
+                          <ShoppingCartOutlined
+                            sx={{ color: "#000" }}
+                            size="small"
+                          />
+                        </IconButton>
                       </div>
                       <div className="icn-favorite-wrapper">
-                        <img
-                          className="icn-favorite"
-                          src="https://c.animaapp.com/mb9pesf442tRSF/img/icn-favorite.svg"
-                        />
+                        <IconButton sx={{ color: "white" }}>
+                          <RemoveRedEyeOutlined
+                            sx={{ color: "#000" }}
+                            size="small"
+                          />
+                        </IconButton>
                       </div>
                     </div>
                     <div className="tag-sec">
@@ -485,25 +509,11 @@ const Templates3 = () => {
                 <div className="testimonials-card">
                   <div className="card-content">
                     <div className="stars">
-                      <img
-                        className="img-3"
-                        src="https://c.animaapp.com/mb9pesf442tRSF/img/icn-bxs-star.svg"
-                      />
-                      <img
-                        className="img-3"
-                        src="https://c.animaapp.com/mb9pesf442tRSF/img/icn-bxs-star.svg"
-                      />
-                      <img
-                        className="img-3"
-                        src="https://c.animaapp.com/mb9pesf442tRSF/img/icn-bxs-star.svg"
-                      />
-                      <img
-                        className="img-3"
-                        src="https://c.animaapp.com/mb9pesf442tRSF/img/icn-bxs-star.svg"
-                      />
-                      <img
-                        className="img-3"
-                        src="https://c.animaapp.com/mb9pesf442tRSF/img/icn-bx-star.svg"
+                      <Rating
+                        name="half-rating-read"
+                        defaultValue={2.5}
+                        precision={0.5}
+                        readOnly
                       />
                     </div>
                     <p className="paragraph">
@@ -517,7 +527,10 @@ const Templates3 = () => {
                     </p>
                   </div>
                   <div className="div-6">
-                    <div className="circle"></div>
+                    <div
+                      className="circle"
+                      style={{ background: `url(${cl1}) 50% 50% / cover` }}
+                    ></div>
                     <div className="div-7">
                       <div className="text-wrapper-4">Regina Miles</div>
                       <div className="h-2">Designer</div>
@@ -529,25 +542,11 @@ const Templates3 = () => {
                 <div className="testimonials-card">
                   <div className="card-content">
                     <div className="stars">
-                      <img
-                        className="img-3"
-                        src="https://c.animaapp.com/mb9pesf442tRSF/img/icn-bxs-star.svg"
-                      />
-                      <img
-                        className="img-3"
-                        src="https://c.animaapp.com/mb9pesf442tRSF/img/icn-bxs-star.svg"
-                      />
-                      <img
-                        className="img-3"
-                        src="https://c.animaapp.com/mb9pesf442tRSF/img/icn-bxs-star.svg"
-                      />
-                      <img
-                        className="img-3"
-                        src="https://c.animaapp.com/mb9pesf442tRSF/img/icn-bxs-star.svg"
-                      />
-                      <img
-                        className="img-3"
-                        src="https://c.animaapp.com/mb9pesf442tRSF/img/icn-bx-star.svg"
+                      <Rating
+                        name="half-rating-read"
+                        defaultValue={2.5}
+                        precision={0.5}
+                        readOnly
                       />
                     </div>
                     <p className="paragraph">
@@ -561,7 +560,10 @@ const Templates3 = () => {
                     </p>
                   </div>
                   <div className="div-6">
-                    <div className="circle-2"></div>
+                    <div
+                      className="circle-2"
+                      style={{ background: `url(${cl2}) 50% 50% / cover` }}
+                    ></div>
                     <div className="div-7">
                       <div className="text-wrapper-4">Regina Miles</div>
                       <div className="h-2">Designer</div>
@@ -573,25 +575,11 @@ const Templates3 = () => {
                 <div className="testimonials-card-2">
                   <div className="card-content">
                     <div className="stars">
-                      <img
-                        className="img-3"
-                        src="https://c.animaapp.com/mb9pesf442tRSF/img/icn-bxs-star.svg"
-                      />
-                      <img
-                        className="img-3"
-                        src="https://c.animaapp.com/mb9pesf442tRSF/img/icn-bxs-star.svg"
-                      />
-                      <img
-                        className="img-3"
-                        src="https://c.animaapp.com/mb9pesf442tRSF/img/icn-bxs-star.svg"
-                      />
-                      <img
-                        className="img-3"
-                        src="https://c.animaapp.com/mb9pesf442tRSF/img/icn-bxs-star.svg"
-                      />
-                      <img
-                        className="img-3"
-                        src="https://c.animaapp.com/mb9pesf442tRSF/img/icn-bx-star.svg"
+                      <Rating
+                        name="half-rating-read"
+                        defaultValue={2.5}
+                        precision={0.5}
+                        readOnly
                       />
                     </div>
                     <p className="paragraph">
@@ -605,7 +593,10 @@ const Templates3 = () => {
                     </p>
                   </div>
                   <div className="div-6">
-                    <div className="circle-3"></div>
+                    <div
+                      className="circle-3"
+                      style={{ background: `url(${crs2}) 50% 50% / cover` }}
+                    ></div>
                     <div className="div-7">
                       <div className="text-wrapper-4">Regina Miles</div>
                       <div className="h-2">Designer</div>
@@ -632,7 +623,10 @@ const Templates3 = () => {
             <div className="row-2">
               <div className="div-2">
                 <div className="user-card">
-                  <div className="fixed-height-sec"></div>
+                  <div
+                    className="fixed-height-sec"
+                    style={{ background: `url(${crs1}) 50% 50% / cover` }}
+                  ></div>
                   <div className="card-content-2">
                     <div className="user-title-sec">Julian Jameson</div>
                     <div className="small-job">Profession</div>
@@ -646,7 +640,10 @@ const Templates3 = () => {
               </div>
               <div className="div-3">
                 <div className="user-card">
-                  <div className="fixed-height-sec-2"></div>
+                  <div
+                    className="fixed-height-sec"
+                    style={{ background: `url(${crs2}) 50% 50% / cover` }}
+                  ></div>
                   <div className="card-content-2">
                     <div className="user-title-sec">Julian Jameson</div>
                     <div className="small-job">Profession</div>
@@ -660,7 +657,10 @@ const Templates3 = () => {
               </div>
               <div className="div-4">
                 <div className="user-card">
-                  <div className="fixed-height-sec-3"></div>
+                  <div
+                    className="fixed-height-sec"
+                    style={{ background: `url(${crs3}) 50% 50% / cover` }}
+                  ></div>
                   <div className="card-content-2">
                     <div className="user-title-sec">Julian Jameson</div>
                     <div className="small-job">Profession</div>
@@ -674,7 +674,10 @@ const Templates3 = () => {
               </div>
               <div className="div-4">
                 <div className="user-card">
-                  <div className="fixed-height-sec-4"></div>
+                  <div
+                    className="fixed-height-sec"
+                    style={{ background: `url(${crs4}) 50% 50% / cover` }}
+                  ></div>
                   <div className="card-content-2">
                     <div className="user-title-sec">Julian Jameson</div>
                     <div className="small-job">Profession</div>

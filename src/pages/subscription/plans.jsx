@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Typography,
@@ -6,92 +6,36 @@ import {
   ButtonGroup,
   Button,
   Container,
+  CircularProgress,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import PlanCard from "../../components/plansCards";
-
-const PLANS = [
-  {
-    id: 1,
-    type: "monthly",
-    tier: "Free",
-    price: 10,
-    features: [
-      "Limited access to content",
-      "Testimonials and VSL access",
-      "Basic dashboard features",
-    ],
-  },
-  {
-    id: 2,
-    type: "monthly",
-    tier: "3.5K tier",
-    price: 20,
-    features: [
-      "Additional video curriculum",
-      "Community access",
-      "Mentor calls and webinars",
-      "Basic store creation tools",
-    ],
-  },
-  {
-    id: 3,
-    type: "monthly",
-    tier: "6K tier",
-    price: 30,
-    features: [
-      "Advanced features including: ",
-      "Store progress tracking",
-      "Niche narrowing",
-      "Fulfillment updates",
-      "Enhanced community access",
-    ],
-  },
-  {
-    id: 3,
-    type: "yearly",
-    tier: "1-2K tier",
-    price: 500,
-    features: [
-      "Limited access to content",
-      "Testimonials and VSL access",
-      "Basic dashboard features",
-    ],
-  },
-  {
-    id: 4,
-    type: "yearly",
-    tier: "5K tier",
-    price: 800,
-    features: [
-      "Additional video curriculum",
-      "Community access",
-      "Mentor calls and webinars",
-      "Basic store creation tools",
-    ],
-  },
-  {
-    id: 5,
-    type: "yearly",
-    tier: "Premium",
-    price: 12997,
-    features: [
-      "Advanced features including: ",
-      "Store progress tracking",
-      "Niche narrowing",
-      "Fulfillment updates",
-      "Enhanced community access",
-    ],
-  },
-];
+import { getPlans } from "../../services/storeService";
 
 const Plans = () => {
   const navigate = useNavigate();
-  const [selectedPlan, setSelectedPlan] = useState("monthly");
+  const [loading, setLoading] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState(29);
   const [selectPlan, setSelectPlan] = useState({});
+  const [plans, setPlans] = useState([]);
+
+  useEffect(() => {
+    const fetchPlans = async () => {
+      try {
+        setLoading(true);
+        const response = await getPlans();
+        setPlans(response?.plans); 
+      } catch (error) {
+        console.log(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPlans();
+  }, []);
 
   return (
-    <Container maxWidth="s">
+    <Box sx={{ position: "relative", height: "100%" }}>
       <Box sx={{ p: 4 }}>
         {/* Welcome Header */}
         <Box display="flex" justifyContent="space-between" alignItems="center">
@@ -100,13 +44,17 @@ const Plans = () => {
             gutterBottom
             sx={{ mb: 4, fontWeight: "bold", color: "#333" }}
           >
-            Welcome, {"xyz"}
+            Buy Subscription
           </Typography>
-          {selectPlan?.id && (
+          {selectPlan?._id && (
             <Button
               variant="outlined"
               color="primary"
-              onClick={() => navigate("/subscription/payment", { state: { plan: selectPlan } })}
+              onClick={() =>
+                navigate("/subscription/payment", {
+                  state: { plan: selectPlan },
+                })
+              }
             >
               Proceed to Payment
             </Button>
@@ -114,79 +62,101 @@ const Plans = () => {
         </Box>
 
         {/* Offers Section */}
-        <Box sx={{ mb: 6 }}>
+        <Box>
           <Grid
             container
             spacing={4}
             alignItems="stretch"
             justifyContent="center"
           >
-            {PLANS.filter((plan) => plan.type === selectedPlan).map((offer) => {
-              return (
-                <Grid key={offer.id} item xs={12} sm={6} md={4} lg={3}>
-                  <PlanCard
-                    plan={offer}
-                    selectPlan={selectPlan}
-                    setSelectPlan={setSelectPlan}
-                  />
-                </Grid>
-              );
-            })}
+            {loading ? (
+              <Grid
+                item
+                xs={12}
+                sx={{ display: "flex", justifyContent: "center", py: 5 }}
+              >
+                <CircularProgress />
+              </Grid>
+            ) : plans?.filter((plan) => plan.durationInDays === selectedPlan)
+                .length === 0 ? (
+              <Grid item xs={12} sx={{ textAlign: "center", py: 5 }}>
+                <Typography variant="h6" color="text.secondary">
+                  No plans found for the selected duration
+                </Typography>
+              </Grid>
+            ) : (
+              plans
+                .filter((plan) => plan.durationInDays === selectedPlan)
+                .map((offer) => (
+                  <Grid key={offer._id} item xs={12} sm={6} md={4} lg={3}>
+                    <PlanCard
+                      plan={offer}
+                      selectPlan={selectPlan}
+                      setSelectPlan={setSelectPlan}
+                    />
+                  </Grid>
+                ))
+            )}
           </Grid>
         </Box>
 
         {/* Personalized Recommendations */}
-        <Typography
-          variant="h5"
-          gutterBottom
-          sx={{ mb: 3, fontWeight: "bold", color: "#333", textAlign: "center" }}
-        >
-          Personalized Recommendations
-        </Typography>
-
-        <Box display="flex" justifyContent="center">
-          <ButtonGroup
-            variant="contained"
-            sx={(theme) => ({
-              border: `1px solid ${theme.palette.primary.main}`,
-            })}
+        <Box sx={{ position: "absolute", bottom: "5%", left: 0, right: 0 }}>
+          <Typography
+            variant="h5"
+            gutterBottom
+            sx={{
+              mb: 3,
+              fontWeight: "bold",
+              color: "#333",
+              textAlign: "center",
+            }}
           >
-            <Button
-              sx={{
-                backgroundColor:
-                  selectedPlan === "monthly" ? "primary" : "white",
-                color: selectedPlan === "monthly" ? "white" : "black",
-                width: 200,
-                borderRadius: "inherit",
-              }}
-              onClick={() => setSelectedPlan("monthly")}
+            Personalized Recommendations
+          </Typography>
+
+          <Box display="flex" justifyContent="center">
+            <ButtonGroup
+              variant="contained"
+              sx={(theme) => ({
+                border: `1px solid ${theme.palette.primary.main}`,
+              })}
             >
-              Monthly
-            </Button>
-            <Button
-              sx={{
-                backgroundColor:
-                  selectedPlan === "yearly" ? "primary" : "white",
-                color: selectedPlan === "yearly" ? "white" : "black",
-                width: 200,
-                borderRadius: "inherit",
-              }}
-              onClick={() => setSelectedPlan("yearly")}
-            >
-              Yearly{" "}
-              <span
-                style={{
-                  color: selectedPlan === "yearly" ? "white" : "gray",
-                  marginLeft: 4,
+              <Button
+                sx={{
+                  backgroundColor: selectedPlan === 29 ? "primary" : "white",
+                  color: selectedPlan === 29 ? "white" : "black",
+                  width: 200,
+                  borderRadius: "inherit",
                 }}
+                onClick={() => setSelectedPlan(29)}
               >
-                (Save 2.5%)
-              </span>
-            </Button>
-          </ButtonGroup>
+                Monthly
+              </Button>
+              <Button
+                sx={{
+                  backgroundColor: selectedPlan === 365 ? "primary" : "white",
+                  color: selectedPlan === 365 ? "white" : "black",
+                  width: 200,
+                  borderRadius: "inherit",
+                }}
+                onClick={() => setSelectedPlan(365)}
+              >
+                Yearly{" "}
+                <span
+                  style={{
+                    color: selectedPlan === 365 ? "white" : "gray",
+                    marginLeft: 4,
+                  }}
+                >
+                  (Save 2.5%)
+                </span>
+              </Button>
+            </ButtonGroup>
+          </Box>
         </Box>
       </Box>
-    </Container>
+    </Box>
   );
 };
 

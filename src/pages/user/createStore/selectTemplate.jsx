@@ -10,12 +10,16 @@ import {
   Select,
   FormControl,
   InputLabel,
+  Modal,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import img2 from "../../../assets/storePage/image2.png";
 import img3 from "../../../assets/storePage/image3.png";
 import img4 from "../../../assets/storePage/image4.png";
-
+import Template from "../../templates/templates1";
+import Templates2 from "../../templates/templates2";
+import Templates3 from "../../templates/templates3";
+import { useNavigate } from "react-router-dom";
 const categories = ["E-Commerce", "Education", "College", "Marketing"];
 const allCategories = [
   "All Categories",
@@ -50,7 +54,8 @@ const templates = [
   // add more as needed
 ];
 
-const TemplateSelector = ({ onNext, setSelectedTemplate }) => {
+const TemplateSelector = () => {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All Categories");
 
@@ -239,9 +244,7 @@ const TemplateSelector = ({ onNext, setSelectedTemplate }) => {
                         color: "green",
                         textDecoration: "underline",
                       }}
-                      onClick={() => {
-                        window.open(template.path, "_blank");
-                      }}
+                      onClick={() => navigate(template.path)}
                     >
                       Preview
                     </Button>
@@ -250,11 +253,7 @@ const TemplateSelector = ({ onNext, setSelectedTemplate }) => {
                         variant="text"
                         color="error"
                         onClick={() => {
-                          onNext();
-                          setSelectedTemplate({
-                            category: template.title,
-                            id: template.id,
-                          });
+                          navigate("/user/home/create-store/editor");
                         }}
                         sx={{
                           py: 0,

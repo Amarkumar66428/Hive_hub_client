@@ -14,7 +14,8 @@ import {
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ArrowBack from "@mui/icons-material/ArrowBack";
-import { addItem, createStore } from "../../../services/stroeService";
+import { addItem, createStore } from "../../../services/storeService";
+import { useNavigate } from "react-router-dom";
 
 const ProjectConfigForm = ({
   projectConfig,
@@ -188,7 +189,6 @@ const AddItemForm = ({
 };
 
 const ToolsPanel = ({
-  previousStep,
   projectConfig,
   setProjectConfig,
   items,
@@ -202,6 +202,7 @@ const ToolsPanel = ({
 }) => {
   const [expanded, setExpanded] = React.useState("projectConfig");
   const [publishing, setPublishing] = React.useState(false);
+  const navigate = useNavigate();
 
   const isProjectConfigValid =
     projectConfig.name.trim() && projectConfig.description.trim();
@@ -312,7 +313,11 @@ const ToolsPanel = ({
       <Box sx={{ display: "flex", justifyContent: "space-between", py: 1 }}>
         <Button
           variant="text"
-          onClick={previousStep}
+          onClick={() =>
+            navigate("/user/home/create-store", {
+              state: { screen: 2 },
+            })
+          }
           startIcon={<ArrowBack />}
           sx={{ textTransform: "none", textDecoration: "underline" }}
         >
