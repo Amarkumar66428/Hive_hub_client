@@ -98,10 +98,9 @@ const ManageStores = () => {
           {/* Bottom Section */}
           <CardContent sx={{ textAlign: "center" }}>
             <Box mb={2}>
-              Get Link:{" "}
               <Typography variant="body1" color="text.secondary">
                 <Link to={`/hive/${store.subdomain}`} target="_blank">
-                  /hive/{store.subdomain}
+                  Click here to view your store
                 </Link>
               </Typography>
             </Box>
