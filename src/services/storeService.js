@@ -17,17 +17,35 @@ export const getPlans = async () => {
 
 export const createStore = async (storeData) => {
   const formData = new FormData();
-  for (const key in storeData) {
+
+  // Append all fields except 'logo'
+  Object.entries(storeData).forEach(([key, value]) => {
     if (key !== "logo") {
-      formData.append(key, storeData[key]);
+      formData.append(key, value);
     }
-  }
-  if (storeData.logo && storeData.logo instanceof File) {
+  });
+
+  // Append 'logo' only if it's a valid File
+  if (storeData.logo instanceof File) {
     formData.append("logo", storeData.logo);
   }
-  const response = await api.post("/user/createStore", formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
+
+  try {
+    const response = await api.post("/user/createStore", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
+  } catch (error) {
+    // Optional: centralized error logging
+    console.error("Create Store API failed:", error);
+    throw error;
+  }
+};
+
+export const getMyStore = async () => {
+  const response = await api.get("/user/getMyStoreWithProducts");
   return response.data;
 };
 

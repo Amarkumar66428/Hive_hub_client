@@ -4,6 +4,7 @@ import TemplateSelector from "./selectTemplate";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getUserdata } from "../../../services/userService";
 import { Box, CircularProgress } from "@mui/material";
+import PreviewTemplate from "./previewTemplate";
 
 const StorePage = () => {
   const location = useLocation();
@@ -12,6 +13,7 @@ const StorePage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [currentStep, setCurrentStep] = useState(screen || 1);
   const [subscription, setSubscription] = useState(null);
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -42,7 +44,18 @@ const StorePage = () => {
     subscription?.isActive &&
       {
         1: <WelcomeScreen onStart={() => setCurrentStep(2)} />,
-        2: <TemplateSelector />,
+        2: (
+          <TemplateSelector
+            setCurrentStep={setCurrentStep}
+            setSelectedTemplate={setSelectedTemplate}
+          />
+        ),
+        3: (
+          <PreviewTemplate
+            setCurrentStep={setCurrentStep}
+            selectedTemplate={selectedTemplate}
+          />
+        ),
       }[currentStep]
   );
 };
