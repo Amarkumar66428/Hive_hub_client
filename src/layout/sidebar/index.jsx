@@ -61,7 +61,7 @@ const SideBar = () => {
               fontSize: "2rem",
               textAlign: "center",
               marginTop: "2rem",
-              padding: "0 2rem",
+              padding: "0 3rem",
             }}
           >
             HivvHub

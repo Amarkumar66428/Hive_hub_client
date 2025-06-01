@@ -96,7 +96,7 @@ const Signup = () => {
         </Divider>
 
         <Box display="flex" flexDirection="column" gap={2} width="100%">
-          <Box>
+          <Box display="flex" flexDirection="column" gap={1} mb={2}>
             <label
               style={{
                 fontWeight: 500,

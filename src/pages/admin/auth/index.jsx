@@ -9,7 +9,7 @@ import {
   IconButton,
   InputAdornment,
 } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FcGoogle } from "react-icons/fc";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import Cookies from "js-cookie";
@@ -63,7 +63,7 @@ const Signin = () => {
         password: form.password,
       };
       const response = await adminSignIn(body);
-      console.log('response: ', response);
+      console.log("response: ", response);
 
       if (response?.data) {
         showSnackbar("Login successful", "success");
@@ -134,8 +134,13 @@ const Signin = () => {
         </Divider>
 
         <form style={{ width: "100%" }}>
-          <Box display="flex" flexDirection="column" gap={2}>
-            <Box display="flex" flexDirection="column" gap={1}>
+          <Box
+            display="flex"
+            flexDirection="column"
+            gap={2}
+            alignItems="center"
+          >
+            <Box display="flex" flexDirection="column" gap={1} width="100%">
               <label
                 style={{
                   fontWeight: 500,
@@ -156,7 +161,7 @@ const Signin = () => {
               />
             </Box>
 
-            <Box display="flex" flexDirection="column" gap={1}>
+            <Box display="flex" flexDirection="column" gap={1} width="100%">
               <label
                 style={{
                   fontWeight: 500,
@@ -221,6 +226,14 @@ const Signin = () => {
             >
               Sign In
             </Button>
+            <Typography variant="body2" sx={{ color: "#fff" }}>
+              <Link
+                to="/auth/signin"
+                style={{ color: "white", textDecoration: "underline" }}
+              >
+                User Login
+              </Link>
+            </Typography>
           </Box>
         </form>
       </Box>

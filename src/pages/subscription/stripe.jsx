@@ -11,6 +11,7 @@ import {
 import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useSnackbar } from "../../features/snackBar";
+import { buySubscription } from "../../services/userService";
 
 const CARD_ELEMENT_OPTIONS = {
   style: {
@@ -35,12 +36,6 @@ const StripePaymentForm = ({
   clientSecret,
   onPaymentSuccess,
   onPaymentError,
-  subscriptionPlan = {
-    name: "Premium Plan",
-    price: 999,
-    billingCycle: "month",
-    description: "Access all premium features with unlimited usage.",
-  },
 }) => {
   const stripe = useStripe();
   const elements = useElements();
@@ -100,40 +95,24 @@ const StripePaymentForm = ({
 
     setLoading(true);
 
-    const cardElement = elements.getElement(CardElement);
+    const payload = {
+      planId: plan._id,
+      paymentMethod: "stripe",
+    };
 
-    const { error, paymentIntent } = await stripe.confirmCardPayment(
-      clientSecret,
-      {
-        payment_method: {
-          card: cardElement,
-          billing_details: {
-            name: name.trim(),
-            email: email.trim(),
-            phone: phone.trim(),
-            address: address.trim()
-              ? {
-                  line1: address.trim(),
-                }
-              : undefined,
-          },
-        },
-      }
-    );
+    const response = await buySubscription(payload);
 
-    if (error) {
-      localStorage.setItem("isSubscribed", true);
-      navigate("/user/home/dashboard");
-      setErrorMessage(error.message);
+    if (!response) {
+      setErrorMessage("Payment failed");
       setLoading(false);
-      if (onPaymentError) onPaymentError(error);
-    } else if (paymentIntent && paymentIntent.status === "succeeded") {
+      if (onPaymentError) onPaymentError(response);
+    } else if (response) {
       setPaymentSucceeded(true);
       setLoading(false);
       localStorage.setItem("isSubscribed", true);
       navigate("/user/home/dashboard");
       showSnackbar("Payment successful", "success");
-      if (onPaymentSuccess) onPaymentSuccess(paymentIntent);
+      if (onPaymentSuccess) onPaymentSuccess(response);
     }
   };
 
@@ -262,7 +241,7 @@ const StripePaymentForm = ({
             startIcon={loading && <CircularProgress size={20} />}
             sx={{ py: 1.5, fontWeight: "bold" }}
           >
-            {loading ? "Processing..." : `Pay ₹${subscriptionPlan.price}`}
+            {loading ? "Processing..." : `Pay ₹${plan.price}`}
           </Button>
         </Box>
       )}

@@ -139,6 +139,15 @@ export const appRouters = [
     subscriptionRequired: true,
   },
   {
+    path: "/user/home/create-store/editor",
+    role: [STORE_OWNER],
+    icon: React.createElement(DesignServicesRounded),
+    component: asyncComponent(() =>
+      import("../pages/user/createStore/createStore.jsx")
+    ),
+    isLayout: false,
+  },
+  {
     path: "/user/community",
     role: [STORE_OWNER],
     title: "Community",
@@ -147,7 +156,7 @@ export const appRouters = [
       import("../pages/user/community/index.jsx")
     ),
     isLayout: true,
-    showInMenu: false,
+    showInMenu: true,
   },
   {
     path: "/user/notifications",
@@ -162,11 +171,11 @@ export const appRouters = [
     showInMenu: true,
   },
   {
-    path: "/user/settings",
-    role: [STORE_OWNER],
+    path: "/settings",
+    role: [SUPER_ADMIN, STORE_OWNER],
     title: "Settings",
     icon: React.createElement(SettingsOutlined),
-    component: asyncComponent(() => import("../pages/user/settings/index.jsx")),
+    component: asyncComponent(() => import("../pages/settings/index.jsx")),
     isLayout: true,
     showInMenu: true,
   },
