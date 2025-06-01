@@ -97,13 +97,19 @@ const ManageStores = () => {
 
           {/* Bottom Section */}
           <CardContent sx={{ textAlign: "center" }}>
-            <Box mb={2}>
+            {store.isApproved ? (
+              <Box mb={2}>
+                <Typography variant="body1" color="text.secondary">
+                  <Link to={`/hive/${store.subdomain}`}>
+                    Click here to view your store
+                  </Link>
+                </Typography>
+              </Box>
+            ) : (
               <Typography variant="body1" color="text.secondary">
-                <Link to={`/hive/${store.subdomain}`} target="_blank">
-                  Click here to view your store
-                </Link>
+                Your store is pending approval.
               </Typography>
-            </Box>
+            )}
           </CardContent>
         </Card>
       )}
