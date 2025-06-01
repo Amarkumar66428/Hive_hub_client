@@ -62,6 +62,12 @@ export const authRouters = [
     isLayout: false,
     showInMenu: false,
   },
+  {
+    path: "/hive/:subdomain",
+    component: asyncComponent(() => import("../pages/public/index.jsx")),
+    isLayout: false,
+    showInMenu: false,
+  },
 ];
 
 export const appRouters = [
@@ -154,6 +160,17 @@ export const appRouters = [
     icon: React.createElement(Explore),
     component: asyncComponent(() =>
       import("../pages/user/community/index.jsx")
+    ),
+    isLayout: true,
+    showInMenu: true,
+  },
+  {
+    path: "/user/manage-store",
+    role: [STORE_OWNER],
+    title: "Manage Store",
+    icon: React.createElement(Storefront),
+    component: asyncComponent(() =>
+      import("../pages/user/stores/index.jsx")
     ),
     isLayout: true,
     showInMenu: true,

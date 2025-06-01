@@ -8,64 +8,85 @@ import {
   TableCell,
   TableContainer,
   Paper,
-  IconButton,
-  Button,
-  Avatar,
   Typography,
   CircularProgress,
-  Tooltip,
+  Switch,
+  IconButton,
 } from "@mui/material";
-import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
 import { getStores } from "../../../services/storeService";
+import { approveStore, blockStore } from "../../../services/adminService";
 
 const ManageStores = () => {
   const [stores, setStores] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  // Row-level action loading
+  const [actionLoading, setActionLoading] = useState({
+    type: null, // "approve" | "block"
+    storeId: null,
+  });
+
   useEffect(() => {
-    const fetchPlans = async () => {
-      try {
-        setLoading(true);
-        const response = await getStores();
-        console.log(response);
-        setStores(response?.stores);
-      } catch (error) {
-        console.log(error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchPlans();
+    fetchStores();
   }, []);
 
+  const fetchStores = async () => {
+    try {
+      setLoading(true);
+      const response = await getStores();
+      setStores(response?.stores || []);
+    } catch (error) {
+      console.error("Error fetching stores:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleApprove = async (storeId, isApproved) => {
+    setActionLoading({ type: "approve", storeId });
+    try {
+      await approveStore(storeId, !isApproved);
+      setStores((prevStores) =>
+        prevStores.map((store) =>
+          store._id === storeId ? { ...store, isApproved: !isApproved } : store
+        )
+      );
+    } catch (error) {
+      console.error("Error approving store:", error);
+    } finally {
+      setActionLoading({ type: null, storeId: null });
+    }
+  };
+
+  const handleBlockToggle = async (storeId, isBlocked) => {
+    setActionLoading({ type: "block", storeId });
+    try {
+      await blockStore(storeId, !isBlocked);
+      setStores((prevStores) =>
+        prevStores.map((store) =>
+          store._id === storeId ? { ...store, isBlocked: !isBlocked } : store
+        )
+      );
+    } catch (error) {
+      console.error("Error blocking store:", error);
+    } finally {
+      setActionLoading({ type: null, storeId: null });
+    }
+  };
+
   return (
-    <Box
-      sx={{
-        p: 4,
-        display: "flex",
-        flexDirection: "column",
-        gap: 2,
-      }}
-    >
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <Typography variant="h4">Manage Stores</Typography>
-      </Box>
+    <Box sx={{ p: 4, display: "flex", flexDirection: "column", gap: 2 }}>
+      <Typography variant="h4">Manage Stores</Typography>
+
       <TableContainer component={Paper} sx={{ maxHeight: "80vh" }}>
         <Table stickyHeader>
           <TableHead>
             <TableRow>
               <TableCell>Name</TableCell>
-              <TableCell>Price</TableCell>
-              <TableCell>Duration</TableCell>
-              <TableCell>Features</TableCell>
-              <TableCell align="right">Actions</TableCell>
+              <TableCell>User</TableCell>
+              <TableCell>Subdomain</TableCell>
+              <TableCell>Approved</TableCell>
+              <TableCell>Blocked</TableCell>
             </TableRow>
           </TableHead>
 
@@ -76,39 +97,45 @@ const ManageStores = () => {
                   <CircularProgress />
                 </TableCell>
               </TableRow>
-            ) : stores?.length === 0 ? (
+            ) : stores.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} align="center">
-                  No items added yet.
+                  No stores found.
                 </TableCell>
               </TableRow>
             ) : (
-              stores?.map((store, index) => (
-                <TableRow key={store._id || index}>
+              stores.map((store) => (
+                <TableRow key={store._id}>
                   <TableCell>{store.name || "Untitled"}</TableCell>
+                  <TableCell>{store.ownerId?.email || "N/A"}</TableCell>
+                  <TableCell>{store.subdomain || "N/A"}</TableCell>
+
                   <TableCell>
-                    {store.price ? `₹${store.price}` : "N/A"}
+                    {actionLoading.type === "approve" &&
+                    actionLoading.storeId === store._id ? (
+                      <CircularProgress size={20} />
+                    ) : (
+                      <Switch
+                        checked={store.isApproved}
+                        onChange={() =>
+                          handleApprove(store._id, store.isApproved)
+                        }
+                      />
+                    )}
                   </TableCell>
-                  <TableCell>{store.durationInDays || "N/A"}</TableCell>
-                  <TableCell
-                    sx={{
-                      maxWidth: 80,
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                    }}
-                  >
-                    <Tooltip title={store.features.join(", ") || "N/A"} arrow>
-                      <span>{store.features.join(", ") || "N/A"}</span>
-                    </Tooltip>
-                  </TableCell>
-                  <TableCell align="right">
-                    <IconButton aria-label="edit" color="primary">
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton aria-label="delete" color="error">
-                      <DeleteIcon />
-                    </IconButton>
+
+                  <TableCell>
+                    {actionLoading.type === "block" &&
+                    actionLoading.storeId === store._id ? (
+                      <CircularProgress size={20} />
+                    ) : (
+                      <Switch
+                        checked={!store.isBlocked}
+                        onChange={() =>
+                          handleBlockToggle(store._id, store.isBlocked)
+                        }
+                      />
+                    )}
                   </TableCell>
                 </TableRow>
               ))
