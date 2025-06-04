@@ -23,23 +23,18 @@ const InviteCode = () => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    phone: "",
   });
 
   const handleChange = (field) => (e) => {
-    if (field === "phone" && e.target.value.length > 13) {
-      return;
-    }
     setFormData({ ...formData, [field]: e.target.value });
   };
 
   const validate = () => {
-    const { name, email, phone } = formData;
+    const { name, email } = formData;
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const phoneRegex = /^\d{13}$/;
 
-    if (!name || !email || !phone) {
+    if (!name || !email) {
       setError(true);
       showSnackbar("Please fill in all fields", "error");
       return false;
@@ -48,12 +43,6 @@ const InviteCode = () => {
     if (!emailRegex.test(email)) {
       setError(true);
       showSnackbar("Please provide a valid email address", "error");
-      return false;
-    }
-
-    if (!phoneRegex.test(phone) || phone.length !== 13) {
-      setError(true);
-      showSnackbar("Phone must be in 13 digits", "error");
       return false;
     }
 
@@ -116,22 +105,6 @@ const InviteCode = () => {
           sx={{ mb: 2 }}
           error={error && !formData.email}
           helperText={error && !formData.email ? "Please provide an email" : ""}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              generateInviteCode();
-            }
-          }}
-        />
-        <TextField
-          fullWidth
-          label="Phone Number"
-          value={formData.phone}
-          onChange={handleChange("phone")}
-          sx={{ mb: 2 }}
-          error={error && !formData.phone}
-          helperText={
-            error && !formData.phone ? "Please provide a phone number" : ""
-          }
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               generateInviteCode();
