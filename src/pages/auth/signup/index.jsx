@@ -18,25 +18,50 @@ const Signup = () => {
   const { showSnackbar } = useSnackbar();
   const [isLoading, setIsLoading] = useState(false);
   const [form, setForm] = useState({
+    name: "",
     email: "",
     inviteCode: "",
+    password: "",
+    confirmPassword: "",
   });
 
+  const validatePassword = (password) => {
+    const regex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+    return regex.test(password);
+  };
+
   const handleSignUp = async () => {
-    if (form.email === "" || form.inviteCode === "") {
+    const { name, email, inviteCode, password, confirmPassword } = form;
+
+    if (!name || !email || !inviteCode || !password || !confirmPassword) {
       showSnackbar("Please fill all the fields", "error");
       return;
     }
+
+    if (!validatePassword(password)) {
+      showSnackbar(
+        "Password must be at least 8 characters long and include uppercase, lowercase, number, and special character",
+        "error"
+      );
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      showSnackbar("Passwords do not match", "error");
+      return;
+    }
+
     try {
       setIsLoading(true);
-      const response = await signUp(form);
+      const response = await signUp({ name, email, inviteCode, password });
       if (response) {
         showSnackbar("Signup successful", "success");
         navigate("/auth/signin");
       }
     } catch (error) {
       console.error(error);
-      showSnackbar(error.response.data.message, "error");
+      showSnackbar(error?.response?.data?.message || "Signup failed", "error");
     } finally {
       setIsLoading(false);
     }
@@ -54,13 +79,12 @@ const Signup = () => {
         gap={2}
         px={2}
         py={4}
-        sx={{
-          fontFamily: "Open Sans",
-        }}
+        sx={{ fontFamily: "Open Sans" }}
       >
         <Typography variant="h1" sx={{ color: "#fff" }}>
           Signup
         </Typography>
+
         <Button
           variant="outlined"
           startIcon={<FcGoogle />}
@@ -68,8 +92,8 @@ const Signup = () => {
             textTransform: "none",
             borderRadius: 2,
             fontWeight: 500,
-            paddingX: 2,
-            paddingY: 1,
+            px: 2,
+            py: 1,
             fontSize: "1rem",
             borderColor: "#ccc",
             color: "black",
@@ -86,56 +110,43 @@ const Signup = () => {
         <Divider
           sx={{
             width: "100%",
-            color: "#fff", // text color
-            "&::before, &::after": {
-              borderColor: "#fff", // line color
-            },
+            color: "#fff",
+            "&::before, &::after": { borderColor: "#fff" },
           }}
         >
           OR
         </Divider>
 
         <Box display="flex" flexDirection="column" gap={2} width="100%">
-          <Box display="flex" flexDirection="column" gap={1} mb={2}>
-            <label
-              style={{
-                fontWeight: 500,
-                marginBottom: 4,
-                color: "#fff",
-                display: "block",
-              }}
-            >
-              Email
-            </label>
-            <TextField
-              variant="outlined"
-              placeholder="demo@example.com"
-              fullWidth
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  backgroundColor: "#fbfcfc70",
-                  borderRadius: "8px",
-                  "& fieldset": {
-                    borderColor: "#ccc",
+          {[
+            { label: "Full Name", field: "name", placeholder: "John Doe" },
+            { label: "Email", field: "email", placeholder: "demo@example.com" },
+            { label: "Password", field: "password", placeholder: "", type: "password" },
+            { label: "Confirm Password", field: "confirmPassword", placeholder: "", type: "password" },
+          ].map(({ label, field, placeholder, type = "text" }) => (
+            <Box key={field}>
+              <label style={{ fontWeight: 500, color: "#fff" }}>{label}</label>
+              <TextField
+                type={type}
+                variant="outlined"
+                placeholder={placeholder}
+                fullWidth
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: "#fbfcfc70",
+                    borderRadius: "8px",
+                    "& fieldset": { borderColor: "#ccc" },
+                    "&:hover fieldset": { borderColor: "#999" },
+                    "&.Mui-focused fieldset": { borderColor: "#666" },
+                    "& input": { padding: "12px" },
                   },
-                  "&:hover fieldset": {
-                    borderColor: "#999",
-                  },
-                  "&.Mui-focused fieldset": {
-                    borderColor: "#666",
-                  },
-                  "& input": {
-                    padding: "12px",
-                  },
-                },
-                input: {
-                  color: "#fff",
-                },
-              }}
-              value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-            />
-          </Box>
+                  input: { color: "#fff" },
+                }}
+                value={form[field]}
+                onChange={(e) => setForm({ ...form, [field]: e.target.value })}
+              />
+            </Box>
+          ))}
 
           <CodeInput
             length={6}
@@ -151,19 +162,14 @@ const Signup = () => {
               textTransform: "none",
               borderRadius: 2,
               fontWeight: 500,
-              paddingX: 2,
-              paddingY: 1,
+              px: 2,
+              py: 1,
               fontSize: "1rem",
               backgroundImage:
                 "linear-gradient(to bottom, #801B7C 0%, #651562 46%, #4E104C 69%, #450E42 78%, #1A0519 100%)",
               color: "#fff",
-
-              "&:hover": {
-                opacity: 0.9,
-              },
-              "&:disabled": {
-                color: "#fff",
-              },
+              "&:hover": { opacity: 0.9 },
+              "&:disabled": { color: "#fff" },
             }}
             fullWidth
             disabled={isLoading}
@@ -185,13 +191,7 @@ const Signup = () => {
           }}
         >
           Already have an account?{" "}
-          <Link
-            to="/auth/signin"
-            underline="none"
-            style={{
-              color: "#801B7C",
-            }}
-          >
+          <Link to="/auth/signin" style={{ color: "#801B7C" }}>
             Sign In
           </Link>
         </Typography>
