@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "./global.css";
 import { Button } from "@mui/material";
 import {
@@ -34,7 +34,14 @@ import linkedin from "../../../assets/svg/linkedin.svg";
 import twitter from "../../../assets/svg/twitter.svg";
 import web from "../../../assets/svg/web.svg";
 
-const Template = ({ template }) => {
+const Template = ({ template, items }) => {
+  const [itemsList, setItemsList] = useState([]);
+
+  useEffect(() => {
+    const itemsData = items || JSON.parse(localStorage.getItem("itemsList"));
+    setItemsList(itemsData);
+  }, [items]);
+
   return (
     <div className="temp1">
       <div className="template">
@@ -65,10 +72,7 @@ const Template = ({ template }) => {
                   <button className="button">
                     <div className="button-base">
                       <div className="text">Shop Now</div>
-                      <img
-                        className="fluent-emoji-flat"
-                        src={paws}
-                      />
+                      <img className="fluent-emoji-flat" src={paws} />
                     </div>
                   </button>
                 </div>
@@ -107,27 +111,59 @@ const Template = ({ template }) => {
                       </div>
                       <div className="frame-8">
                         <div className="frame-9">
-                          <div className="product-card">
-                            <img
-                              className="chemarro-about-a"
-                              src={feature1}
-                              alt="feature 1"
-                            />
-                          </div>
-                          <div className="product-card">
-                            <img
-                              className="chemarro-about-a"
-                              src={feature2}
-                              alt="feature 2"
-                            />
-                          </div>
-                          <div className="product-card">
-                            <img
-                              className="chemarro-about-a"
-                              src={feature3}
-                              alt="feature 3"
-                            />
-                          </div>
+                          {itemsList?.length > 0 &&
+                          itemsList.some((item) => item.category === "shop")
+                            ? itemsList
+                                .filter((item) => item.category === "shop")
+                                .slice(0, 3)
+                                .map((item, idx) => (
+                                  <div className="product-card" key={idx}>
+                                    <img
+                                      className="chemarro-about-a"
+                                      src={item?.imagePreview}
+                                      alt={`feature ${idx + 1}`}
+                                    />
+                                    <div className="product-info">
+                                      <div className="product-title">
+                                        {item?.title}
+                                      </div>
+                                      <div className="product-price">
+                                        ${item?.price}
+                                        <button className="buy-button">
+                                          Add to Cart
+                                        </button>
+                                        <button className="buy-button">
+                                          Buy Now
+                                        </button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))
+                            : [feature1, feature2, feature3].map(
+                                (feature, idx) => (
+                                  <div className="product-card" key={idx}>
+                                    <img
+                                      className="chemarro-about-a"
+                                      src={feature}
+                                      alt={`feature ${idx + 1}`}
+                                    />
+                                    <div className="product-info">
+                                      <div className="product-title">
+                                        Lorem ipsum
+                                      </div>
+                                      <div className="product-price">
+                                        $999
+                                        <button className="buy-button">
+                                          Add to Cart
+                                        </button>
+                                        <button className="buy-button">
+                                          Buy Now
+                                        </button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                )
+                              )}
                         </div>
                         <div className="view-more">View More &gt;&gt;&gt;</div>
                       </div>
@@ -151,38 +187,64 @@ const Template = ({ template }) => {
                 <div className="container">
                   <div className="div">
                     <div className="frame-11">
-                      <div className="overlap-group-wrapper">
-                        <div
-                          className="overlap-group"
-                          style={{ backgroundImage: `url(${service1})` }}
-                        >
-                          <div className="text-wrapper-6">Grooming</div>
-                        </div>
-                      </div>
-                      <div className="overlap-group-wrapper">
-                        <div
-                          className="overlap-2"
-                          style={{ backgroundImage: `url(${service2})` }}
-                        >
-                          <div className="text-wrapper-7">Boarding</div>
-                        </div>
-                      </div>
-                      <div className="overlap-group-wrapper">
-                        <div
-                          className="overlap-3"
-                          style={{ backgroundImage: `url(${service3})` }}
-                        >
-                          <div className="text-wrapper-8">Veterinary</div>
-                        </div>
-                      </div>
-                      <div className="overlap-group-wrapper">
-                        <div
-                          className="overlap-4"
-                          style={{ backgroundImage: `url(${service4})` }}
-                        >
-                          <div className="text-wrapper-9">Training</div>
-                        </div>
-                      </div>
+                      {itemsList?.length > 0 &&
+                      itemsList.some((item) => item.category === "services")
+                        ? itemsList
+                            .filter((item) => item.category === "services")
+                            .slice(0, 3)
+                            .map((item, idx) => (
+                              <div className="overlap-group-wrapper" key={idx}>
+                                <div
+                                  className="overlap-group"
+                                  style={{
+                                    backgroundImage: `url(${item?.imagePreview})`,
+                                  }}
+                                >
+                                  <div className="text-wrapper-6">
+                                    {item?.title}
+                                  </div>
+                                </div>
+                              </div>
+                            ))
+                        : [
+                            {
+                              image: service1,
+                              title: "Grooming",
+                              className: "overlap-group",
+                              textClass: "text-wrapper-6",
+                            },
+                            {
+                              image: service2,
+                              title: "Boarding",
+                              className: "overlap-2",
+                              textClass: "text-wrapper-7",
+                            },
+                            {
+                              image: service3,
+                              title: "Veterinary",
+                              className: "overlap-3",
+                              textClass: "text-wrapper-8",
+                            },
+                            {
+                              image: service4,
+                              title: "Training",
+                              className: "overlap-4",
+                              textClass: "text-wrapper-9",
+                            },
+                          ].map((service, idx) => (
+                            <div className="overlap-group-wrapper" key={idx}>
+                              <div
+                                className={service.className}
+                                style={{
+                                  backgroundImage: `url(${service.image})`,
+                                }}
+                              >
+                                <div className={service.textClass}>
+                                  {service.title}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
                     </div>
                     <div className="frame-12">
                       <div
