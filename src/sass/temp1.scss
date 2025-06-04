@@ -326,6 +326,35 @@
     position: relative;
     flex: 0 0 auto;
     width: 100%;
+
+    .product-info {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    .product-title {
+      font-weight: 600;
+      font-size: 1rem;
+    }
+
+    .product-price {
+      color: #444;
+      margin: 4px 0;
+    }
+
+    .buy-button {
+      padding: 6px 12px;
+      background-color: #ff4081;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-left: 10px;
+    }
   }
 
   .template .product-card {
@@ -334,15 +363,13 @@
     height: 447px;
     background-color: #ffffff;
     border-radius: 10px;
-    overflow: hidden;
   }
 
   .template .chemarro-about-a {
-    position: absolute;
     width: 375px;
     height: 447px;
-    top: 0;
-    left: 0;
+    object-fit: cover;
+    border-radius: 10px;
   }
 
   .template .view-more {
@@ -351,10 +378,11 @@
     font-family: "Formative Trial-Bold", Helvetica;
     font-weight: 700;
     color: #101828;
-    font-size: 20px;
+    font-size: 16px;
     letter-spacing: 0;
     line-height: 20px;
     white-space: nowrap;
+    margin-top: 1em;
   }
 
   .template .frame-wrapper-2 {

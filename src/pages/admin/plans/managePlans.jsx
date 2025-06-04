@@ -5,9 +5,14 @@ import {
   Typography,
   CircularProgress,
   Grid,
+  List,
+  ListItem,
+  ListItemText,
+  IconButton,
 } from "@mui/material";
 import { getPlans } from "../../../services/storeService";
 import PlanCard from "../../../components/plansCards";
+import { BorderColorOutlined, DeleteOutlined, SettingsOutlined } from "@mui/icons-material";
 
 const ManagePlans = ({ setOpen }) => {
   const [plans, setPlans] = useState([]);
@@ -36,6 +41,7 @@ const ManagePlans = ({ setOpen }) => {
         display: "flex",
         flexDirection: "column",
         gap: 2,
+        position: "relative",
       }}
     >
       <Box
@@ -93,6 +99,45 @@ const ManagePlans = ({ setOpen }) => {
             ))}
           </Grid>
         )}
+      </Box>
+      <Box
+        sx={{
+          position: "sticky",
+          bottom: "2em",
+          left: 0,
+          right: 0,
+          backgroundColor: "#000",
+          padding: 2,
+          width: "20%",
+          borderRadius: "50px",
+          margin: "auto",
+        }}
+      >
+        <List
+          sx={{
+            display: "flex",
+            gap: 2,
+            justifyContent: "space-between",
+            padding: 0,
+            margin: 0,
+          }}
+        >
+          <ListItem sx={{ padding: 0, justifyContent: "center" }}>
+            <IconButton sx={{ borderRadius: "50%" }}>
+              <BorderColorOutlined sx={{ color: "white", fontSize: "1.4em" }} />
+            </IconButton>
+          </ListItem>
+          <ListItem sx={{ padding: 0, justifyContent: "center" }}>
+            <IconButton sx={{ borderRadius: "50%" }}>
+              <DeleteOutlined sx={{ color: "white", fontSize: "1.4em" }} />
+            </IconButton>
+          </ListItem>
+          <ListItem sx={{ padding: 0, justifyContent: "center" }}>
+            <IconButton sx={{ borderRadius: "50%" }}>
+              <SettingsOutlined sx={{ color: "white", fontSize: "1.4em" }} />
+            </IconButton>
+          </ListItem>
+        </List>
       </Box>
     </Box>
   );

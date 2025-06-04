@@ -1,4 +1,5 @@
 import {
+  AccountBoxOutlined,
   Dashboard,
   DataObject,
   DesignServicesRounded,
@@ -109,6 +110,17 @@ export const appRouters = [
     title: "Manage Plans",
     icon: React.createElement(LocalOffer),
     component: asyncComponent(() => import("../pages/admin/plans/index.jsx")),
+    isLayout: true,
+    showInMenu: true,
+  },
+  {
+    path: "/admin/manage-invite",
+    role: [SUPER_ADMIN],
+    title: "Manage Invite",
+    icon: React.createElement(AccountBoxOutlined),
+    component: asyncComponent(() =>
+      import("../pages/admin/mangeInvite/index.jsx")
+    ),
     isLayout: true,
     showInMenu: true,
   },
