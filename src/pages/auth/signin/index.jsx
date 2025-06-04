@@ -4,6 +4,8 @@ import {
   Button,
   CircularProgress,
   Divider,
+  IconButton,
+  InputAdornment,
   TextField,
   Typography,
 } from "@mui/material";
@@ -11,21 +13,47 @@ import { Link, useNavigate } from "react-router-dom";
 import { FcGoogle } from "react-icons/fc";
 import Cookies from "js-cookie";
 import { signIn } from "../../../services/authService";
-import CodeInput from "../../../components/CustomInput/codeInput";
 import { useSnackbar } from "../../../features/snackBar";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
+
+const textFieldStyles = {
+  "& .MuiOutlinedInput-root": {
+    backgroundColor: "#fbfcfc70",
+    borderRadius: "8px",
+    "& fieldset": {
+      borderColor: "#ccc",
+    },
+    "&:hover fieldset": {
+      borderColor: "#999",
+    },
+    "&.Mui-focused fieldset": {
+      borderColor: "#666",
+    },
+    "& input": {
+      padding: "12px",
+      color: "#fff",
+      caretColor: "#fff",
+    },
+    "&:hover input": {
+      caretColor: "#fff",
+    },
+  },
+};
 
 const Signin = () => {
   const navigate = useNavigate();
 
   const { showSnackbar } = useSnackbar();
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
   const [form, setForm] = useState({
     email: "",
-    inviteCode: "",
+    password: "",
   });
 
   const handleSignIn = async () => {
-    if (form.email === "" || form.inviteCode === "") {
+    if (form.email === "" || form.password === "") {
       showSnackbar("Please fill all the fields", "error");
       return;
     }
@@ -33,7 +61,7 @@ const Signin = () => {
       setIsLoading(true);
       const body = {
         email: form.email,
-        inviteCode: form.inviteCode,
+        password: form.password,
       };
       const response = await signIn(body);
       if (response?.data) {
@@ -103,12 +131,12 @@ const Signin = () => {
           OR
         </Divider>
         <form style={{ width: "100%" }}>
-          <Box display="flex" flexDirection="column" gap={2}>
-            <Box display="flex" flexDirection="column" gap={1} mb={2}>
+          <Box display="flex" flexDirection="column" gap={4}>
+            <Box display="flex" flexDirection="column" gap={1}>
               <label
                 style={{
                   fontWeight: 500,
-                  marginBottom: 4,
+                  marginBottom: 2,
                   color: "#fff",
                   display: "block",
                 }}
@@ -119,41 +147,45 @@ const Signin = () => {
                 variant="outlined"
                 placeholder="demo@example.com"
                 fullWidth
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    backgroundColor: "#fbfcfc70",
-                    borderRadius: "8px",
-                    "& fieldset": {
-                      borderColor: "#ccc",
-                    },
-                    "&:hover fieldset": {
-                      borderColor: "#999",
-                      cursorColor: "#fff",
-                    },
-                    "&.Mui-focused fieldset": {
-                      borderColor: "#666",
-                    },
-                    "& input": {
-                      padding: "12px",
-                      color: "#fff", // input text color
-                      caretColor: "#fff", // default caret color
-                    },
-                    "&:hover input": {
-                      caretColor: "#fff", // caret becomes white on hover
-                      cursor: "text",
-                    },
-                  },
-                }}
+                sx={textFieldStyles}
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
               />
             </Box>
-            <CodeInput
-              length={6}
-              size="1em"
-              value={form.inviteCode}
-              onChange={(value) => setForm({ ...form, inviteCode: value })}
-            />
+            <Box display="flex" flexDirection="column" gap={1} width="100%">
+              <label
+                style={{
+                  fontWeight: 500,
+                  marginBottom: 2,
+                  color: "#fff",
+                  display: "block",
+                }}
+              >
+                Password
+              </label>
+              <TextField
+                type={showPassword ? "text" : "password"}
+                variant="outlined"
+                placeholder="Enter your password"
+                fullWidth
+                sx={textFieldStyles}
+                value={form.password}
+                onChange={(e) => setForm({ ...form, password: e.target.value })}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        onClick={() => setShowPassword((prev) => !prev)}
+                        edge="end"
+                        sx={{ color: "#fff" }}
+                      >
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Box>
             <Button
               type="submit"
               variant="contained"
