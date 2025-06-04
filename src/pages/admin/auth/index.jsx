@@ -63,10 +63,9 @@ const Signin = () => {
         password: form.password,
       };
       const response = await adminSignIn(body);
-      console.log("response: ", response);
 
       if (response?.data) {
-        showSnackbar("Login successful", "success");
+        showSnackbar(response?.message || "Login successful", "success");
         localStorage.setItem("user", JSON.stringify(response.data));
         Cookies.set("access_token", response.data.token, { expires: 1 });
         navigate("/admin/home/dashboard");

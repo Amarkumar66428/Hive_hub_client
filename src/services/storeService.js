@@ -5,11 +5,6 @@ export const getStores = async () => {
   return response.data;
 };
 
-export const createPlan = async (planData) => {
-  const response = await api.post("/admin/createPlan", planData);
-  return response.data;
-};
-
 export const getPlans = async () => {
   const response = await api.get("/user/getAllPlans");
   return response.data;

@@ -7,7 +7,6 @@ import { Box, CircularProgress, Typography } from "@mui/material";
 const PublicSite = () => {
   const { subdomain } = useParams();
   const [template, setTemplate] = useState(null);
-  console.log("template: ", template);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -15,7 +14,6 @@ const PublicSite = () => {
       try {
         setLoading(true);
         const response = await getStoreBySubdomain(subdomain);
-        console.log(response);
         if (response?.store) {
           setTemplate(response.store);
         }

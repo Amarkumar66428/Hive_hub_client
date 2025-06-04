@@ -12,8 +12,7 @@ import { CheckCircleOutlined } from "@mui/icons-material";
 
 const label = { inputProps: { "aria-label": "Checkbox demo" } };
 
-const PlanCard = ({ plan, selectPlan, setSelectPlan }) => {
-  console.log('plan: ', plan);
+const PlanCard = ({ plan, selectPlan, setSelectPlan, size }) => {
   return (
     <Paper
       onClick={() => setSelectPlan(plan)}
@@ -21,8 +20,8 @@ const PlanCard = ({ plan, selectPlan, setSelectPlan }) => {
       sx={{
         cursor: "pointer",
         position: "relative",
-        width: 280,
-        height: 300,
+        width: size === "large" ? 380 : 280,
+        height: size === "large" ? 400 : 300,
         borderRadius: 3,
         background:
           plan?.tier === "Premium"
