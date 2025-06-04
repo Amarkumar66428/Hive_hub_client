@@ -11,80 +11,113 @@ import {
   Typography,
   CircularProgress,
   Switch,
- } from "@mui/material";
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Button,
+} from "@mui/material";
+import { DeleteOutlineOutlined } from "@mui/icons-material";
+import {
+  getAllInvites,
+  deleteInvite,
+  blockUnblockInvite,
+} from "../../../services/adminUserSevices";
+import { formatDate } from "../../../utils/helper";
+import { useNavigate } from "react-router-dom";
 
 const ManageInvite = () => {
-  const [tableData, setTableData] = useState([]);
+  const navigate = useNavigate();
+  const [invites, setInvites] = useState([]);
   const [loading, setLoading] = useState(false);
-
-  // Row-level action loading
   const [actionLoading, setActionLoading] = useState({
-    type: null, // "approve" | "block"
-    storeId: null,
+    type: null,
+    inviteId: null,
+  });
+
+  // Confirmation Dialog
+  const [confirmDelete, setConfirmDelete] = useState({
+    open: false,
+    inviteId: null,
   });
 
   useEffect(() => {
-    fetchStores();
+    fetchInvites();
   }, []);
 
-  const fetchStores = async () => {
+  const fetchInvites = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-      // const response = await getInvites();
-      // console.log(response);
-      // setTableData(response?.invites || []);
+      const response = await getAllInvites();
+      setInvites(response?.invites || []);
     } catch (error) {
-      console.error("Error fetching stores:", error);
+      console.error("Error fetching invites:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleApprove = async (storeId, isApproved) => {
-    setActionLoading({ type: "approve", storeId });
+  const handleToggleBlocked = async (inviteId, isBlocked) => {
+    setActionLoading({ type: "toggle", inviteId });
     try {
-      // await approveInvite(storeId, !isApproved);
-      setTableData((prevTableData) =>
-        prevTableData.map((store) =>
-          store._id === storeId ? { ...store, isApproved: !isApproved } : store
+      await blockUnblockInvite(inviteId);
+      setInvites((prev) =>
+        prev.map((invite) =>
+          invite._id === inviteId
+            ? { ...invite, isBlocked: !isBlocked }
+            : invite
         )
       );
     } catch (error) {
-      console.error("Error approving store:", error);
+      console.error("Error updating blocked state:", error);
     } finally {
-      setActionLoading({ type: null, storeId: null });
+      setActionLoading({ type: null, inviteId: null });
     }
   };
 
-  const handleBlockToggle = async (storeId, isBlocked) => {
-    setActionLoading({ type: "block", storeId });
+  const handleConfirmDelete = (inviteId) => {
+    setConfirmDelete({ open: true, inviteId });
+  };
+
+  const handleDelete = async () => {
+    const { inviteId } = confirmDelete;
+    setActionLoading({ type: "delete", inviteId });
+
     try {
-      // await blockInvite(storeId, !isBlocked);
-      setTableData((prevTableData) =>
-        prevTableData.map((store) =>
-          store._id === storeId ? { ...store, isBlocked: !isBlocked } : store
-        )
-      );
+      await deleteInvite(inviteId);
+      setInvites((prev) => prev.filter((invite) => invite._id !== inviteId));
     } catch (error) {
-      console.error("Error blocking store:", error);
+      console.error("Error deleting invite:", error);
     } finally {
-      setActionLoading({ type: null, storeId: null });
+      setActionLoading({ type: null, inviteId: null });
+      setConfirmDelete({ open: false, inviteId: null });
     }
   };
 
   return (
     <Box sx={{ p: 4, display: "flex", flexDirection: "column", gap: 2 }}>
-      <Typography variant="h4">Manage Stores</Typography>
+      <Box display="flex" justifyContent="space-between" alignItems="center">
+        <Typography variant="h4">Manage Invites</Typography>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => navigate("/admin/invite-new-user")}
+        >
+          Invite New User
+        </Button>
+      </Box>
 
       <TableContainer component={Paper} sx={{ maxHeight: "80vh" }}>
         <Table stickyHeader>
           <TableHead>
             <TableRow>
-              <TableCell>Name</TableCell>
-              <TableCell>Invite Code</TableCell>
               <TableCell>Email</TableCell>
-              <TableCell>Active</TableCell>
+              <TableCell>Invite Code</TableCell>
+              <TableCell>Created At</TableCell>
               <TableCell>Blocked</TableCell>
+              <TableCell>Action</TableCell>
             </TableRow>
           </TableHead>
 
@@ -95,45 +128,35 @@ const ManageInvite = () => {
                   <CircularProgress />
                 </TableCell>
               </TableRow>
-            ) : tableData.length === 0 ? (
+            ) : invites.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} align="center">
-                  No stores found.
+                  No invites found.
                 </TableCell>
               </TableRow>
             ) : (
-              tableData.map((store) => (
-                <TableRow key={store._id}>
-                  <TableCell>{store.name || "N/A"}</TableCell>
-                  <TableCell>{store.inviteCode || "N/A"}</TableCell>
-                  <TableCell>{store.email || "N/A"}</TableCell>
-
+              invites.map((invite) => (
+                <TableRow key={invite._id}>
+                  <TableCell>{invite.email || "N/A"}</TableCell>
+                  <TableCell>{invite.code || "N/A"}</TableCell>
+                  <TableCell>{formatDate(invite.createdAt) || "N/A"}</TableCell>
                   <TableCell>
-                    {actionLoading.type === "approve" &&
-                    actionLoading.storeId === store._id ? (
+                    {actionLoading.type === "toggle" &&
+                    actionLoading.inviteId === invite._id ? (
                       <CircularProgress size={20} />
                     ) : (
                       <Switch
-                        checked={store.isActive}
+                        checked={invite.isBlocked}
                         onChange={() =>
-                          handleApprove(store._id, store.isActive)
+                          handleToggleBlocked(invite._id, invite.isBlocked)
                         }
                       />
                     )}
                   </TableCell>
-
                   <TableCell>
-                    {actionLoading.type === "block" &&
-                    actionLoading.storeId === store._id ? (
-                      <CircularProgress size={20} />
-                    ) : (
-                      <Switch
-                        checked={!store.isBlocked}
-                        onChange={() =>
-                          handleBlockToggle(store._id, store.isBlocked)
-                        }
-                      />
-                    )}
+                    <IconButton onClick={() => handleConfirmDelete(invite._id)}>
+                      <DeleteOutlineOutlined color="error" />
+                    </IconButton>
                   </TableCell>
                 </TableRow>
               ))
@@ -141,6 +164,37 @@ const ManageInvite = () => {
           </TableBody>
         </Table>
       </TableContainer>
+
+      {/* Confirm Delete Dialog */}
+      <Dialog
+        open={confirmDelete.open}
+        onClose={() => setConfirmDelete({ open: false, inviteId: null })}
+      >
+        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete this invite?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setConfirmDelete({ open: false, inviteId: null })}
+          >
+            Cancel
+          </Button>
+          <Button
+            color="error"
+            onClick={handleDelete}
+            disabled={actionLoading.type === "delete"}
+          >
+            {actionLoading.type === "delete" ? (
+              <CircularProgress size={20} />
+            ) : (
+              "Delete"
+            )}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

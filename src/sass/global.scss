@@ -164,3 +164,17 @@ figure {
     }
   }
 }
+
+.plan-active-switch {
+  .ant-switch-inner {
+    color: #fff;
+  }
+
+  &.ant-switch-checked {
+    background-color: #52c41a !important;
+  }
+
+  &:not(.ant-switch-checked) {
+    background-color: #ff4d4f !important;
+  }
+}

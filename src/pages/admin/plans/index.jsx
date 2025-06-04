@@ -4,12 +4,22 @@ import ManagePlans from "./managePlans";
 
 const PlansScreen = () => {
   const [open, setOpen] = useState(false);
+  const [selectPlan, setSelectPlan] = useState(null);
+
   return (
     <>
       {!open ? (
-        <ManagePlans setOpen={setOpen} />
+        <ManagePlans
+          setOpen={setOpen}
+          selectPlan={selectPlan}
+          setSelectPlan={setSelectPlan}
+        />
       ) : (
-        <CreateTier setOpen={setOpen} />
+        <CreateTier
+          setOpen={setOpen}
+          selectPlan={selectPlan}
+          setSelectPlan={setSelectPlan}
+        />
       )}
     </>
   );

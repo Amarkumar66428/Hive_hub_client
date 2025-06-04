@@ -32,7 +32,6 @@ const CreateStore = () => {
   const navigate = useNavigate();
   const { state } = useLocation();
   const template = state?.template;
-  console.log("template: ", template);
   const [loading, setLoading] = useState(false);
   const { showSnackbar } = useSnackbar();
 

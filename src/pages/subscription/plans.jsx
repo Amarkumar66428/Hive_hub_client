@@ -11,6 +11,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import PlanCard from "../../components/plansCards";
 import { getPlans } from "../../services/storeService";
+import { ArrowForward } from "@mui/icons-material";
 
 const Plans = () => {
   const navigate = useNavigate();
@@ -48,13 +49,18 @@ const Plans = () => {
           </Typography>
           {selectPlan?._id && (
             <Button
-              variant="outlined"
+              variant="contained"
               color="primary"
               onClick={() =>
                 navigate("/subscription/payment", {
                   state: { plan: selectPlan },
                 })
               }
+              endIcon={<ArrowForward />}
+              sx={{
+                fontSize: "1.2rem",
+                padding: "10px 20px",
+              }}
             >
               Proceed to Payment
             </Button>

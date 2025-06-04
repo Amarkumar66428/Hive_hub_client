@@ -93,18 +93,6 @@ export const appRouters = [
     showInSubMenu: true,
   },
   {
-    path: "/admin/home/invite-code",
-    role: [SUPER_ADMIN],
-    title: "Invite Code",
-    subMenuTitle: "Home",
-    icon: React.createElement(DataObject),
-    component: asyncComponent(() =>
-      import("../pages/admin/inviteCode/index.jsx")
-    ),
-    isLayout: true,
-    showInSubMenu: true,
-  },
-  {
     path: "/admin/manage-plans",
     role: [SUPER_ADMIN],
     title: "Manage Plans",
@@ -123,6 +111,16 @@ export const appRouters = [
     ),
     isLayout: true,
     showInMenu: true,
+  },
+  {
+    path: "/admin/invite-new-user",
+    role: [SUPER_ADMIN],
+    title: "Create Invite",
+    icon: React.createElement(DataObject),
+    component: asyncComponent(() =>
+      import("../pages/admin/mangeInvite/createInvite.jsx")
+    ),
+    isLayout: true,
   },
   {
     path: "/admin/manage-stores",
