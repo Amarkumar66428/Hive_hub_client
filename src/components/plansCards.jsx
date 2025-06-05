@@ -9,6 +9,7 @@ import {
   Checkbox,
 } from "@mui/material";
 import { CheckCircleOutlined } from "@mui/icons-material";
+import cardTop from "../assets/svg/cardTop.svg";
 
 const label = { inputProps: { "aria-label": "Checkbox demo" } };
 
@@ -36,29 +37,41 @@ const PlanCard = ({ plan, selectPlan, setSelectPlan, size }) => {
       }}
     >
       {/* Top banner for plan name */}
-      <Box sx={{ position: "absolute", top: 0, display: "flex" }}>
+      <Box
+        sx={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        {/* Background Image */}
+        <Box
+          component="img"
+          src={cardTop}
+          alt="Card Top"
+          sx={{
+            width: "60%",
+            height: "100%",
+            objectFit: "contain",
+            zIndex: 0,
+          }}
+        />
+
+        {/* Overlay Text */}
         <Box
           sx={{
-            backgroundColor:
-              plan?.tier == "Premium" || plan?.name == "Premium" ? "rgb(116, 82, 24)" : "primary.main",
-            borderBottomLeftRadius: "20px",
-            borderBottomRightRadius: "20px",
-            width: "160px",
-            height: "40px",
-            boxShadow: "0 3px 8px rgba(0,0,0,0.2)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
             position: "absolute",
-            top: 0,
-            left: "50%",
-            transform: "translateX(-50%)", // center horizontally if needed
+            top: "10px",
+            width: "100%",
+            textAlign: "center",
+            zIndex: 1,
           }}
         >
-          <Typography
-            variant="h6"
-            sx={{ fontSize: "1.2rem", textAlign: "center", color: "white" }}
-          >
+          <Typography variant="h6" sx={{ fontSize: "1.2rem", color: "white" }}>
             {plan.tier || plan.name || "10K"}
           </Typography>
         </Box>
