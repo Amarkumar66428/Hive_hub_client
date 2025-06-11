@@ -69,9 +69,24 @@ const PlanCard = ({ plan, selectPlan, setSelectPlan, size }) => {
             width: "100%",
             textAlign: "center",
             zIndex: 1,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
           }}
         >
-          <Typography variant="h6" sx={{ fontSize: "1.2rem", color: "white" }}>
+          <Typography
+            variant="h6"
+            title={plan.tier || plan.name || "10K"}
+            component="div"
+            sx={{
+              fontSize: "1.2rem",
+              color: "white",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              maxWidth: "40%",
+            }}
+          >
             {plan.tier || plan.name || "10K"}
           </Typography>
         </Box>
