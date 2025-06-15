@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   List,
   ListItemButton,
@@ -11,7 +11,7 @@ import { ExpandLess, ExpandMore } from "@mui/icons-material";
 import { appRouters } from "../../router/router.config";
 import { useNavigate } from "react-router-dom";
 
-const SideBar = () => {
+const SideBar = ({ openSideBar, setSideBar }) => {
   const user = JSON.parse(localStorage.getItem("user"));
   const navigate = useNavigate();
   const [openMenus, setOpenMenus] = useState({});
@@ -40,6 +40,7 @@ const SideBar = () => {
       handleToggle(item.titleKey);
     } else {
       navigate(item.path);
+      setSideBar(false);
     }
   };
 
@@ -48,10 +49,13 @@ const SideBar = () => {
   };
 
   return (
-    <aside className="sidebar">
+    <aside
+      className={`sidebar sidebar-mobile ${openSideBar ? "sidebar-open" : ""}`}
+    >
       <List
         subheader={
           <ListSubheader
+            className="sidebar-title"
             component="h1"
             id="nested-list-subheader"
             sx={{
@@ -79,7 +83,7 @@ const SideBar = () => {
             return null;
 
           return (
-            <div key={parentItem.titleKey}>
+            <li key={parentItem.titleKey}>
               <ListItemButton
                 onClick={() => handleListItemClick(parentItem)}
                 sx={{
@@ -178,7 +182,7 @@ const SideBar = () => {
                   </List>
                 </Collapse>
               )}
-            </div>
+            </li>
           );
         })}
       </List>
