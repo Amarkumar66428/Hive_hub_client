@@ -72,7 +72,6 @@ const Signin = () => {
       }
     } catch (error) {
       console.error(error);
-      showSnackbar(error.response.data.message, "error");
     } finally {
       setIsLoading(false);
     }

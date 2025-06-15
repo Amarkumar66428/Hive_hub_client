@@ -33,6 +33,8 @@ const CARD_ELEMENT_OPTIONS = {
 };
 
 const StripePaymentForm = ({
+  plan,
+  setOpen,
   clientSecret,
   onPaymentSuccess,
   onPaymentError,
@@ -41,9 +43,6 @@ const StripePaymentForm = ({
   const elements = useElements();
   const navigate = useNavigate();
   const { showSnackbar } = useSnackbar();
-
-  const { state } = useLocation();
-  const { plan } = state || {};
 
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
@@ -117,7 +116,7 @@ const StripePaymentForm = ({
   };
 
   return (
-    <Paper elevation={3} sx={{ p: 4, maxWidth: 600, mx: "auto" }}>
+    <React.Fragment>
       <Typography
         variant="h4"
         component="h1"
@@ -153,7 +152,7 @@ const StripePaymentForm = ({
             Your Details
           </Typography>
           <Grid container spacing={2} sx={{ mb: 3 }}>
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <TextField
                 label="Name on Card"
                 variant="outlined"
@@ -167,7 +166,7 @@ const StripePaymentForm = ({
               />
             </Grid>
 
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 label="Email Address"
                 variant="outlined"
@@ -182,7 +181,7 @@ const StripePaymentForm = ({
               />
             </Grid>
 
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 label="Phone Number"
                 variant="outlined"
@@ -197,7 +196,7 @@ const StripePaymentForm = ({
               />
             </Grid>
 
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <TextField
                 label="Billing Address"
                 variant="outlined"
@@ -232,20 +231,30 @@ const StripePaymentForm = ({
             </Typography>
           )}
 
-          <Button
-            type="submit"
-            variant="contained"
-            color="primary"
-            fullWidth
-            disabled={!stripe || loading}
-            startIcon={loading && <CircularProgress size={20} />}
-            sx={{ py: 1.5, fontWeight: "bold" }}
-          >
-            {loading ? "Processing..." : `Pay ₹${plan.price}`}
-          </Button>
+          <Box sx={{ display: "flex", gap: 2 }}>
+            <Button
+              variant="outlined"
+              color="primary"
+              fullWidth
+              onClick={() => setOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              fullWidth
+              disabled={!stripe || loading}
+              startIcon={loading && <CircularProgress size={20} />}
+              sx={{ py: 1.5, fontWeight: "bold" }}
+            >
+              {loading ? "Processing..." : `Pay ₹${plan.price}`}
+            </Button>
+          </Box>
         </Box>
       )}
-    </Paper>
+    </React.Fragment>
   );
 };
 

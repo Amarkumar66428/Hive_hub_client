@@ -57,9 +57,9 @@ const NotificationCenter = () => {
           Notifications
         </Typography>
 
-        <Grid container spacing={3} sx={{ flex: 1 }}>
+        <Grid container spacing={2} sx={{ flex: 1 }}>
           {/* Left Pane */}
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <Paper
               variant="elevation"
               sx={{ height: "90%", display: "flex", flexDirection: "column" }}
@@ -117,7 +117,7 @@ const NotificationCenter = () => {
           </Grid>
 
           {/* Right Pane */}
-          <Grid item xs={8} md={8}>
+          <Grid size={{ xs: 12, md: 8 }}>
             <Paper
               variant="elevation"
               sx={{
