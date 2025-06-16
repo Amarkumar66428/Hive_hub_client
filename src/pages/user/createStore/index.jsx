@@ -1,50 +1,30 @@
-import React, { useEffect, useState } from "react";
+import { useState } from "react";
 import WelcomeScreen from "./welcomeScreen";
 import TemplateSelector from "./selectTemplate";
-import { useLocation, useNavigate } from "react-router-dom";
-import { getUserdata } from "../../../services/userService";
-import { Box, CircularProgress } from "@mui/material";
+import { useLocation } from "react-router-dom";
 import PreviewTemplate from "./previewTemplate";
 
 const StorePage = () => {
   const location = useLocation();
-  const navigate = useNavigate();
   const screen = location.state?.screen;
-  const [isLoading, setIsLoading] = useState(true);
   const [currentStep, setCurrentStep] = useState(screen || 1);
-  const [subscription, setSubscription] = useState(null);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
 
-
-  return isLoading ? (
-    <Box
-      sx={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        height: "100%",
-      }}
-    >
-      <CircularProgress />
-    </Box>
-  ) : (
-    subscription?.isActive &&
-      {
-        1: <WelcomeScreen onStart={() => setCurrentStep(2)} />,
-        2: (
-          <TemplateSelector
-            setCurrentStep={setCurrentStep}
-            setSelectedTemplate={setSelectedTemplate}
-          />
-        ),
-        3: (
-          <PreviewTemplate
-            setCurrentStep={setCurrentStep}
-            selectedTemplate={selectedTemplate}
-          />
-        ),
-      }[currentStep]
-  );
+  return {
+    1: <WelcomeScreen onStart={() => setCurrentStep(2)} />,
+    2: (
+      <TemplateSelector
+        setCurrentStep={setCurrentStep}
+        setSelectedTemplate={setSelectedTemplate}
+      />
+    ),
+    3: (
+      <PreviewTemplate
+        setCurrentStep={setCurrentStep}
+        selectedTemplate={selectedTemplate}
+      />
+    ),
+  }[currentStep];
 };
 
 export default StorePage;

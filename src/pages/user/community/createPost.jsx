@@ -88,7 +88,6 @@ const CreatePostModal = ({ createPostModal, setCreatePostModal }) => {
 
       const postData = form;
       const response = await communityService.createPost(postData);
-      console.log("response: ", response);
       if (response) {
         setCreatePostModal(false);
       }

@@ -34,9 +34,10 @@ import communityService from "../../../services/community";
 import { useSnackbar } from "../../../features/snackBar";
 import { TextAreaE1 } from "../../../components/inputs";
 import { formatDate } from "../../../utils/helper";
+import useAuth from "../../../hooks/useAuth";
 
 const Community = () => {
-  const currentUser = JSON.parse(localStorage.getItem("user"));
+  const currentUser = useAuth();
   const { showSnackbar } = useSnackbar();
   const theme = useTheme();
   const [loading, setLoading] = useState(false);
@@ -55,7 +56,6 @@ const Community = () => {
         setLoading(true);
         const params = `?page=${1}&limit=${10}`;
         const response = await communityService.getAllCommunities(params);
-        console.log("response: ", response);
         setTableData(response?.posts || []);
       } catch (error) {
         console.log(error);
@@ -103,7 +103,6 @@ const Community = () => {
         content: commentInput,
       };
       const response = await communityService.commentOnPost(postId, comment);
-      console.log("response:::comment: ", response);
       if (response) {
         setTableData((prevData) =>
           prevData.map((post) => {
@@ -170,7 +169,6 @@ const Community = () => {
     try {
       setLoading(true);
       const response = await communityService.getMyPosts(currentUser._id);
-      console.log("response: ", response);
       setTableData(response?.posts || []);
     } catch (error) {
       console.log(error);
@@ -180,7 +178,6 @@ const Community = () => {
   };
 
   const handleMenuItemClick = (action) => {
-    console.log(`${action} clicked`);
     handleClose();
 
     // Add your navigation logic here
