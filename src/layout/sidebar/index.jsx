@@ -10,9 +10,10 @@ import {
 import { ExpandLess, ExpandMore } from "@mui/icons-material";
 import { appRouters } from "../../router/router.config";
 import { useNavigate } from "react-router-dom";
+import useAuth from "../../hooks/useAuth";
 
 const SideBar = ({ openSideBar, setSideBar }) => {
-  const user = JSON.parse(localStorage.getItem("user"));
+  const user = useAuth();
   const navigate = useNavigate();
   const [openMenus, setOpenMenus] = useState({});
   const { menuItems, subMenuMap } = useMemo(() => {

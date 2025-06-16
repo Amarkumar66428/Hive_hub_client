@@ -11,7 +11,7 @@ import {
 import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useSnackbar } from "../../features/snackBar";
-import { buySubscription } from "../../services/userService";
+import userService from "../../services/userService";
 
 const CARD_ELEMENT_OPTIONS = {
   style: {
@@ -99,7 +99,7 @@ const StripePaymentForm = ({
       paymentMethod: "stripe",
     };
 
-    const response = await buySubscription(payload);
+    const response = await userService.buySubscription(payload);
 
     if (!response) {
       setErrorMessage("Payment failed");

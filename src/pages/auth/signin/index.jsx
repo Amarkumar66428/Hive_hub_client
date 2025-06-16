@@ -14,7 +14,10 @@ import { FcGoogle } from "react-icons/fc";
 import Cookies from "js-cookie";
 import { signIn } from "../../../services/authService";
 import { useSnackbar } from "../../../features/snackBar";
-import { Visibility, VisibilityOff } from "@mui/icons-material";
+import { Subscript, Visibility, VisibilityOff } from "@mui/icons-material";
+import userService from "../../../services/userService";
+import { useDispatch } from "react-redux";
+import { setUserData } from "../../../reducer/authSlice";
 
 const textFieldStyles = {
   "& .MuiOutlinedInput-root": {
@@ -42,6 +45,7 @@ const textFieldStyles = {
 
 const Signin = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const { showSnackbar } = useSnackbar();
   const [isLoading, setIsLoading] = useState(false);
@@ -65,10 +69,19 @@ const Signin = () => {
       };
       const response = await signIn(body);
       if (response?.data) {
-        showSnackbar("Login successful", "success");
-        localStorage.setItem("user", JSON.stringify(response?.data));
         Cookies.set("access_token", response?.data?.token, { expires: 1 });
-        navigate("/user/home/dashboard");
+        if (response?.data?.token) {
+          const userData = await userService.getUserdata();
+          if (userData) {
+            const user = {
+              user: userData?.subscription,
+              subscription: userData?.subscription,
+            };
+            dispatch(setUserData(user));
+            showSnackbar("Login successful", "success");
+            navigate("/user/home/dashboard");
+          }
+        }
       }
     } catch (error) {
       console.error(error);

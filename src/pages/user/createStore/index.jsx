@@ -15,19 +15,6 @@ const StorePage = () => {
   const [subscription, setSubscription] = useState(null);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      const userData = await getUserdata();
-      if (userData?.subscription?.isActive) {
-        setSubscription(userData?.subscription);
-        setIsLoading(false);
-      } else {
-        setIsLoading(false);
-        navigate("/subscription/plans");
-      }
-    };
-    fetchUserData();
-  }, [navigate]);
 
   return isLoading ? (
     <Box
