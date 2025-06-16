@@ -1,39 +1,30 @@
-// src/features/userAuth/userAuthSlice.js
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   user: null,
   token: null,
-  isAuthenticated: false,
-  loading: false,
-  error: null,
+  subscription: null,
 };
 
 const authSlice = createSlice({
-  name: 'auth',
+  name: "auth",
   initialState,
   reducers: {
-    loginStart: (state) => {
-      state.loading = true;
-      state.error = null;
-    },
-    loginSuccess: (state, action) => {
-      state.loading = false;
+    setUserData: (state, action) => {
       state.user = action.payload.user;
       state.token = action.payload.token;
-      state.isAuthenticated = true;
+      state.subscription = action.payload.subscription;
     },
-    loginFailure: (state, action) => {
-      state.loading = false;
-      state.error = action.payload;
-    },
-    logout: (state) => {
+    clearUserData: (state) => {
       state.user = null;
       state.token = null;
-      state.isAuthenticated = false;
+      state.subscription = null;
     },
   },
 });
 
-export const { loginStart, loginSuccess, loginFailure, logout } = authSlice.actions;
+export const getCurrentUser = (state) => state.auth.user;
+export const getCurrentSubscription = (state) => state.auth.subscription;
+
+export const { setUserData, clearUserData } = authSlice.actions;
 export default authSlice.reducer;

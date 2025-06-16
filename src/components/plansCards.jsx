@@ -65,7 +65,8 @@ const PlanCard = ({ plan, selectPlan, setSelectPlan, size }) => {
         <Box
           sx={{
             position: "absolute",
-            top: "10px",
+            top: 0,
+            height: "100%",
             width: "100%",
             textAlign: "center",
             zIndex: 1,

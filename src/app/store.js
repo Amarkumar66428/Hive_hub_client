@@ -1,13 +1,9 @@
 // src/app/store.js
 import { configureStore } from '@reduxjs/toolkit';
-import userAuthReducer from '../features/userAuth/userAuthSlice';
-import otherReducer from '../features/otherFeature/otherSlice';
+import rootReducer from '../reducer/index.js';
 
 export const store = configureStore({
-  reducer: {
-    userAuth: userAuthReducer,
-    other: otherReducer,
-  },
+  reducer: rootReducer,
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: false,

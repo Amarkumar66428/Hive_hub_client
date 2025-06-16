@@ -179,9 +179,7 @@ export const appRouters = [
     role: [STORE_OWNER],
     title: "Manage Store",
     icon: React.createElement(Storefront),
-    component: asyncComponent(() =>
-      import("../pages/user/stores/index.jsx")
-    ),
+    component: asyncComponent(() => import("../pages/user/stores/index.jsx")),
     isLayout: true,
     showInMenu: true,
   },

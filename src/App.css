@@ -1,4 +1,28 @@
-#root{
-    height: 100%;
-    width: 100%;
+#root {
+  height: 100%;
+  width: 100%;
+}
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(180, 180, 180, 0.4) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: rgba(180, 180, 180, 0.4);
+  border-radius: 8px;
+  background-clip: padding-box;
+  border: 1px solid transparent;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(180, 180, 180, 0.6);
 }
