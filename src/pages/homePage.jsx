@@ -1,23 +1,6 @@
 import { Box, Typography } from "@mui/material";
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import Cookies from "js-cookie";
 
 const HomePage = () => {
-  const navigate = useNavigate();
-  const access_token = Cookies.get("access_token");
-  const user = localStorage.getItem("user");
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (access_token && user) {
-        navigate("/user/home/dashboard");
-      } else {
-        navigate("/auth/signin");
-      }
-    }, 2500);
-    return () => clearTimeout(timer);
-  }, [navigate]);
 
   return (
     <section className="welcome-page signup-page">

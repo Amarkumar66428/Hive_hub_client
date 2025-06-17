@@ -1,10 +1,30 @@
 import React, { memo } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { authRouters, appRouters, publicRouters } from "./router.config";
 import ProtectedRoute from "./ProtectedRoutes";
 import AppLayout from "../layout";
 import { Box } from "@mui/material";
 import NotFoundPage from "../components/pageNotFound";
+import Cookies from "js-cookie";
+import useAuth from "../hooks/useAuth";
+import { SUPER_ADMIN } from "../constant/LookupConst";
+
+const Authorization = ({ children }) => {
+  const location = useLocation();
+  const access_token = Cookies.get("access_token");
+  const userRole = useAuth()?.role;
+
+  const redirectPath =
+    userRole === SUPER_ADMIN
+      ? "/admin/home/dashboard"
+      : "/user/home/dashboard";
+
+  if (access_token) {
+    return <Navigate to={redirectPath} state={{ from: location }} replace />;
+  }
+
+  return children;
+};
 
 const AppRouter = () => {
   return (
@@ -14,7 +34,9 @@ const AppRouter = () => {
         <Route
           key={path}
           path={path}
-          element={React.createElement(component)}
+          element={
+            <Authorization>{React.createElement(component)}</Authorization>
+          }
         />
       ))}
       {publicRouters.map(({ path, component }) => (

@@ -27,6 +27,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import Template from "../../templates/templates1";
 import { createStore } from "../../../services/storeService";
 import { useSnackbar } from "../../../features/snackBar";
+import Templates2 from "../../templates/templates2";
 
 const CreateStore = () => {
   const navigate = useNavigate();
@@ -204,7 +205,7 @@ const CreateStore = () => {
       </Stack>
 
       <Box sx={{ height: `calc(100vh - 60px)`, overflow: "auto" }}>
-        <Tem plate template={template} items={itemsList} />
+        <Templates2 plate template={template} items={itemsList} />
       </Box>
 
       {/* Add Item Drawer */}
