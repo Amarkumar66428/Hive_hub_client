@@ -204,7 +204,7 @@ const CreateStore = () => {
       </Stack>
 
       <Box sx={{ height: `calc(100vh - 60px)`, overflow: "auto" }}>
-        <Template template={template} items={itemsList} />
+        <Tem plate template={template} items={itemsList} />
       </Box>
 
       {/* Add Item Drawer */}

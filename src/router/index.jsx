@@ -1,6 +1,6 @@
 import React, { memo } from "react";
 import { Routes, Route } from "react-router-dom";
-import { authRouters, appRouters } from "./router.config";
+import { authRouters, appRouters, publicRouters } from "./router.config";
 import ProtectedRoute from "./ProtectedRoutes";
 import AppLayout from "../layout";
 import { Box } from "@mui/material";
@@ -11,6 +11,13 @@ const AppRouter = () => {
     <Routes>
       {/* Public Routes */}
       {authRouters.map(({ path, component }) => (
+        <Route
+          key={path}
+          path={path}
+          element={React.createElement(component)}
+        />
+      ))}
+      {publicRouters.map(({ path, component }) => (
         <Route
           key={path}
           path={path}

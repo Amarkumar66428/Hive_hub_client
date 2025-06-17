@@ -35,21 +35,20 @@ const templates = [
     isPublished: true,
     path: "/templates/e-commerce",
   },
-  {
+    {
     id: 2,
+    title: "E-Commerce",
+    image: img4,
+    isPublished: true,
+    path: "/templates/shop",
+  },
+  {
+    id: 3,
     title: "Education",
     image: img3,
     isPublished: false,
     path: "/templates/education",
   },
-  {
-    id: 3,
-    title: "E-Commerce",
-    image: img4,
-    isPublished: false,
-    path: "/templates/shop",
-  },
-  // add more as needed
 ];
 
 const TemplateSelector = ({ setCurrentStep, setSelectedTemplate }) => {
