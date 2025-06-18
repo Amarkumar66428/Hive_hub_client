@@ -27,6 +27,8 @@ import {
   Person,
   ExpandMore,
   ChatTwoTone,
+  ChatBubbleOutline,
+  Send,
 } from "@mui/icons-material";
 
 import CreatePostModal from "./createPost";
@@ -203,6 +205,9 @@ const Community = () => {
         sx={{
           backgroundColor: "#fff",
           boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
+          position: "sticky",
+          top: 0,
+          zIndex: 100,
         }}
       >
         <Box
@@ -302,7 +307,7 @@ const Community = () => {
           </Menu>
         </Box>
       </Box>
-      <Container maxWidth="s" sx={{ mt: 4 }}>
+      <Container maxWidth="md" sx={{ mt: 4 }}>
         <Box sx={{ width: "100%" }}>
           {loading ? (
             <Box display="flex" justifyContent="center" mt={6}>
@@ -317,7 +322,7 @@ const Community = () => {
           ) : (
             <Grid container spacing={2}>
               {tableData.map((post) => (
-                <Grid size={{ xs: 12, sm: 6, md: 4 }} key={post._id}>
+                <Grid size={{ xs: 12 }} key={post._id}>
                   <Card
                     sx={{
                       borderRadius: 3,
@@ -486,9 +491,8 @@ const Community = () => {
                               }
                               sx={{ p: 0 }}
                             >
-                              <ChatTwoTone
+                              <ChatBubbleOutline
                                 sx={{
-                                  color: "secondary.main",
                                   fontSize: "1.1em",
                                 }}
                               />
@@ -519,6 +523,10 @@ const Community = () => {
                             alignItems="center"
                             mb={2}
                           >
+                            <Avatar
+                              src={""}
+                              sx={{ width: 30, height: 30 }}
+                            />
                             <TextAreaE1
                               allowClear
                               placeholder="Write a comment..."
@@ -544,7 +552,7 @@ const Community = () => {
                               }
                               sx={{ alignSelf: "flex-end" }}
                             >
-                              Post
+                              <Send />
                             </Button>
                           </Box>
 
@@ -564,56 +572,61 @@ const Community = () => {
                               {post.comments.map((comment, i) => (
                                 <Box
                                   key={i}
-                                  sx={{
-                                    p: 1,
-                                    borderRadius: 1,
-                                    bgcolor: "#fff",
-                                  }}
+                                  display="flex"
+                                  gap={1}
                                 >
+                                  <Avatar
+                                    src={comment.avatar || ""}
+                                    sx={{ width: 30, height: 30 }}
+                                  />
                                   <Box
-                                    display={"flex"}
-                                    flexDirection={"row"}
-                                    justifyContent={"space-between"}
+                                    sx={{
+                                      p: 1,
+                                      borderRadius: 1,
+                                      bgcolor: "#fff",
+                                      width: "100%",
+                                    }}
                                   >
-                                    <Box display="flex" alignItems="center">
-                                      <Avatar
-                                        src={comment.avatar || ""}
-                                        sx={{ mr: 1, width: 24, height: 24 }}
-                                      />
+                                    <Box
+                                      display={"flex"}
+                                      flexDirection={"row"}
+                                    >
+                                      <Box display="flex" alignItems="center">
+                                        <Typography
+                                          variant="body2"
+                                          fontWeight="bold"
+                                        >
+                                          {comment.userId === currentUser._id
+                                            ? "You"
+                                            : comment.userId}
+                                        </Typography>
+                                      </Box>
                                       <Typography
                                         variant="body2"
-                                        fontWeight="bold"
+                                        color="text.secondary"
+                                        ml={1}
                                       >
-                                        {comment.userId === currentUser._id
-                                          ? "You"
-                                          : comment.userId}
+                                        {formatDate(comment.createdAt)}
                                       </Typography>
                                     </Box>
                                     <Typography
                                       variant="body2"
                                       color="text.secondary"
-                                      ml={1}
+                                      mt={1}
                                     >
-                                      {formatDate(comment.createdAt)}
+                                      {comment.content}
                                     </Typography>
+                                    <Button
+                                      variant="text"
+                                      size="small"
+                                      onClick={() =>
+                                        handleCommentLike(post._id, comment._id)
+                                      }
+                                      sx={{ px: 0, py: 0 }}
+                                    >
+                                      Like {comment.likes.length}
+                                    </Button>
                                   </Box>
-                                  <Typography
-                                    variant="body2"
-                                    color="text.secondary"
-                                    mt={1}
-                                  >
-                                    {comment.content}
-                                  </Typography>
-                                  <Button
-                                    variant="text"
-                                    size="small"
-                                    onClick={() =>
-                                      handleCommentLike(post._id, comment._id)
-                                    }
-                                    sx={{ px: 0, py: 0 }}
-                                  >
-                                    Like {comment.likes.length}
-                                  </Button>
                                 </Box>
                               ))}
                             </Box>

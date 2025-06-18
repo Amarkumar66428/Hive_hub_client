@@ -204,6 +204,7 @@ figure {
 .community-like-dislike-container {
   .con-like {
     --red: rgb(255, 50, 50);
+    --gray: #707070;
     position: relative;
     width: 1.4em;
     height: 1.4em;
@@ -226,7 +227,7 @@ figure {
 
       .outline,
       .filled {
-        fill: var(--red);
+        fill: var(--gray);
         position: absolute;
       }
 
@@ -248,9 +249,15 @@ figure {
     }
 
     .like:checked ~ .checkmark {
-      .filled,
       .celebrate {
         display: block;
+      }
+    }
+
+    .like:checked ~ .checkmark {
+      .filled {
+        display: block;
+        fill: var(--red);
       }
     }
   }
