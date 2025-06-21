@@ -22,6 +22,7 @@ import {
   Edit,
   Delete,
   Visibility,
+  Logout,
 } from "@mui/icons-material";
 import { useNavigate, useLocation } from "react-router-dom";
 import Template from "../../templates/templates1";
@@ -150,28 +151,33 @@ const CreateStore = () => {
         direction="row"
         alignItems="center"
         justifyContent="space-between"
-        gap={2}
-        p={2}
-        height={60}
-        bgcolor="background.paper"
-        s  x={{ borderBottom: "1px solid #e0e0e0" }}
+        p={0}
+        className="store-editor-header"
       >
-        <Box display="flex" alignItems="center" gap={2}>
-          <Button
+        <Box display="flex" alignItems="center">
+          <IconButton
             variant="text"
-            color="primary"
             onClick={() =>
               navigate("/user/home/create-store", { state: { screen: 2 } })
             }
+            sx={{
+              color: "#fff",
+              borderRadius: 0,
+              borderRight: "1px solid #928aa2",
+              "&:hover": { backgroundColor: "#928aa2" },
+            }}
           >
-            Back
-          </Button>
-        </Box>
-        <Stack direction="row" gap={2}>
+            <Logout sx={{ transform: "rotate(180deg)", color: "#fff" }} />
+          </IconButton>
           <Button
             variant="text"
-            color="secondary"
             onClick={() => setDrawerOpen(true)}
+            sx={{
+              color: "#fff",
+              textTransform: "capitalize",
+              borderRadius: 0,
+              "&:hover": { backgroundColor: "#928aa2" },
+            }}
           >
             Add Product
           </Button>
@@ -179,14 +185,29 @@ const CreateStore = () => {
             variant="text"
             color="info"
             onClick={() => setItemListDrawerOpen(true)}
+            sx={{
+              color: "#fff",
+              textTransform: "capitalize",
+              borderRadius: 0,
+              "&:hover": { backgroundColor: "#928aa2" },
+            }}
           >
+            {" "}
             View Products
           </Button>
+        </Box>
+        <Stack direction="row" gap={2}>
           <Button
             variant="text"
-            color="success"
             onClick={handlePublish}
             disabled={loading}
+            sx={{
+              color: "#fff",
+              textTransform: "capitalize",
+              borderRadius: 0,
+              backgroundColor: "success.main",
+              "&:hover": { backgroundColor: "success.dark" },
+            }}
             startIcon={
               loading ? (
                 <CircularProgress size={20} sx={{ color: "success.main" }} />

@@ -162,6 +162,17 @@ figure {
   }
 }
 
+.store-editor-header {
+  background-image: linear-gradient(
+    to left,
+    #801b7c 5%,
+    #651562 15%,
+    #4e104c 25%,
+    #450e42 30%,
+    #1a0519 70%
+  );
+}
+
 .header-hamburger {
   display: flex;
   align-items: center;
