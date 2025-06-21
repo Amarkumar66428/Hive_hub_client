@@ -13,7 +13,6 @@ import {
 } from "@mui/icons-material";
 import { Rating, Typography } from "@mui/material";
 import first_hero from "../../../assets/storePage/temp2/first_hero.webp";
-import blacks from "../../../assets/storePage/temp2/blacks.svg";
 import new1 from "../../../assets/storePage/temp2/newA1.webp";
 import new2 from "../../../assets/storePage/temp2/newA2.webp";
 import new3 from "../../../assets/storePage/temp2/newA3.webp";
@@ -36,15 +35,19 @@ const Templates2 = () => {
       <div className="template">
         <div className="div">
           <div className="overlap">
-            <div
-              style={{
-                backgroundImage: `url(${first_hero})`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-              }}
-            >
-              <img className="vector" src={blacks} />
-              <img className="img" src={blacks} />
+            <div>
+              <div
+                style={{
+                  backgroundImage: `url(${first_hero})`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                  height: "100%",
+                  width: "100%",
+                  position: "absolute",
+                  top: 0,
+                  right: 0,
+                }}
+              />
             </div>
             <p className="text-wrapper">FIND CLOTHES THAT MATCHES YOUR STYLE</p>
             <p className="p">

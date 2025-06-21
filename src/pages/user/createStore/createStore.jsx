@@ -15,17 +15,8 @@ import {
   TableHead,
   TableRow,
 } from "@mui/material";
-import {
-  ArrowBack,
-  Publish,
-  AddCircleOutline,
-  Edit,
-  Delete,
-  Visibility,
-  Logout,
-} from "@mui/icons-material";
+import { Edit, Delete, Logout } from "@mui/icons-material";
 import { useNavigate, useLocation } from "react-router-dom";
-import Template from "../../templates/templates1";
 import { createStore } from "../../../services/storeService";
 import { useSnackbar } from "../../../features/snackBar";
 import Templates2 from "../../templates/templates2";
@@ -151,7 +142,7 @@ const CreateStore = () => {
         direction="row"
         alignItems="center"
         justifyContent="space-between"
-        p={0}
+        px={1}
         className="store-editor-header"
       >
         <Box display="flex" alignItems="center">
@@ -196,27 +187,25 @@ const CreateStore = () => {
             View Products
           </Button>
         </Box>
-        <Stack direction="row" gap={2}>
-          <Button
-            variant="text"
-            onClick={handlePublish}
-            disabled={loading}
-            sx={{
-              color: "#fff",
-              textTransform: "capitalize",
-              borderRadius: 0,
-              backgroundColor: "success.main",
-              "&:hover": { backgroundColor: "success.dark" },
-            }}
-            startIcon={
-              loading ? (
-                <CircularProgress size={20} sx={{ color: "success.main" }} />
-              ) : null
-            }
-          >
-            {loading ? "Publishing..." : "Publish"}
-          </Button>
-        </Stack>
+        <Button
+          variant="text"
+          onClick={handlePublish}
+          disabled={loading}
+          sx={{
+            color: "#fff",
+            textTransform: "capitalize",
+            borderRadius: 0,
+            backgroundColor: "success.main",
+            "&:hover": { backgroundColor: "success.dark" },
+          }}
+          startIcon={
+            loading ? (
+              <CircularProgress size={20} sx={{ color: "success.main" }} />
+            ) : null
+          }
+        >
+          {loading ? "Publishing..." : "Publish"}
+        </Button>
       </Stack>
 
       <Box sx={{ height: `calc(100vh - 60px)`, overflow: "auto" }}>

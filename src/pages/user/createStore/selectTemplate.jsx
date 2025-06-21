@@ -32,7 +32,7 @@ const templates = [
     id: 1,
     title: "E-Commerce",
     image: img2,
-    isPublished: true,
+    isPublished: false,
     path: "/templates/e-commerce",
   },
     {
