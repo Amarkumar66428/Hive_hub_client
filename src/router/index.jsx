@@ -15,12 +15,12 @@ const Authorization = ({ children }) => {
   const userRole = useAuth()?.role;
 
   const redirectPath =
-    userRole === SUPER_ADMIN
-      ? "/admin/home/dashboard"
-      : "/user/home/dashboard";
+    userRole === SUPER_ADMIN ? "/admin/home/dashboard" : "/user/home/dashboard";
 
   if (access_token) {
     return <Navigate to={redirectPath} state={{ from: location }} replace />;
+  } else if (window.location.pathname === "/") {
+    return <Navigate to="/auth/signin" state={{ from: location }} replace />;
   }
 
   return children;

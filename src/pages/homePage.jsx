@@ -24,9 +24,10 @@ const HomePage = () => {
             fontWeight: "bold",
             fontFamily: "Open Sans",
             fontSize: "4rem",
+            color: "#ccc",
           }}
         >
-          HivvHib
+          HiveHub
         </Typography>
         <Typography
           variant="body1"
