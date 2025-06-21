@@ -13,10 +13,18 @@ import {
   Divider,
   Paper,
 } from "@mui/material";
-import { PhotoCamera, Delete } from "@mui/icons-material";
+import { Close, Delete, PhotoCamera } from "@mui/icons-material";
 import communityService from "../../../services/community";
+import { useSnackbar } from "../../../features/snackBar";
 
-const CreatePostModal = ({ createPostModal, setCreatePostModal }) => {
+const CreatePostModal = ({
+  createPostModal,
+  setCreatePostModal,
+  fetchPlans,
+}) => {
+  const { showSnackbar } = useSnackbar();
+
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     content: "",
@@ -73,7 +81,12 @@ const CreatePostModal = ({ createPostModal, setCreatePostModal }) => {
 
   const handleSubmit = async () => {
     try {
+      setLoading(true);
       const { title, content, tags, media } = formData;
+      if (!title && !media) {
+        showSnackbar("Title or Media is required", "error");
+        return;
+      }
       const form = new FormData();
       form.append("title", title);
       form.append("content", content);
@@ -88,12 +101,23 @@ const CreatePostModal = ({ createPostModal, setCreatePostModal }) => {
 
       const postData = form;
       const response = await communityService.createPost(postData);
-      console.log("response: ", response);
       if (response) {
+        fetchPlans();
+        showSnackbar("Post created successfully", "success");
         setCreatePostModal(false);
+        setFormData({
+          title: "",
+          content: "",
+          tags: [],
+          tagInput: "",
+          media: null,
+          mediaPreview: null,
+        });
       }
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -103,7 +127,7 @@ const CreatePostModal = ({ createPostModal, setCreatePostModal }) => {
       onCancel={() => setCreatePostModal(false)}
       footer={null}
       centered
-      width={"60%"}
+      width={"50%"}
     >
       {/* Header */}
       <Stack direction="row" spacing={2} alignItems="center" mb={2}>
@@ -118,7 +142,7 @@ const CreatePostModal = ({ createPostModal, setCreatePostModal }) => {
       {/* Content */}
       <Grid container spacing={2} sx={{ flexGrow: 1 }}>
         {/* Left Side - Form */}
-        <Grid size={{ xs: 12, md: 7 }}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Stack spacing={2}>
             <TextField
               label="Title"
@@ -168,7 +192,7 @@ const CreatePostModal = ({ createPostModal, setCreatePostModal }) => {
         {/* Right Side - Media Upload */}
         <Grid
           item
-          size={{ xs: 12, md: 5 }}
+          size={{ xs: 12, md: 6 }}
           sx={{
             display: "flex",
             flexDirection: "column",
@@ -185,7 +209,7 @@ const CreatePostModal = ({ createPostModal, setCreatePostModal }) => {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                height: 250,
+                height: "100%",
                 width: "100%",
               }}
             >
@@ -198,6 +222,22 @@ const CreatePostModal = ({ createPostModal, setCreatePostModal }) => {
                   objectFit: "cover",
                 }}
               />
+              <IconButton
+                variant="text"
+                onClick={handleRemoveMedia}
+                sx={{
+                  position: "absolute",
+                  top: 0,
+                  right: 0,
+                  margin: 0.5,
+                  p: 0,
+                  color: "error.main",
+                  zIndex: 1,
+                  bgcolor: "rgba(0, 0, 0, 0.5)",
+                }}
+              >
+                <Close />
+              </IconButton>
             </Box>
           ) : (
             <>
@@ -207,7 +247,7 @@ const CreatePostModal = ({ createPostModal, setCreatePostModal }) => {
                 startIcon={<PhotoCamera />}
                 onClick={() => document.getElementById("media-input").click()}
                 sx={{
-                  height: 250,
+                  height: "100%",
                   borderRadius: 2,
                   borderStyle: "dashed",
                   textTransform: "none",
@@ -224,27 +264,6 @@ const CreatePostModal = ({ createPostModal, setCreatePostModal }) => {
               />
             </>
           )}
-          <Box
-            display={"flex"}
-            alignItems={"center"}
-            sx={{ borderTop: "1px solid #ccc" }}
-          >
-            {formData.mediaPreview && (
-              <Button
-                variant="text"
-                onClick={handleRemoveMedia}
-                sx={{
-                  py: 0,
-                  ml: "auto",
-                  color: "error.main",
-                  backgroundColor: "#fff",
-                  "&:hover": { backgroundColor: "#eee" },
-                }}
-              >
-                Remove
-              </Button>
-            )}
-          </Box>
         </Grid>
       </Grid>
 
@@ -262,6 +281,7 @@ const CreatePostModal = ({ createPostModal, setCreatePostModal }) => {
           variant="contained"
           color="primary"
           disabled={!formData.content.trim() && !formData.media}
+          loading={loading}
         >
           Post
         </Button>

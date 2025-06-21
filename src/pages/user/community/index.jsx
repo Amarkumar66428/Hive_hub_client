@@ -1,4 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { 
+  useEffect, 
+  useState, 
+  useCallback, 
+  useMemo, 
+  useRef,
+  memo 
+} from "react";
 import {
   Box,
   Button,
@@ -19,14 +26,24 @@ import {
   Tooltip,
   CardActions,
   Collapse,
-  useTheme,
+  Skeleton,
+  Alert,
+  Chip,
+  Fade,
+  Paper,
+  Stack,
 } from "@mui/material";
 import {
   Add,
   Article,
   Person,
   ExpandMore,
-  ChatTwoTone,
+  ChatBubbleOutline,
+  Send,
+  Share,
+  Refresh,
+  FavoriteBorder,
+  Favorite,
 } from "@mui/icons-material";
 
 import CreatePostModal from "./createPost";
@@ -34,614 +51,285 @@ import communityService from "../../../services/community";
 import { useSnackbar } from "../../../features/snackBar";
 import { TextAreaE1 } from "../../../components/inputs";
 import { formatDate } from "../../../utils/helper";
+import useAuth from "../../../hooks/useAuth";
 
-const Community = () => {
-  const currentUser = JSON.parse(localStorage.getItem("user"));
-  const { showSnackbar } = useSnackbar();
-  const theme = useTheme();
-  const [loading, setLoading] = useState(false);
-  const [tableData, setTableData] = useState([]);
-  const [anchorEl, setAnchorEl] = useState(null);
-  const [createPostModal, setCreatePostModal] = useState(false);
-  const [openCommentBox, setOpenCommentBox] = useState(null);
+// Constants
+const POSTS_PER_PAGE = 10;
+const INTERSECTION_THRESHOLD = 0.1;
+
+// Memoized Post Card Component
+const PostCard = memo(({ 
+  post, 
+  currentUser, 
+  onLike, 
+  onComment, 
+  onCommentLike, 
+  openCommentBox, 
+  setOpenCommentBox 
+}) => {
   const [commentInput, setCommentInput] = useState("");
-  const [savingPostComment, setSavingPostComment] = useState(false);
+  const [savingComment, setSavingComment] = useState(false);
 
-  const open = Boolean(anchorEl);
-
-  useEffect(() => {
-    const fetchPlans = async () => {
-      try {
-        setLoading(true);
-        const params = `?page=${1}&limit=${10}`;
-        const response = await communityService.getAllCommunities(params);
-        console.log("response: ", response);
-        setTableData(response?.posts || []);
-      } catch (error) {
-        console.log(error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchPlans();
-  }, []);
-
-  const handleClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-
-  const handleLike = async (postId) => {
+  const handleCommentSubmit = useCallback(async () => {
+    if (!commentInput.trim()) return;
+    
+    setSavingComment(true);
     try {
-      setTableData((prevData) =>
-        prevData.map((post) =>
-          post._id === postId
-            ? {
-                ...post,
-                likes: post.likes.includes(currentUser._id)
-                  ? post.likes.filter((id) => id !== currentUser._id)
-                  : [...post.likes, currentUser._id],
-              }
-            : post
-        )
-      );
-      await communityService.likeOnPost(postId);
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
-  const handleComment = async (postId) => {
-    try {
-      if (!commentInput) return showSnackbar("Please enter a comment", "error");
-
-      setSavingPostComment(true);
-      const comment = {
-        content: commentInput,
-      };
-      const response = await communityService.commentOnPost(postId, comment);
-      console.log("response:::comment: ", response);
-      if (response) {
-        setTableData((prevData) =>
-          prevData.map((post) => {
-            if (post._id !== postId) return post;
-
-            const currentIds = new Set();
-            const merged = [];
-
-            for (const c of post.comments) {
-              currentIds.add(c._id);
-              merged.push(c);
-            }
-
-            for (const c of response.post.comments) {
-              if (!currentIds.has(c._id)) {
-                currentIds.add(c._id);
-                merged.push(c);
-              }
-            }
-
-            return { ...post, comments: merged };
-          })
-        );
-      }
-      showSnackbar(
-        response?.message || "Comment added successfully",
-        "success"
-      );
-    } catch (err) {
-      console.log(err);
+      await onComment(post._id, commentInput);
+      setCommentInput("");
     } finally {
-      setSavingPostComment(false);
+      setSavingComment(false);
     }
-  };
+  }, [commentInput, onComment, post._id]);
 
-  const handleCommentLike = async (postId, commentId) => {
-    try {
-      setTableData((prevData) =>
-        prevData.map((post) =>
-          post._id === postId
-            ? {
-                ...post,
-                comments: post.comments.map((comment) =>
-                  comment._id === commentId
-                    ? {
-                        ...comment,
-                        likes: comment.likes.includes(currentUser._id)
-                          ? comment.likes.filter((id) => id !== currentUser._id)
-                          : [...comment.likes, currentUser._id],
-                      }
-                    : comment
-                ),
-              }
-            : post
-        )
-      );
-      await communityService.likeOnPostComment(postId, commentId);
-    } catch (err) {
-      console.log(err);
-    }
-  };
+  const isLiked = useMemo(() => 
+    post?.likes?.includes(currentUser._id), 
+    [post?.likes, currentUser._id]
+  );
 
-  const fetchMyPosts = async () => {
-    try {
-      setLoading(true);
-      const response = await communityService.getMyPosts(currentUser._id);
-      console.log("response: ", response);
-      setTableData(response?.posts || []);
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleMenuItemClick = (action) => {
-    console.log(`${action} clicked`);
-    handleClose();
-
-    // Add your navigation logic here
-    switch (action) {
-      case "create-post":
-        setCreatePostModal(true);
-        break;
-      case "my-posts":
-        fetchMyPosts();
-        break;
-      case "my-profile":
-        // Navigate to community profile page
-        // navigate('/community-profile');
-        break;
-      default:
-        break;
-    }
-  };
+  const isCommentBoxOpen = openCommentBox === post._id;
 
   return (
-    <>
-      <Box
+    <Fade in timeout={300}>
+      <Card
+        elevation={2}
         sx={{
-          backgroundColor: "#fff",
-          boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
+          borderRadius: 3,
+          transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+          bgcolor: "background.paper",
+          border: 1,
+          borderColor: "divider",
+          overflow: "hidden",
+          "&:hover": {
+            elevation: 4,
+            transform: "translateY(-2px)",
+            borderColor: "primary.light",
+          },
         }}
       >
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            p: 1,
-            justifyContent: "space-between",
-          }}
-        >
-          <Box>
-            <Typography variant="h6" fontWeight={700} color="primary">
-              Join Our Thriving Community
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Learn from real store owners, share your journey, and get inspired
-              by stories of success in the eCommerce world.
-            </Typography>
-          </Box>
-          <Button
-            onClick={handleClick}
-            aria-controls={open ? "avatar-menu" : undefined}
-            aria-haspopup="true"
-            aria-expanded={open ? "true" : undefined}
-            sx={{
-              px: 1,
-              py: 0.5,
-              borderRadius: 16,
-
-              "&:hover": {
-                backgroundColor: "transparent",
-              },
-            }}
-          >
+        {/* Post Header */}
+        <CardContent sx={{ pb: 1 }}>
+          <Stack direction="row" spacing={2} alignItems="center" mb={2}>
             <Avatar
-              src={"https://randomuser.me/api/portraits/women/44.jpg"}
-              alt={"Alexandra"}
-              sx={{
-                width: 40,
-                height: 40,
-                cursor: "pointer",
+              src={post?.avatar}
+              alt={post?.author}
+              sx={{ 
+                width: 48, 
+                height: 48,
+                border: 2,
+                borderColor: "divider"
               }}
             />
-            <ExpandMore
-              sx={{
-                ml: 0.5,
-                fontSize: 22,
-                color: "text.secondary",
-              }}
-            />
-          </Button>
-
-          <Menu
-            id="avatar-menu"
-            anchorEl={anchorEl}
-            open={open}
-            onClose={handleClose}
-            MenuListProps={{
-              "aria-labelledby": "avatar-button",
-            }}
-            PaperProps={{
-              elevation: 3,
-              sx: {
-                mt: 1,
-                minWidth: 200,
-                "& .MuiMenuItem-root": {
-                  px: 2,
-                  py: 1.5,
-                },
-              },
-            }}
-            transformOrigin={{ horizontal: "right", vertical: "top" }}
-            anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
-          >
-            <MenuItem onClick={() => handleMenuItemClick("create-post")}>
-              <ListItemIcon>
-                <Add fontSize="small" />
-              </ListItemIcon>
-              <ListItemText>Create Post</ListItemText>
-            </MenuItem>
-
-            <MenuItem onClick={() => handleMenuItemClick("my-posts")}>
-              <ListItemIcon>
-                <Article fontSize="small" />
-              </ListItemIcon>
-              <ListItemText>My Posts</ListItemText>
-            </MenuItem>
-
-            <Divider />
-
-            <MenuItem onClick={() => handleMenuItemClick("my-profile")}>
-              <ListItemIcon>
-                <Person fontSize="small" />
-              </ListItemIcon>
-              <ListItemText>My Community Profile</ListItemText>
-            </MenuItem>
-          </Menu>
-        </Box>
-      </Box>
-      <Container maxWidth="s" sx={{ mt: 4 }}>
-        <Box sx={{ width: "100%" }}>
-          {loading ? (
-            <Box display="flex" justifyContent="center" mt={6}>
-              <CircularProgress />
-            </Box>
-          ) : tableData?.length === 0 ? (
-            <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
-              <Typography variant="h6" fontWeight={600} gutterBottom>
-                No community posts found
+            <Box flex={1}>
+              <Typography variant="h6" fontWeight={600} color="text.primary">
+                {post?.author || "Unknown"}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                {formatDate(post?.createdAt)}
               </Typography>
             </Box>
-          ) : (
-            <Grid container spacing={2}>
-              {tableData.map((post) => (
-                <Grid size={{ xs: 12, sm: 6, md: 4 }} key={post._id}>
-                  <Card
-                    sx={{
-                      borderRadius: 3,
-                      boxShadow: 3,
-                      transition: "0.3s",
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 1,
-                      p: 2,
+          </Stack>
 
+          {/* Post Content */}
+          <Typography variant="h5" fontWeight={700} gutterBottom color="text.primary">
+            {post.title}
+          </Typography>
+          <ContentWithReadMore 
+            content={post?.content} 
+            tags={post?.tags} 
+          />
+        </CardContent>
+
+        {/* Post Media */}
+        {post?.media?.length > 0 && (
+          <CardMedia
+            component="img"
+            image={post.media[0]?.url}
+            alt={post.title}
+            sx={{
+              height: { xs: 250, md: 350 },
+              objectFit: "cover",
+              bgcolor: "grey.100",
+            }}
+          />
+        )}
+
+        {/* Post Actions */}
+        <CardActions sx={{ px: 2, py: 1.5, bgcolor: "grey.50" }}>
+          <Stack direction="row" justifyContent="space-between" width="100%">
+            <Stack direction="row" spacing={3}>
+              {/* Like Button */}
+              <Stack direction="row" alignItems="center" spacing={0.5}>
+                <Tooltip title={isLiked ? "Unlike" : "Like"}>
+                  <IconButton
+                    size="small"
+                    onClick={() => onLike(post._id)}
+                    sx={{
+                      color: isLiked ? "error.main" : "text.secondary",
                       "&:hover": {
-                        boxShadow: 6,
+                        bgcolor: isLiked ? "error.50" : "grey.100",
                       },
                     }}
                   >
-                    {/* Header: Avatar and Author */}
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        borderBottom: "1px solid #ccc",
-                        pb: 1,
-                      }}
-                    >
-                      <Avatar
-                        src={post.avatar}
-                        alt={post.author}
-                        sx={{ width: 30, height: 30 }}
-                      />
-                      <Typography
-                        fontWeight={600}
-                        variant="body2"
-                        sx={{ display: "flex", alignItems: "center", ml: 1 }}
-                      >
-                        {post.author || "Unknown"}
-                      </Typography>
-                    </Box>
+                    {isLiked ? <Favorite /> : <FavoriteBorder />}
+                  </IconButton>
+                </Tooltip>
+                <Typography variant="body2" color="text.secondary">
+                  {post?.likes?.length || 0}
+                </Typography>
+              </Stack>
 
-                    {/* Content */}
-                    {post.media?.length ? (
-                      <CardContent sx={{ p: 0, fontSize: 14 }}>
-                        <Typography variant="h6" fontWeight={600}>
-                          {post.title}
-                        </Typography>
-                        <ContentWithReadMore
-                          content={post.content}
-                          tags={post.tags}
-                        />
-                      </CardContent>
-                    ) : null}
-                    {/* Image */}
-                    {post.media?.length ? (
-                      <CardMedia
-                        component="img"
-                        image={post?.media[0]?.url}
-                        alt={post.title}
-                        sx={{
-                          height: 200,
-                          width: "90%",
-                          objectFit: "contain",
-                          mx: "auto",
-                        }}
-                      />
-                    ) : (
-                      <CardContent sx={{ p: 0, fontSize: 14 }}>
-                        <Typography variant="h6" fontWeight={600}>
-                          {post.title}
-                        </Typography>
-                        <ContentWithReadMore
-                          content={post.content}
-                          tags={post.tags}
-                        />
-                      </CardContent>
+              {/* Comment Button */}
+              <Stack direction="row" alignItems="center" spacing={0.5}>
+                <Tooltip title="Comment">
+                  <IconButton
+                    size="small"
+                    onClick={() => setOpenCommentBox(
+                      isCommentBoxOpen ? null : post._id
                     )}
+                    sx={{
+                      color: isCommentBoxOpen ? "primary.main" : "text.secondary",
+                      "&:hover": { bgcolor: "primary.50" },
+                    }}
+                  >
+                    <ChatBubbleOutline />
+                  </IconButton>
+                </Tooltip>
+                <Typography variant="body2" color="text.secondary">
+                  {post?.comments?.length || 0}
+                </Typography>
+              </Stack>
+            </Stack>
 
-                    {/* Actions: Like and Comment */}
-                    <CardActions
-                      sx={{
-                        borderTop: "1px solid #ccc",
-                        p: 0,
-                        pt: 1,
-                        display: "flex",
-                        flexDirection: "column",
-                      }}
-                    >
-                      <Box
-                        display={"flex"}
-                        gap={1}
-                        justifyContent={"flex-start"}
-                        width={"100%"}
-                      >
-                        <Box
-                          className="community-like-dislike-container"
-                          display={"flex"}
-                          gap={1}
-                        >
-                          <Tooltip title="Like">
-                            <div className="con-like">
-                              <input
-                                className="like"
-                                type="checkbox"
-                                title="like"
-                                defaultChecked={post.likes.includes(
-                                  currentUser._id
-                                )}
-                                onChange={() => handleLike(post._id)}
-                              />
-                              <div className="checkmark">
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  className="outline"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path d="M17.5,1.917a6.4,6.4,0,0,0-5.5,3.3,6.4,6.4,0,0,0-5.5-3.3A6.8,6.8,0,0,0,0,8.967c0,4.547,4.786,9.513,8.8,12.88a4.974,4.974,0,0,0,6.4,0C19.214,18.48,24,13.514,24,8.967A6.8,6.8,0,0,0,17.5,1.917Zm-3.585,18.4a2.973,2.973,0,0,1-3.83,0C4.947,16.006,2,11.87,2,8.967a4.8,4.8,0,0,1,4.5-5.05A4.8,4.8,0,0,1,11,8.967a1,1,0,0,0,2,0,4.8,4.8,0,0,1,4.5-5.05A4.8,4.8,0,0,1,22,8.967C22,11.87,19.053,16.006,13.915,20.313Z"></path>
-                                </svg>
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  className="filled"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path d="M17.5,1.917a6.4,6.4,0,0,0-5.5,3.3,6.4,6.4,0,0,0-5.5-3.3A6.8,6.8,0,0,0,0,8.967c0,4.547,4.786,9.513,8.8,12.88a4.974,4.974,0,0,0,6.4,0C19.214,18.48,24,13.514,24,8.967A6.8,6.8,0,0,0,17.5,1.917Z"></path>
-                                </svg>
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  height="100"
-                                  width="100"
-                                  className="celebrate"
-                                >
-                                  <polygon
-                                    className="poly"
-                                    points="10,10 20,20"
-                                  ></polygon>
-                                  <polygon
-                                    className="poly"
-                                    points="10,50 20,50"
-                                  ></polygon>
-                                  <polygon
-                                    className="poly"
-                                    points="20,80 30,70"
-                                  ></polygon>
-                                  <polygon
-                                    className="poly"
-                                    points="90,10 80,20"
-                                  ></polygon>
-                                  <polygon
-                                    className="poly"
-                                    points="90,50 80,50"
-                                  ></polygon>
-                                  <polygon
-                                    className="poly"
-                                    points="80,80 70,70"
-                                  ></polygon>
-                                </svg>
-                              </div>
-                            </div>
-                          </Tooltip>
-                          <Typography>{post.likes.length}</Typography>
-                        </Box>
-                        <Box display={"flex"} gap={1}>
-                          <Tooltip title="Comment">
-                            <IconButton
-                              onClick={() =>
-                                setOpenCommentBox((prev) =>
-                                  prev === post._id ? null : post?._id
-                                )
-                              }
-                              sx={{ p: 0 }}
-                            >
-                              <ChatTwoTone
-                                sx={{
-                                  color: "secondary.main",
-                                  fontSize: "1.1em",
-                                }}
-                              />
-                            </IconButton>
-                          </Tooltip>
-                          <Typography>{post.comments.length}</Typography>
-                        </Box>
-                      </Box>
-                      <Collapse
-                        in={openCommentBox === post._id}
-                        sx={{ width: "100%" }}
-                      >
-                        <Box
-                          sx={{
-                            p: 1,
-                            borderTop: "1px solid #eee",
-                            borderRadius: 1,
-                            bgcolor: "#f4f6f8",
-                            mt: 1,
-                          }}
-                        >
-                          {/* Comment Input */}
-                          <Box
-                            display="flex"
-                            gap={1}
-                            justifyContent="space-between"
-                            width="100%"
-                            alignItems="center"
-                            mb={2}
-                          >
-                            <TextAreaE1
-                              allowClear
-                              placeholder="Write a comment..."
-                              value={commentInput || ""}
-                              onChange={(e) => setCommentInput(e.target.value)}
-                              autoSize
-                              style={{
-                                ":focus": {
-                                  outline: "none",
-                                  borderColor: theme?.palette?.primary?.main,
-                                },
-                              }}
-                            />
-                            <Button
-                              variant="outlined"
-                              size="small"
-                              onClick={() => handleComment(post._id)}
-                              disabled={savingPostComment}
-                              startIcon={
-                                savingPostComment ? (
-                                  <CircularProgress size={20} />
-                                ) : null
-                              }
-                              sx={{ alignSelf: "flex-end" }}
-                            >
-                              Post
-                            </Button>
-                          </Box>
+            {/* Share Button */}
+            <Tooltip title="Share">
+              <IconButton size="small" sx={{ color: "text.secondary" }}>
+                <Share />
+              </IconButton>
+            </Tooltip>
+          </Stack>
+        </CardActions>
 
-                          {/* Existing Comments */}
-                          {post.comments.length === 0 ? (
-                            <Typography variant="body2" color="text.secondary">
-                              No comments yet.
-                            </Typography>
-                          ) : (
-                            <Box
-                              display="flex"
-                              flexDirection="column"
-                              gap={1}
-                              maxHeight={200}
-                              overflow={"auto"}
-                            >
-                              {post.comments.map((comment, i) => (
-                                <Box
-                                  key={i}
-                                  sx={{
-                                    p: 1,
-                                    borderRadius: 1,
-                                    bgcolor: "#fff",
-                                  }}
-                                >
-                                  <Box
-                                    display={"flex"}
-                                    flexDirection={"row"}
-                                    justifyContent={"space-between"}
-                                  >
-                                    <Box display="flex" alignItems="center">
-                                      <Avatar
-                                        src={comment.avatar || ""}
-                                        sx={{ mr: 1, width: 24, height: 24 }}
-                                      />
-                                      <Typography
-                                        variant="body2"
-                                        fontWeight="bold"
-                                      >
-                                        {comment.userId === currentUser._id
-                                          ? "You"
-                                          : comment.userId}
-                                      </Typography>
-                                    </Box>
-                                    <Typography
-                                      variant="body2"
-                                      color="text.secondary"
-                                      ml={1}
-                                    >
-                                      {formatDate(comment.createdAt)}
-                                    </Typography>
-                                  </Box>
-                                  <Typography
-                                    variant="body2"
-                                    color="text.secondary"
-                                    mt={1}
-                                  >
-                                    {comment.content}
-                                  </Typography>
-                                  <Button
-                                    variant="text"
-                                    size="small"
-                                    onClick={() =>
-                                      handleCommentLike(post._id, comment._id)
-                                    }
-                                    sx={{ px: 0, py: 0 }}
-                                  >
-                                    Like {comment.likes.length}
-                                  </Button>
-                                </Box>
-                              ))}
-                            </Box>
-                          )}
-                        </Box>
-                      </Collapse>
-                    </CardActions>
-                  </Card>
-                </Grid>
-              ))}
-            </Grid>
-          )}
-        </Box>
-      </Container>
-      <CreatePostModal
-        createPostModal={createPostModal}
-        setCreatePostModal={setCreatePostModal}
-      />
-    </>
+        {/* Comments Section */}
+        <Collapse in={isCommentBoxOpen} timeout="auto">
+          <Paper 
+            elevation={0} 
+            sx={{ 
+              bgcolor: "grey.50", 
+              borderTop: 1, 
+              borderColor: "divider",
+              p: 2 
+            }}
+          >
+            {/* Comment Input */}
+            <Stack direction="row" spacing={2} mb={2}>
+              <Avatar 
+                src={currentUser?.avatar} 
+                sx={{ width: 32, height: 32 }} 
+              />
+              <Box flex={1}>
+                <TextAreaE1
+                  placeholder="Write a comment..."
+                  value={commentInput}
+                  onChange={(e) => setCommentInput(e.target.value)}
+                  autoSize={{ minRows: 1, maxRows: 4 }}
+                  style={{ width: "100%" }}
+                />
+              </Box>
+              <Button
+                variant="contained"
+                size="small"
+                onClick={handleCommentSubmit}
+                disabled={savingComment || !commentInput.trim()}
+                startIcon={savingComment ? <CircularProgress size={16} /> : <Send />}
+                sx={{ alignSelf: "flex-end" }}
+              >
+                {savingComment ? "Posting..." : "Post"}
+              </Button>
+            </Stack>
+
+            {/* Comments List */}
+            <CommentsSection 
+              comments={post?.comments || []}
+              currentUser={currentUser}
+              onCommentLike={onCommentLike}
+              postId={post._id}
+            />
+          </Paper>
+        </Collapse>
+      </Card>
+    </Fade>
   );
-};
+});
 
-export default Community;
+// Memoized Comments Section
+const CommentsSection = memo(({ comments, currentUser, onCommentLike, postId }) => {
+  if (comments.length === 0) {
+    return (
+      <Typography variant="body2" color="text.secondary" textAlign="center" py={2}>
+        No comments yet. Be the first to comment!
+      </Typography>
+    );
+  }
 
-const ContentWithReadMore = ({ content, tags, maxChars = 100 }) => {
+  return (
+    <Stack spacing={2} maxHeight={300} overflow="auto">
+      {comments.map((comment) => (
+        <CommentItem
+          key={comment._id}
+          comment={comment}
+          currentUser={currentUser}
+          onLike={() => onCommentLike(postId, comment._id)}
+        />
+      ))}
+    </Stack>
+  );
+});
+
+// Memoized Comment Item
+const CommentItem = memo(({ comment, currentUser, onLike }) => {
+  const isLiked = comment.likes?.includes(currentUser._id);
+
+  return (
+    <Paper elevation={0} sx={{ p: 1.5, bgcolor: "background.paper", borderRadius: 2 }}>
+      <Stack direction="row" spacing={1.5}>
+        <Avatar
+          src={comment.avatar}
+          sx={{ width: 32, height: 32 }}
+        />
+        <Box flex={1}>
+          <Stack direction="row" alignItems="center" spacing={1} mb={0.5}>
+            <Typography variant="body2" fontWeight={600}>
+              {comment.userId === currentUser._id ? "You" : comment.author || comment.userId}
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              {formatDate(comment.createdAt)}
+            </Typography>
+          </Stack>
+          <Typography variant="body2" color="text.primary" mb={1}>
+            {comment.content}
+          </Typography>
+          <Button
+            size="small"
+            startIcon={isLiked ? <Favorite /> : <FavoriteBorder />}
+            onClick={onLike}
+            sx={{
+              minWidth: "auto",
+              px: 1,
+              color: isLiked ? "error.main" : "text.secondary",
+              "&:hover": { bgcolor: "transparent" },
+            }}
+          >
+            {comment.likes?.length || 0}
+          </Button>
+        </Box>
+      </Stack>
+    </Paper>
+  );
+});
+
+// Memoized Content Component
+const ContentWithReadMore = memo(({ content, tags, maxChars = 150 }) => {
   const [expanded, setExpanded] = useState(false);
 
   if (!content) return null;
@@ -651,42 +339,489 @@ const ContentWithReadMore = ({ content, tags, maxChars = 100 }) => {
 
   return (
     <Box>
-      <Typography
-        variant="body2"
-        component="span"
-        sx={{ color: "text.secondary" }}
-      >
+      <Typography variant="body1" color="text.secondary" mb={1}>
         {displayedText}
         {isLong && (
-          <Typography
-            component="span"
-            onClick={() => setExpanded((prev) => !prev)}
-            sx={{
-              color: "primary.main",
-              cursor: "pointer",
-              fontWeight: 500,
+          <Button
+            size="small"
+            onClick={() => setExpanded(!expanded)}
+            sx={{ 
+              minWidth: "auto", 
+              p: 0, 
               ml: 1,
+              textTransform: "none",
+              fontSize: "inherit"
             }}
           >
             {expanded ? "Show Less" : "...Read More"}
-          </Typography>
+          </Button>
         )}
       </Typography>
 
-      {(isLong ? expanded : true) && tags?.length > 0 && (
-        <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mt: 1 }}>
+      {(expanded || !isLong) && tags?.length > 0 && (
+        <Stack direction="row" spacing={1} flexWrap="wrap" mt={1}>
           {tags.map((tag, idx) => (
-            <Typography
+            <Chip
               key={idx}
-              variant="body2"
-              component="span"
-              sx={{ color: "secondary.main" }}
-            >
-              #{tag}
-            </Typography>
+              label={`#${tag}`}
+              size="small"
+              variant="outlined"
+              sx={{ 
+                fontSize: "0.75rem",
+                height: 24,
+                "& .MuiChip-label": { px: 1 }
+              }}
+            />
           ))}
-        </Box>
+        </Stack>
       )}
     </Box>
   );
+});
+
+// Optimized Skeleton Component
+const PostSkeleton = memo(() => (
+  <Card elevation={2} sx={{ borderRadius: 3, overflow: "hidden" }}>
+    <CardContent>
+      <Stack direction="row" spacing={2} mb={2}>
+        <Skeleton variant="circular" width={48} height={48} />
+        <Box>
+          <Skeleton variant="text" width={120} height={24} />
+          <Skeleton variant="text" width={80} height={16} />
+        </Box>
+      </Stack>
+      <Skeleton variant="text" width="90%" height={32} sx={{ mb: 1 }} />
+      <Skeleton variant="text" width="70%" height={20} sx={{ mb: 2 }} />
+      <Stack direction="row" spacing={1} mb={2}>
+        {[60, 80, 45].map((width, index) => (
+          <Skeleton key={index} variant="rounded" width={width} height={24} />
+        ))}
+      </Stack>
+    </CardContent>
+    <Skeleton variant="rectangular" height={300} />
+    <CardActions>
+      <Stack direction="row" spacing={3} py={1}>
+        <Skeleton variant="rounded" width={60} height={32} />
+        <Skeleton variant="rounded" width={80} height={32} />
+      </Stack>
+    </CardActions>
+  </Card>
+));
+
+// Main Community Component
+const Community = () => {
+  const currentUser = useAuth();
+  const { showSnackbar } = useSnackbar();
+  
+  // State
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [error, setError] = useState(null);
+  const [hasMore, setHasMore] = useState(true);
+  const [page, setPage] = useState(1);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [createPostModal, setCreatePostModal] = useState(false);
+  const [openCommentBox, setOpenCommentBox] = useState(null);
+
+  // Refs
+  const observerRef = useRef();
+  const lastPostElementRef = useRef();
+
+  // Memoized values
+  const open = Boolean(anchorEl);
+
+  // Fetch posts function
+  const fetchPosts = useCallback(async (pageNum = 1, isLoadMore = false) => {
+    try {
+      if (isLoadMore) {
+        setLoadingMore(true);
+      } else {
+        setLoading(true);
+        setError(null);
+      }
+
+      const params = `?page=${pageNum}&limit=${POSTS_PER_PAGE}`;
+      const response = await communityService.getAllCommunities(params);
+      
+      const newPosts = response?.posts || [];
+      
+      if (isLoadMore) {
+        setPosts(prev => [...prev, ...newPosts]);
+      } else {
+        setPosts(newPosts);
+      }
+      
+      setHasMore(newPosts.length === POSTS_PER_PAGE);
+      setPage(pageNum);
+      
+    } catch (err) {
+      console.error("Error fetching posts:", err);
+      setError("Failed to load posts. Please try again.");
+      showSnackbar("Failed to load posts", "error");
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  }, [showSnackbar]);
+
+  // Intersection Observer callback
+  const handleObserver = useCallback((entries) => {
+    const target = entries[0];
+    if (target.isIntersecting && hasMore && !loadingMore && !loading) {
+      fetchPosts(page + 1, true);
+    }
+  }, [hasMore, loadingMore, loading, page, fetchPosts]);
+
+  // Setup intersection observer
+  useEffect(() => {
+    const option = {
+      root: null,
+      rootMargin: "20px",
+      threshold: INTERSECTION_THRESHOLD
+    };
+    
+    observerRef.current = new IntersectionObserver(handleObserver, option);
+    
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, [handleObserver]);
+
+  // Observe last post element
+  useEffect(() => {
+    if (lastPostElementRef.current && observerRef.current) {
+      observerRef.current.observe(lastPostElementRef.current);
+    }
+    
+    return () => {
+      if (lastPostElementRef.current && observerRef.current) {
+        observerRef.current.unobserve(lastPostElementRef.current);
+      }
+    };
+  }, [posts]);
+
+  // Initial fetch
+  useEffect(() => {
+    fetchPosts(1, false);
+  }, [fetchPosts]);
+
+  // Optimized handlers
+  const handleLike = useCallback(async (postId) => {
+    try {
+      // Optimistic update
+      setPosts(prev => prev.map(post => 
+        post._id === postId
+          ? {
+              ...post,
+              likes: post.likes?.includes(currentUser._id)
+                ? post.likes.filter(id => id !== currentUser._id)
+                : [...(post.likes || []), currentUser._id]
+            }
+          : post
+      ));
+      
+      await communityService.likeOnPost(postId);
+    } catch (err) {
+      console.error("Error liking post:", err);
+      // Revert optimistic update on error
+      setPosts(prev => prev.map(post => 
+        post._id === postId
+          ? {
+              ...post,
+              likes: post.likes?.includes(currentUser._id)
+                ? [...(post.likes || []), currentUser._id]
+                : post.likes?.filter(id => id !== currentUser._id) || []
+            }
+          : post
+      ));
+      showSnackbar("Failed to like post", "error");
+    }
+  }, [currentUser._id, showSnackbar]);
+
+  const handleComment = useCallback(async (postId, commentText) => {
+    try {
+      const comment = { content: commentText };
+      const response = await communityService.commentOnPost(postId, comment);
+      
+      if (response) {
+        setPosts(prev => prev.map(post => {
+          if (post._id !== postId) return post;
+          
+          const existingIds = new Set(post.comments?.map(c => c._id) || []);
+          const newComments = [...(post.comments || [])];
+          
+          response.post.comments?.forEach(c => {
+            if (!existingIds.has(c._id)) {
+              newComments.push(c);
+            }
+          });
+          
+          return { ...post, comments: newComments };
+        }));
+        
+        showSnackbar("Comment added successfully", "success");
+      }
+    } catch (err) {
+      console.error("Error adding comment:", err);
+      showSnackbar("Failed to add comment", "error");
+    }
+  }, [showSnackbar]);
+
+  const handleCommentLike = useCallback(async (postId, commentId) => {
+    try {
+      // Optimistic update
+      setPosts(prev => prev.map(post =>
+        post._id === postId
+          ? {
+              ...post,
+              comments: post.comments?.map(comment =>
+                comment._id === commentId
+                  ? {
+                      ...comment,
+                      likes: comment.likes?.includes(currentUser._id)
+                        ? comment.likes.filter(id => id !== currentUser._id)
+                        : [...(comment.likes || []), currentUser._id]
+                    }
+                  : comment
+              ) || []
+            }
+          : post
+      ));
+      
+      await communityService.likeOnPostComment(postId, commentId);
+    } catch (err) {
+      console.error("Error liking comment:", err);
+      showSnackbar("Failed to like comment", "error");
+    }
+  }, [currentUser._id, showSnackbar]);
+
+  const fetchMyPosts = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await communityService.getMyPosts(currentUser._id);
+      setPosts(response?.posts || []);
+      setHasMore(false); // Assuming my posts don't have pagination
+    } catch (error) {
+      console.error("Error fetching my posts:", error);
+      setError("Failed to load your posts");
+    } finally {
+      setLoading(false);
+    }
+  }, [currentUser._id]);
+
+  const handleMenuItemClick = useCallback((action) => {
+    setAnchorEl(null);
+    
+    switch (action) {
+      case "create-post":
+        setCreatePostModal(true);
+        break;
+      case "my-posts":
+        fetchMyPosts();
+        break;
+      case "my-profile":
+        // Navigate to profile
+        break;
+      default:
+        break;
+    }
+  }, [fetchMyPosts]);
+
+  const handleRefresh = useCallback(() => {
+    setPage(1);
+    setHasMore(true);
+    fetchPosts(1, false);
+  }, [fetchPosts]);
+
+  // Error state
+  if (error && posts.length === 0) {
+    return (
+      <Container maxWidth="md" sx={{ mt: 4 }}>
+        <Alert 
+          severity="error" 
+          action={
+            <Button color="inherit" size="small" onClick={handleRefresh}>
+              <Refresh sx={{ mr: 1 }} />
+              Retry
+            </Button>
+          }
+        >
+          {error}
+        </Alert>
+      </Container>
+    );
+  }
+
+  return (
+    <>
+      {/* Header */}
+      <Paper
+        elevation={1}
+        sx={{
+          bgcolor: "background.paper",
+          position: "sticky",
+          top: 0,
+          zIndex: 100,
+          borderBottom: 1,
+          borderColor: "divider",
+        }}
+      >
+        <Container maxWidth="md">
+          <Stack 
+            direction="row" 
+            justifyContent="space-between" 
+            alignItems="center" 
+            py={2}
+          >
+            <Box>
+              <Typography variant="h5" fontWeight={700} color="primary" gutterBottom>
+                Join Our Thriving Community
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Learn from real store owners, share your journey, and get inspired
+                by stories of success in the eCommerce world.
+              </Typography>
+            </Box>
+            
+            <Button
+              onClick={(e) => setAnchorEl(e.currentTarget)}
+              sx={{
+                borderRadius: 3,
+                px: 2,
+                py: 1,
+                "&:hover": { bgcolor: "action.hover" },
+              }}
+            >
+              <Avatar
+                src="https://randomuser.me/api/portraits/women/44.jpg"
+                sx={{ width: 40, height: 40, mr: 1 }}
+              />
+              <ExpandMore />
+            </Button>
+
+            <Menu
+              anchorEl={anchorEl}
+              open={open}
+              onClose={() => setAnchorEl(null)}
+              transformOrigin={{ horizontal: "right", vertical: "top" }}
+              anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+              PaperProps={{
+                elevation: 3,
+                sx: { mt: 1, minWidth: 200 }
+              }}
+            >
+              <MenuItem onClick={() => handleMenuItemClick("create-post")}>
+                <ListItemIcon><Add /></ListItemIcon>
+                <ListItemText>Create Post</ListItemText>
+              </MenuItem>
+              <MenuItem onClick={() => handleMenuItemClick("my-posts")}>
+                <ListItemIcon><Article /></ListItemIcon>
+                <ListItemText>My Posts</ListItemText>
+              </MenuItem>
+              <Divider />
+              <MenuItem onClick={() => handleMenuItemClick("my-profile")}>
+                <ListItemIcon><Person /></ListItemIcon>
+                <ListItemText>My Community Profile</ListItemText>
+              </MenuItem>
+            </Menu>
+          </Stack>
+        </Container>
+      </Paper>
+
+      {/* Content */}
+      <Container maxWidth="md" sx={{ py: 3 }}>
+        {loading && posts.length === 0 ? (
+          <Stack spacing={3}>
+            {Array.from({ length: 3 }).map((_, index) => (
+              <PostSkeleton key={index} />
+            ))}
+          </Stack>
+        ) : posts.length === 0 ? (
+          <Paper 
+            elevation={0} 
+            sx={{ 
+              textAlign: "center", 
+              py: 8,
+              bgcolor: "grey.50",
+              borderRadius: 3
+            }}
+          >
+            <Typography variant="h6" color="text.secondary" gutterBottom>
+              No posts found
+            </Typography>
+            <Typography variant="body2" color="text.secondary" mb={3}>
+              Be the first to share something with the community!
+            </Typography>
+            <Button 
+              variant="contained" 
+              startIcon={<Add />}
+              onClick={() => setCreatePostModal(true)}
+            >
+              Create Post
+            </Button>
+          </Paper>
+        ) : (
+          <Stack spacing={3}>
+            {posts.map((post, index) => (
+              <div
+                key={post._id}
+                ref={index === posts.length - 1 ? lastPostElementRef : null}
+              >
+                <PostCard
+                  post={post}
+                  currentUser={currentUser}
+                  onLike={handleLike}
+                  onComment={handleComment}
+                  onCommentLike={handleCommentLike}
+                  openCommentBox={openCommentBox}
+                  setOpenCommentBox={setOpenCommentBox}
+                />
+              </div>
+            ))}
+            
+            {/* Loading more indicator */}
+            {loadingMore && (
+              <Box display="flex" justifyContent="center" py={3}>
+                <Stack alignItems="center" spacing={2}>
+                  <CircularProgress size={32} />
+                  <Typography variant="body2" color="text.secondary">
+                    Loading more posts...
+                  </Typography>
+                </Stack>
+              </Box>
+            )}
+            
+            {/* End of posts indicator */}
+            {!hasMore && posts.length > 0 && (
+              <Paper 
+                elevation={0} 
+                sx={{ 
+                  textAlign: "center", 
+                  py: 3,
+                  bgcolor: "grey.50",
+                  borderRadius: 2
+                }}
+              >
+                <Typography variant="body2" color="text.secondary">
+                  🎉 You've reached the end! That's all the posts for now.
+                </Typography>
+              </Paper>
+            )}
+          </Stack>
+        )}
+      </Container>
+
+      <CreatePostModal
+        createPostModal={createPostModal}
+        setCreatePostModal={setCreatePostModal}
+        fetchPlans={() => fetchPosts(1, false)}
+      />
+    </>
+  );
 };
+
+export default memo(Community);

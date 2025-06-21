@@ -13,6 +13,7 @@ import { styled } from "@mui/system";
 import EditIcon from "@mui/icons-material/Edit";
 import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
+import useAuth from "../../hooks/useAuth";
 
 const Input = styled("input")({
   display: "none",
@@ -20,6 +21,7 @@ const Input = styled("input")({
 
 const ProfileSettings = () => {
   const navigate = useNavigate();
+  const userData = useAuth();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -30,7 +32,6 @@ const ProfileSettings = () => {
 
   // Load user data from localStorage on mount
   useEffect(() => {
-    const userData = localStorage.getItem("user");
     if (userData) {
       try {
         const user = JSON.parse(userData);

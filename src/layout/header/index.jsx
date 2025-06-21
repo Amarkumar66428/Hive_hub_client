@@ -2,7 +2,7 @@ import { Box, Typography } from "@mui/material";
 
 const Header = ({ openSideBar, setSideBar }) => {
   return (
-    <header className="header">
+    <header className="app-main-header">
       <Box
         sx={(theme) => ({
           display: "flex",

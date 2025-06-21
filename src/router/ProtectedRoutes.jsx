@@ -1,54 +1,55 @@
-// components/ProtectedRoute.jsx
 import { Navigate, useLocation } from "react-router-dom";
 import Cookies from "js-cookie";
+import { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
 import useAuth from "../hooks/useAuth";
 import usePlan from "../hooks/useSubscription";
-import { useEffect } from "react";
 import userService from "../services/userService";
-import { useDispatch } from "react-redux";
 import { setUserData } from "../reducer/authSlice";
+import AppLoading from "../pages/hiveloading";
 
-const ProtectedRoute = ({ children, role, subscriptionRequired }) => {
+const ProtectedRoute = ({ children, role = [], subscriptionRequired = false }) => {
   const location = useLocation();
   const dispatch = useDispatch();
-  const accessToken = Cookies.get("access_token");
+
+  const token = Cookies.get("access_token");
   const user = useAuth();
-  console.log('user: ', user);
-  const isSubscribed = usePlan()?.isActive;
-  console.log('isSubscribed: ', isSubscribed);
+  const plan = usePlan();
+
+  const [loading, setLoading] = useState(!user && !!token);
 
   useEffect(() => {
-    const getUserData = async () => {
-      try {
-        const userData = await userService.getUserdata();
-        if (userData) {
-          const user = {
-            user: userData?.subscription,
-            subscription: userData?.subscription,
-          };
-          dispatch(setUserData(user));
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    if (!user) {
-      getUserData();
+    if (!user && token) {
+      userService.getUserdata()
+        .then((data) => {
+          if (data) {
+            dispatch(setUserData({
+              user: data?.user,
+              subscription: data.subscription,
+            }));
+          }
+        })
+        .catch(console.error)
+        .finally(() => setLoading(false));
+    } else {
+      setLoading(false);
     }
-  }, [user]);
+  }, [user, token, dispatch]);
 
-  const isAuthenticated = !!accessToken && user?.role === role[0];
+  const isAuthenticated = !!token && role.includes(user?.role);
+  const isSubscribed = plan?.isActive;
+
+  if (loading) return <AppLoading />; // or a small loader component
 
   if (!isAuthenticated) {
-    const path = "/auth/signin";
-    return <Navigate to={path} state={{ from: location }} replace />;
+    return <Navigate to="/auth/signin" state={{ from: location }} replace />;
   }
 
   if (subscriptionRequired && !isSubscribed) {
     return <Navigate to="/subscription/plans" replace />;
   }
 
-  if (!role) {
+  if (!role.length) {
     return <Navigate to="/exception?type=401" replace />;
   }
 

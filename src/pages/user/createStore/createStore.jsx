@@ -22,11 +22,13 @@ import {
   Edit,
   Delete,
   Visibility,
+  Logout,
 } from "@mui/icons-material";
 import { useNavigate, useLocation } from "react-router-dom";
 import Template from "../../templates/templates1";
 import { createStore } from "../../../services/storeService";
 import { useSnackbar } from "../../../features/snackBar";
+import Templates2 from "../../templates/templates2";
 
 const CreateStore = () => {
   const navigate = useNavigate();
@@ -149,53 +151,67 @@ const CreateStore = () => {
         direction="row"
         alignItems="center"
         justifyContent="space-between"
-        gap={2}
-        p={2}
-        height={60}
-        bgcolor="background.paper"
-        sx={{ borderBottom: "1px solid #e0e0e0" }}
+        p={0}
+        className="store-editor-header"
       >
-        <Box display="flex" alignItems="center" gap={2}>
-          <Button
-            variant="contained"
-            color="primary"
+        <Box display="flex" alignItems="center">
+          <IconButton
+            variant="text"
             onClick={() =>
               navigate("/user/home/create-store", { state: { screen: 2 } })
             }
-            startIcon={<ArrowBack />}
+            sx={{
+              color: "#fff",
+              borderRadius: 0,
+              borderRight: "1px solid #928aa2",
+              "&:hover": { backgroundColor: "#928aa2" },
+            }}
           >
-            Back
-          </Button>
-          <Typography variant="h5">Create Own Store</Typography>
-        </Box>
-        <Stack direction="row" gap={2}>
+            <Logout sx={{ transform: "rotate(180deg)", color: "#fff" }} />
+          </IconButton>
           <Button
-            variant="outlined"
-            color="secondary"
+            variant="text"
             onClick={() => setDrawerOpen(true)}
-            startIcon={<AddCircleOutline />}
+            sx={{
+              color: "#fff",
+              textTransform: "capitalize",
+              borderRadius: 0,
+              "&:hover": { backgroundColor: "#928aa2" },
+            }}
           >
             Add Product
           </Button>
           <Button
-            variant="outlined"
+            variant="text"
             color="info"
             onClick={() => setItemListDrawerOpen(true)}
-            startIcon={<Visibility />}
+            sx={{
+              color: "#fff",
+              textTransform: "capitalize",
+              borderRadius: 0,
+              "&:hover": { backgroundColor: "#928aa2" },
+            }}
           >
+            {" "}
             View Products
           </Button>
+        </Box>
+        <Stack direction="row" gap={2}>
           <Button
-            variant="contained"
-            color="success"
+            variant="text"
             onClick={handlePublish}
             disabled={loading}
+            sx={{
+              color: "#fff",
+              textTransform: "capitalize",
+              borderRadius: 0,
+              backgroundColor: "success.main",
+              "&:hover": { backgroundColor: "success.dark" },
+            }}
             startIcon={
               loading ? (
                 <CircularProgress size={20} sx={{ color: "success.main" }} />
-              ) : (
-                <Publish />
-              )
+              ) : null
             }
           >
             {loading ? "Publishing..." : "Publish"}
@@ -204,7 +220,7 @@ const CreateStore = () => {
       </Stack>
 
       <Box sx={{ height: `calc(100vh - 60px)`, overflow: "auto" }}>
-        <Template template={template} items={itemsList} />
+        <Templates2 plate template={template} items={itemsList} />
       </Box>
 
       {/* Add Item Drawer */}

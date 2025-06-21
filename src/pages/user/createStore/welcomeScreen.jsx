@@ -5,7 +5,7 @@ import image from "../../../assets/storePage/image1.png";
 const WelcomeScreen = ({ onStart }) => {
   return (
     <Container
-      maxWidth="sm"
+      maxWidth="md"
       sx={{
         minHeight: "100vh",
         display: "flex",
@@ -17,7 +17,7 @@ const WelcomeScreen = ({ onStart }) => {
         color: "#000",
       }}
     >
-      <Typography variant="h5" fontWeight="bold" gutterBottom sx={{ mb: 1 }}>
+      <Typography variant="h4" fontWeight="bold" gutterBottom sx={{ mb: 1 }}>
         Welcome to HivvHub
       </Typography>
       <Typography
@@ -35,8 +35,7 @@ const WelcomeScreen = ({ onStart }) => {
           borderRadius: 3,
           p: 3,
           mb: 4,
-          width: "100%",
-          maxWidth: 400,
+          width: "80%",
           boxShadow: 3,
           display: "flex",
           justifyContent: "center",

@@ -74,7 +74,7 @@ const Signin = () => {
           const userData = await userService.getUserdata();
           if (userData) {
             const user = {
-              user: userData?.subscription,
+              user: userData?.user,
               subscription: userData?.subscription,
             };
             dispatch(setUserData(user));
