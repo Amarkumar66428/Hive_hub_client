@@ -29,59 +29,24 @@ import crs4 from "../../../assets/storePage/temp3/crs4.webp";
 import cl1 from "../../../assets/storePage/temp3/cl1.webp";
 import cl2 from "../../../assets/storePage/temp3/cl2.webp";
 
-const Templates2 = () => {
+const Templates2 = ({ siteWidth, layout }) => {
   return (
     <div className="temp2">
-      <div className="template">
+      <div
+        className="template"
+        style={{
+          transition: "max-width 0.5s ease-in-out",
+          maxWidth: siteWidth ? siteWidth : "100%",
+          margin: "0 auto",
+        }}
+      >
         <div className="div">
-          <div className="overlap">
-            <div>
-              <div
-                style={{
-                  backgroundImage: `url(${first_hero})`,
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
-                  height: "100%",
-                  width: "100%",
-                  position: "absolute",
-                  top: 0,
-                  right: 0,
-                }}
-              />
-            </div>
-            <p className="text-wrapper">FIND CLOTHES THAT MATCHES YOUR STYLE</p>
-            <p className="p">
-              Browse through our diverse range of meticulously crafted garments,
-              designed to bring out your individuality and cater to your sense
-              of style.
-            </p>
-            <div className="frame">
-              <div className="text-wrapper-2">Shop Now</div>
-            </div>
-            <div className="frame-2">
-              <div className="frame-3">
-                <div className="text-wrapper-3">200+</div>
-                <div className="text-wrapper-4">International Brands</div>
-              </div>
-              <img
-                className="line"
-                src="https://c.animaapp.com/mb9ouoro5Ao2nl/img/line-9.svg"
-              />
-              <div className="frame-3">
-                <div className="text-wrapper-3">2,000+</div>
-                <div className="text-wrapper-4">High-Quality Products</div>
-              </div>
-              <img
-                className="line"
-                src="https://c.animaapp.com/mb9ouoro5Ao2nl/img/line-9.svg"
-              />
-              <div className="frame-3">
-                <div className="text-wrapper-3">30,000+</div>
-                <div className="text-wrapper-4">Happy Customers</div>
-              </div>
-            </div>
-          </div>
-          <div className="frame-4">
+          <div
+            className="frame-4"
+            style={{
+              backgroundColor: layout.primaryColor,
+            }}
+          >
             <p className="sign-up-and-get">
               <span className="span">
                 Sign up and get 20% off to your first order.{" "}
@@ -115,328 +80,281 @@ const Templates2 = () => {
               <AccountCircleOutlined className="frame-11" />
             </div>
           </div>
-          <div className="overlap-group">
+          <div className="overlap">
+            <figure>
+              <div
+                style={{
+                  backgroundImage: `url(${first_hero})`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                  height: "100%",
+                  width: "100%",
+                }}
+              />
+            </figure>
+            <div className="hero-content">
+              <p className="text-wrapper">
+                FIND CLOTHES THAT MATCHES YOUR STYLE
+              </p>
+              <p className="p">
+                Browse through our diverse range of meticulously crafted
+                garments, designed to bring out your individuality and cater to
+                your sense of style.
+              </p>
+              <button
+                className="frame"
+                style={{
+                  backgroundColor: layout.primaryColor,
+                }}
+              >
+                <div className="text-wrapper-2">Shop Now</div>
+              </button>
+              <div className="frame-2">
+                <div className="frame-3">
+                  <div className="text-wrapper-3">200+</div>
+                  <div className="text-wrapper-4">International Brands</div>
+                </div>
+                <img
+                  className="line"
+                  src="https://c.animaapp.com/mb9ouoro5Ao2nl/img/line-9.svg"
+                />
+                <div className="frame-3">
+                  <div className="text-wrapper-3">2,000+</div>
+                  <div className="text-wrapper-4">High-Quality Products</div>
+                </div>
+                <img
+                  className="line"
+                  src="https://c.animaapp.com/mb9ouoro5Ao2nl/img/line-9.svg"
+                />
+                <div className="frame-3">
+                  <div className="text-wrapper-3">30,000+</div>
+                  <div className="text-wrapper-4">Happy Customers</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            className="overlap-group"
+            style={{
+              backgroundColor: layout.primaryColor,
+            }}
+          >
             <Typography variant="h1">VERSACE</Typography>
             <Typography variant="h1">GUCCI</Typography>
             <Typography variant="h1">ZARA</Typography>
             <Typography variant="h1">PRADA</Typography>
             <Typography variant="h1">DIOR</Typography>
           </div>
-          <div className="text-wrapper-9">NEW ARRIVALS</div>
-          <div className="text-wrapper-10">top selling</div>
-          <div className="text-wrapper-11">OUR HAPPY CUSTOMERS</div>
-          <div className="frame-13">
-            <div className="frame-14">
-              <Rating
-                name="half-rating-read"
-                defaultValue={2.5}
-                precision={0.5}
-                readOnly
-              />
-            </div>
-            <p className="element">
-              <span className="text-wrapper-12">4.5/</span>{" "}
-              <span className="text-wrapper-13">5</span>
-            </p>
-          </div>
-          <div className="frame-15">
-            <div className="frame-14">
-              <img
-                className="star"
-                src="https://c.animaapp.com/mb9ouoro5Ao2nl/img/star-2.svg"
-              />
-              <img
-                className="star"
-                src="https://c.animaapp.com/mb9ouoro5Ao2nl/img/star-2.svg"
-              />
-              <img
-                className="star"
-                src="https://c.animaapp.com/mb9ouoro5Ao2nl/img/star-2.svg"
-              />
-              <img
-                className="star-2"
-                src="https://c.animaapp.com/mb9ouoro5Ao2nl/img/star-5.svg"
-              />
-            </div>
-            <p className="element">
-              <span className="text-wrapper-12">3.5/</span>{" "}
-              <span className="text-wrapper-13">5</span>
-            </p>
-          </div>
-          <div className="frame-16">
-            <div className="frame-14">
-              <img
-                className="star"
-                src="https://c.animaapp.com/mb9ouoro5Ao2nl/img/star-2.svg"
-              />
-              <img
-                className="star"
-                src="https://c.animaapp.com/mb9ouoro5Ao2nl/img/star-2.svg"
-              />
-              <img
-                className="star"
-                src="https://c.animaapp.com/mb9ouoro5Ao2nl/img/star-2.svg"
-              />
-              <img
-                className="star"
-                src="https://c.animaapp.com/mb9ouoro5Ao2nl/img/star-2.svg"
-              />
-              <img
-                className="star-2"
-                src="https://c.animaapp.com/mb9ouoro5Ao2nl/img/star-5.svg"
-              />
-            </div>
-            <p className="element">
-              <span className="text-wrapper-12">4.5/</span>{" "}
-              <span className="text-wrapper-13">5</span>
-            </p>
-          </div>
-          <div className="frame-17">
-            <div className="frame-14">
-              <img
-                className="star"
-                src="https://c.animaapp.com/mb9ouoro5Ao2nl/img/star-2.svg"
-              />
-              <img
-                className="star"
-                src="https://c.animaapp.com/mb9ouoro5Ao2nl/img/star-2.svg"
-              />
-              <img
-                className="star"
-                src="https://c.animaapp.com/mb9ouoro5Ao2nl/img/star-2.svg"
-              />
-              <img
-                className="star"
-                src="https://c.animaapp.com/mb9ouoro5Ao2nl/img/star-2.svg"
-              />
-              <img
-                className="star-2"
-                src="https://c.animaapp.com/mb9ouoro5Ao2nl/img/star-5.svg"
-              />
-            </div>
-            <p className="element">
-              <span className="text-wrapper-12">4.5/</span>{" "}
-              <span className="text-wrapper-13">5</span>
-            </p>
-          </div>
-          <div className="image-wrapper">
-            <img className="image" src={new1} />
-          </div>
-          <div className="img-wrapper">
-            <img className="image-2" src={new2} />
-          </div>
-          <div className="frame-18">
-            <img className="image" src={new3} />
-          </div>
-          <div className="frame-19">
-            <img className="image" src={new4} />
-          </div>
-          <p className="t-SHIRT-WITH-TAPE">
-            <span className="text-wrapper-14">T-</span>
-            <span className="text-wrapper-14">SHIRT</span>
-            <span className="text-wrapper-14">&nbsp;</span>
-            <span className="text-wrapper-14">WITH</span>
-            <span className="text-wrapper-14"> T</span>
-            <span className="text-wrapper-14">APE</span>
-            <span className="text-wrapper-14"> D</span>
-            <span className="text-wrapper-14">ETAILS</span>
-          </p>
-          <p className="SKINNY-FIT-JEANS">
-            <span className="text-wrapper-14">S</span>
-            <span className="text-wrapper-14">KINNY</span>
-            <span className="text-wrapper-14"> F</span>
-            <span className="text-wrapper-14">IT</span>
-            <span className="text-wrapper-14"> J</span>
-            <span className="text-wrapper-14">EANS</span>
-          </p>
-          <p className="CHECKERED-SHIRT">
-            <span className="text-wrapper-14">C</span>
-            <span className="text-wrapper-14">HECKERED</span>
-            <span className="text-wrapper-14"> S</span>
-            <span className="text-wrapper-14">HIRT</span>
-          </p>
-          <p className="SLEEVE-STRIPED-t">
-            <span className="text-wrapper-14">S</span>
-            <span className="text-wrapper-14">LEEVE</span>
-            <span className="text-wrapper-14"> S</span>
-            <span className="text-wrapper-14">TRIPED</span>
-            <span className="text-wrapper-14"> T-</span>
-            <span className="text-wrapper-14">SHIRT</span>
-          </p>
-          <div className="div-wrapper">
-            <div className="text-wrapper-15">$120</div>
-          </div>
-          <div className="frame-20">
-            <div className="text-wrapper-15">$130</div>
-            <div className="text-wrapper-16">$160</div>
-            <div className="frame-21">
-              <div className="text-wrapper-17">-30%</div>
+          <div>
+            <div className="text-wrapper-9">NEW ARRIVALS</div>
+            <div className="new-arrivals">
+              <div className="image-wrapper">
+                <figure>
+                  <img className="image" src={new1} />
+                </figure>
+                <p className="title">T-SHIRT WITH TAPE DETAILS</p>
+                <div className="frame-13">
+                  <div className="frame-14">
+                    <Rating
+                      name="half-rating-read"
+                      defaultValue={2.5}
+                      precision={0.5}
+                      readOnly
+                    />
+                  </div>
+                  <p className="element">
+                    <span className="text-wrapper-12">4.5/</span>{" "}
+                    <span className="text-wrapper-13">5</span>
+                  </p>
+                </div>
+                <div className="div-wrapper">
+                  <div className="text-wrapper-15">$120</div>
+                </div>
+              </div>
+              <div className="image-wrapper">
+                <figure>
+                  <img className="image" src={new2} />
+                </figure>
+                <p className="title">SKINNY FIT JEANS</p>
+                <div className="frame-13">
+                  <div className="frame-14">
+                    <Rating
+                      name="half-rating-read"
+                      defaultValue={2.5}
+                      precision={0.5}
+                      readOnly
+                    />
+                  </div>
+                  <p className="element">
+                    <span className="text-wrapper-12">4.5/</span>{" "}
+                    <span className="text-wrapper-13">5</span>
+                  </p>
+                </div>
+                <div className="frame-22">
+                  <div className="text-wrapper-15">$240</div>
+                  <div className="text-wrapper-16">$260</div>
+                  <div className="frame-21">
+                    <div className="text-wrapper-18">-20%</div>
+                  </div>
+                </div>
+              </div>
+              <div className="image-wrapper">
+                <figure>
+                  <img className="image" src={new3} />
+                </figure>
+                <p className="title">CHECKERED SHIRT</p>
+                <div className="frame-13">
+                  <div className="frame-14">
+                    <Rating
+                      name="half-rating-read"
+                      defaultValue={2.5}
+                      precision={0.5}
+                      readOnly
+                    />
+                  </div>
+                  <p className="element">
+                    <span className="text-wrapper-12">4.5/</span>{" "}
+                    <span className="text-wrapper-13">5</span>
+                  </p>
+                </div>
+                <div className="div-wrapper">
+                  <div className="text-wrapper-15">$120</div>
+                </div>
+              </div>
+              <div className="image-wrapper">
+                <figure>
+                  <img className="image" src={new4} />
+                </figure>
+                <p className="title">SLEEVE STRIPED T-SHIRT</p>
+                <div className="frame-13">
+                  <div className="frame-14">
+                    <Rating
+                      name="half-rating-read"
+                      defaultValue={2.5}
+                      precision={0.5}
+                      readOnly
+                    />
+                  </div>
+                  <p className="element">
+                    <span className="text-wrapper-12">4.5/</span>{" "}
+                    <span className="text-wrapper-13">5</span>
+                  </p>
+                </div>
+                <div className="frame-22">
+                  <div className="text-wrapper-15">$240</div>
+                  <div className="text-wrapper-16">$260</div>
+                  <div className="frame-21">
+                    <div className="text-wrapper-18">-20%</div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-          <div className="frame-22">
-            <div className="text-wrapper-15">$240</div>
-            <div className="text-wrapper-16">$260</div>
-            <div className="frame-21">
-              <div className="text-wrapper-18">-20%</div>
+          <div>
+            <div className="text-wrapper-10">top selling</div>
+            <div className="new-arrivals">
+              <div className="image-wrapper">
+                <figure>
+                  <img className="image" src={topS1} />
+                </figure>
+                <p className="title">VERTICAL STRIPED SHIRT</p>
+                <div className="frame-13">
+                  <div className="frame-14">
+                    <Rating
+                      name="half-rating-read"
+                      defaultValue={2.5}
+                      precision={0.5}
+                      readOnly
+                    />
+                  </div>
+                  <p className="element">
+                    <span className="text-wrapper-12">4.5/</span>{" "}
+                    <span className="text-wrapper-13">5</span>
+                  </p>
+                </div>
+                <div className="div-wrapper">
+                  <div className="text-wrapper-15">$120</div>
+                </div>
+              </div>
+              <div className="image-wrapper">
+                <figure>
+                  <img className="image" src={topS2} />
+                </figure>
+                <p className="title">COURAGE GRAPHIC T-SHIRT</p>
+                <div className="frame-13">
+                  <div className="frame-14">
+                    <Rating
+                      name="half-rating-read"
+                      defaultValue={2.5}
+                      precision={0.5}
+                      readOnly
+                    />
+                  </div>
+                  <p className="element">
+                    <span className="text-wrapper-12">4.5/</span>{" "}
+                    <span className="text-wrapper-13">5</span>
+                  </p>
+                </div>
+                <div className="frame-22">
+                  <div className="text-wrapper-15">$240</div>
+                  <div className="text-wrapper-16">$260</div>
+                  <div className="frame-21">
+                    <div className="text-wrapper-18">-20%</div>
+                  </div>
+                </div>
+              </div>
+              <div className="image-wrapper">
+                <figure>
+                  <img className="image" src={topS3} />
+                </figure>
+                <p className="title">LOOSE FIT BERMUDA SHORTS</p>
+                <div className="frame-13">
+                  <div className="frame-14">
+                    <Rating
+                      name="half-rating-read"
+                      defaultValue={2.5}
+                      precision={0.5}
+                      readOnly
+                    />
+                  </div>
+                  <p className="element">
+                    <span className="text-wrapper-12">4.5/</span>{" "}
+                    <span className="text-wrapper-13">5</span>
+                  </p>
+                </div>
+                <div className="div-wrapper">
+                  <div className="text-wrapper-15">$120</div>
+                </div>
+              </div>
+              <div className="image-wrapper">
+                <figure>
+                  <img className="image" src={topS4} />
+                </figure>
+                <p className="title">FADED SKINNY JEANS</p>
+                <div className="frame-13">
+                  <div className="frame-14">
+                    <Rating
+                      name="half-rating-read"
+                      defaultValue={2.5}
+                      precision={0.5}
+                      readOnly
+                    />
+                  </div>
+                  <p className="element">
+                    <span className="text-wrapper-12">4.5/</span>{" "}
+                    <span className="text-wrapper-13">5</span>
+                  </p>
+                </div>
+                <div className="frame-22">
+                  <div className="text-wrapper-15">$240</div>
+                  <div className="text-wrapper-16">$260</div>
+                  <div className="frame-21">
+                    <div className="text-wrapper-18">-20%</div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-          <div className="text-wrapper-19">$180</div>
-          <div className="frame-23">
-            <div className="text-wrapper-18">-20%</div>
-          </div>
-          <div className="frame-24">
-            <div className="frame-14">
-              <img
-                className="star"
-                src="https://c.animaapp.com/mb9ouoro5Ao2nl/img/star-2.svg"
-              />
-              <img
-                className="star"
-                src="https://c.animaapp.com/mb9ouoro5Ao2nl/img/star-2.svg"
-              />
-              <img
-                className="star"
-                src="https://c.animaapp.com/mb9ouoro5Ao2nl/img/star-2.svg"
-              />
-              <img
-                className="star"
-                src="https://c.animaapp.com/mb9ouoro5Ao2nl/img/star-2.svg"
-              />
-              <img
-                className="star"
-                src="https://c.animaapp.com/mb9ouoro5Ao2nl/img/star-2.svg"
-              />
-            </div>
-            <p className="element">
-              <span className="text-wrapper-12">5.0/</span>{" "}
-              <span className="text-wrapper-13">5</span>
-            </p>
-          </div>
-          <div className="frame-25">
-            <div className="frame-14">
-              <img
-                className="star"
-                src="https://c.animaapp.com/mb9ouoro5Ao2nl/img/star-2.svg"
-              />
-              <img
-                className="star"
-                src="https://c.animaapp.com/mb9ouoro5Ao2nl/img/star-2.svg"
-              />
-              <img
-                className="star"
-                src="https://c.animaapp.com/mb9ouoro5Ao2nl/img/star-2.svg"
-              />
-              <img
-                className="star"
-                src="https://c.animaapp.com/mb9ouoro5Ao2nl/img/star-2.svg"
-              />
-            </div>
-            <p className="element">
-              <span className="text-wrapper-12">4.0/</span>{" "}
-              <span className="text-wrapper-13">5</span>
-            </p>
-          </div>
-          <div className="frame-26">
-            <div className="frame-14">
-              <img
-                className="star"
-                src="https://c.animaapp.com/mb9ouoro5Ao2nl/img/star-2.svg"
-              />
-              <img
-                className="star"
-                src="https://c.animaapp.com/mb9ouoro5Ao2nl/img/star-2.svg"
-              />
-              <img
-                className="star"
-                src="https://c.animaapp.com/mb9ouoro5Ao2nl/img/star-2.svg"
-              />
-            </div>
-            <p className="element">
-              <span className="text-wrapper-12">3.0/</span>{" "}
-              <span className="text-wrapper-13">5</span>
-            </p>
-          </div>
-          <div className="frame-27">
-            <div className="frame-14">
-              <img
-                className="star"
-                src="https://c.animaapp.com/mb9ouoro5Ao2nl/img/star-2.svg"
-              />
-              <img
-                className="star"
-                src="https://c.animaapp.com/mb9ouoro5Ao2nl/img/star-2.svg"
-              />
-              <img
-                className="star"
-                src="https://c.animaapp.com/mb9ouoro5Ao2nl/img/star-2.svg"
-              />
-              <img
-                className="star"
-                src="https://c.animaapp.com/mb9ouoro5Ao2nl/img/star-2.svg"
-              />
-              <img
-                className="star-2"
-                src="https://c.animaapp.com/mb9ouoro5Ao2nl/img/star-5.svg"
-              />
-            </div>
-            <p className="element">
-              <span className="text-wrapper-12">4.5/</span>{" "}
-              <span className="text-wrapper-13">5</span>
-            </p>
-          </div>
-          <div className="frame-28">
-            <img className="image" src={topS1} />
-          </div>
-          <div className="frame-29">
-            <img className="image-3" src={topS2} />
-          </div>
-          <div className="frame-30">
-            <img className="image" src={topS3} />
-          </div>
-          <div className="frame-31">
-            <img className="image-4" src={topS4} />
-          </div>
-          <p className="VERTICAL-STRIPED">
-            <span className="text-wrapper-14">V</span>
-            <span className="text-wrapper-14">ERTICAL</span>
-            <span className="text-wrapper-14"> S</span>
-            <span className="text-wrapper-14">TRIPED</span>
-            <span className="text-wrapper-14"> S</span>
-            <span className="text-wrapper-14">HIRT</span>
-          </p>
-          <p className="COURAGE-GRAPHIC-t">
-            <span className="text-wrapper-14">C</span>
-            <span className="text-wrapper-14">OURAGE</span>
-            <span className="text-wrapper-14"> G</span>
-            <span className="text-wrapper-14">RAPHIC</span>
-            <span className="text-wrapper-14"> T-</span>
-            <span className="text-wrapper-14">SHIRT</span>
-          </p>
-          <p className="LOOSE-FIT-BERMUDA">
-            <span className="text-wrapper-14">L</span>
-            <span className="text-wrapper-14">OOSE</span>
-            <span className="text-wrapper-14"> F</span>
-            <span className="text-wrapper-14">IT</span>
-            <span className="text-wrapper-14"> B</span>
-            <span className="text-wrapper-14">ERMUDA</span>
-            <span className="text-wrapper-14"> S</span>
-            <span className="text-wrapper-14">HORTS</span>
-          </p>
-          <p className="FADED-SKINNY-JEANS">
-            <span className="text-wrapper-14">F</span>
-            <span className="text-wrapper-14">ADED</span>
-            <span className="text-wrapper-14"> S</span>
-            <span className="text-wrapper-14">KINNY</span>
-            <span className="text-wrapper-14"> J</span>
-            <span className="text-wrapper-14">EANS</span>
-          </p>
-          <div className="text-wrapper-20">$212</div>
-          <div className="text-wrapper-21">$232</div>
-          <div className="frame-32">
-            <div className="text-wrapper-15">$210</div>
-          </div>
-          <div className="text-wrapper-22">$145</div>
-          <div className="text-wrapper-23">$80</div>
           <div className="frame-33">
             <div className="text-wrapper-24">View All</div>
           </div>
@@ -611,8 +529,8 @@ const Templates2 = () => {
               </div>
             </div>
           </div>
-          <East className="arrow-down-bold-2" sx={{ color: "#000" }} />
           <West className="arrow-down-bold" sx={{ color: "#000" }} />
+          <East className="arrow-down-bold-2" sx={{ color: "#000" }} />
           <div className="group-wrapper">
             <div className="group-3">
               <div className="overlap-group-3">
@@ -621,7 +539,12 @@ const Templates2 = () => {
                   className="line-3"
                   src="https://c.animaapp.com/mb9ouoro5Ao2nl/img/line-8.svg"
                 />
-                <div className="frame-48">
+                <div
+                  className="frame-48"
+                  style={{
+                    backgroundColor: layout.primaryColor,
+                  }}
+                >
                   <p className="text-wrapper-30">
                     STAY UPTO DATE ABOUT OUR LATEST OFFERS
                   </p>

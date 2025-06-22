@@ -1,22 +1,38 @@
 import React, { useEffect, useState } from "react";
 import {
   Box,
-  Card,
-  CardContent,
   Typography,
   Chip,
   CircularProgress,
-  Stack,
-  Container,
-  Avatar,
+  TextField,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
 import { getMyStore } from "../../../services/storeService";
-import StorefrontIcon from "@mui/icons-material/Storefront";
 import { Link } from "react-router-dom";
+import { Delete, Edit } from "@mui/icons-material";
 
 const ManageStores = () => {
   const [store, setStore] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [products, setProducts] = useState([]);
+  const [editingProduct, setEditingProduct] = useState(null);
+
+  const handleEditProduct = (product) => {
+    setEditingProduct({ ...product });
+  };
+
+  const handleSaveProduct = () => {
+    // Add your save logic here
+    setEditingProduct(null);
+  };
+
+  const handleDeleteProduct = (productId) => {
+    // Add your delete logic here
+  };
 
   useEffect(() => {
     const fetchStore = async () => {
@@ -34,7 +50,7 @@ const ManageStores = () => {
   }, []);
 
   return (
-    <Container maxWidth="sm" sx={{ mt: 6 }}>
+    <Box sx={{ width: "100%" }}>
       {loading ? (
         <Box display="flex" justifyContent="center" mt={6}>
           <CircularProgress />
@@ -44,76 +60,278 @@ const ManageStores = () => {
           No store found.
         </Typography>
       ) : (
-        <Card
-          elevation={8}
-          sx={{
-            borderRadius: 4,
-            overflow: "hidden",
-            transition: "transform 0.3s ease, box-shadow 0.3s ease",
-            "&:hover": {
-              transform: "translateY(-4px)",
-              boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
-            },
-          }}
-        >
-          {/* Top Banner */}
+        <Box sx={{ p: 2 }}>
+          {/* Store Header Section */}
           <Box
             sx={{
-              bgcolor: "primary.light",
-              py: 2,
-              px: 3,
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
-              color: "white",
+              p: 2,
+              mb: 2,
+              bgcolor: "background.paper",
+              borderRadius: 2,
+              boxShadow: "0 2px 10px rgba(0,0,0,0.05)",
             }}
           >
-            <Stack direction="row" alignItems="center" spacing={2}>
-              <Avatar
+            <Box
+              sx={{
+                gap: 2,
+                width: "100%",
+              }}
+            >
+              <Box
                 sx={{
-                  bgcolor: "white",
-                  color: "primary.main",
-                  width: 48,
-                  height: 48,
+                  py: 2,
+                  borderBottom: "1px solid",
+                  borderColor: "divider",
                 }}
               >
-                <StorefrontIcon />
-              </Avatar>
-              <Box>
-                <Typography variant="h6" color="white">
-                  {store.name || "Untitled Store"}
-                </Typography>
-                <Typography fontSize={14} color="rgba(255,255,255,0.85)">
-                  Subdomain: <strong>{store.subdomain || "N/A"}</strong>
+                <Typography variant="h5" fontWeight="600">
+                  Store Details
                 </Typography>
               </Box>
-            </Stack>
-            <Chip
-              label={store.isApproved ? "Approved" : "Pending Approval"}
-              color={store.isApproved ? "success" : "warning"}
-              variant="filled"
-            />
+              <Box
+                sx={{
+                  py: 2,
+                }}
+              >
+                <Typography variant="h4" fontWeight="600">
+                  Store Name: {store.name || "Untitled Store"}
+                </Typography>
+                <Typography variant="body1" color="text.secondary">
+                  Subdomain:{" "}
+                  {store.subdomain
+                    ? `${store.subdomain}.yourdomain.com`
+                    : "Not set"}
+                </Typography>
+                <Box
+                  sx={{ display: "flex", alignItems: "center", gap: 1, mt: 1 }}
+                >
+                  <Typography variant="body1" color="text.secondary">
+                    Approval:{" "}
+                  </Typography>
+                  <Chip
+                    label={store.isApproved ? "Approved" : "Pending"}
+                    color={store.isApproved ? "success" : "warning"}
+                    size="small"
+                  />
+                  {store.isApproved && (
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      component={Link}
+                      to={`/hive/${store.subdomain}`}
+                      startIcon={<Visibility />}
+                    >
+                      View Store
+                    </Button>
+                  )}
+                </Box>
+              </Box>
+            </Box>
           </Box>
 
-          {/* Bottom Section */}
-          <CardContent sx={{ textAlign: "center" }}>
-            {store.isApproved ? (
-              <Box mb={2}>
-                <Typography variant="body1" color="text.secondary">
-                  <Link to={`/hive/${store.subdomain}`}>
-                    Click here to view your store
-                  </Link>
-                </Typography>
+          {/* Products Section */}
+          <Box
+            sx={{
+              bgcolor: "background.paper",
+              borderRadius: 2,
+              overflow: "hidden",
+              boxShadow: "0 2px 10px rgba(0,0,0,0.05)",
+            }}
+          >
+            {/* Section Header */}
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                p: 3,
+                borderBottom: "1px solid",
+                borderColor: "divider",
+              }}
+            >
+              <Typography variant="h5" fontWeight="600">
+                Store Inventory
+              </Typography>
+            </Box>
+
+            {/* Product List */}
+            {products.length > 0 ? (
+              <Box>
+                {products.map((product) => (
+                  <Box
+                    key={product.id}
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      p: 3,
+                      borderBottom: "1px solid",
+                      borderColor: "divider",
+                      "&:hover": { bgcolor: "action.hover" },
+                    }}
+                  >
+                    <Box sx={{ flex: 1 }}>
+                      <Typography variant="subtitle1" fontWeight="500">
+                        {product.name}
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{ mt: 0.5 }}
+                      >
+                        SKU: {product.sku || "N/A"} | Price: ${product.price}
+                      </Typography>
+                    </Box>
+
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 2,
+                        mr: 4,
+                      }}
+                    >
+                      <Box sx={{ textAlign: "center" }}>
+                        <Typography variant="body2" color="text.secondary">
+                          Stock
+                        </Typography>
+                        <Typography
+                          fontWeight="500"
+                          color={
+                            product.stock <= product.lowStockThreshold
+                              ? "error.main"
+                              : "inherit"
+                          }
+                        >
+                          {product.stock}
+                        </Typography>
+                      </Box>
+                      <Box sx={{ textAlign: "center" }}>
+                        <Typography variant="body2" color="text.secondary">
+                          Threshold
+                        </Typography>
+                        <Typography fontWeight="500">
+                          {product.lowStockThreshold}
+                        </Typography>
+                      </Box>
+                    </Box>
+
+                    <Box sx={{ display: "flex", gap: 1 }}>
+                      <IconButton
+                        color="primary"
+                        onClick={() => handleEditProduct(product)}
+                      >
+                        <Edit />
+                      </IconButton>
+                      <IconButton
+                        color="error"
+                        onClick={() => handleDeleteProduct(product.id)}
+                      >
+                        <Delete />
+                      </IconButton>
+                    </Box>
+                  </Box>
+                ))}
               </Box>
             ) : (
-              <Typography variant="body1" color="text.secondary">
-                Your store is pending approval.
-              </Typography>
+              <Box sx={{ p: 4, textAlign: "center" }}>
+                <Typography variant="body1" color="text.secondary">
+                  No products available. Add your first product to get started.
+                </Typography>
+              </Box>
             )}
-          </CardContent>
-        </Card>
+          </Box>
+
+          {/* Product Edit Modal */}
+          <Dialog
+            open={Boolean(editingProduct)}
+            onClose={() => setEditingProduct(null)}
+            fullWidth
+            maxWidth="sm"
+          >
+            <DialogTitle>
+              {editingProduct ? "Edit Product" : "Add Product"}
+            </DialogTitle>
+            <DialogContent>
+              <Box
+                sx={{ display: "flex", flexDirection: "column", gap: 3, pt: 2 }}
+              >
+                <TextField
+                  label="Product Name"
+                  value={editingProduct?.name || ""}
+                  onChange={(e) =>
+                    setEditingProduct({
+                      ...editingProduct,
+                      name: e.target.value,
+                    })
+                  }
+                  fullWidth
+                />
+                <TextField
+                  label="SKU"
+                  value={editingProduct?.sku || ""}
+                  onChange={(e) =>
+                    setEditingProduct({
+                      ...editingProduct,
+                      sku: e.target.value,
+                    })
+                  }
+                  fullWidth
+                />
+                <TextField
+                  label="Price"
+                  type="number"
+                  value={editingProduct?.price || ""}
+                  onChange={(e) =>
+                    setEditingProduct({
+                      ...editingProduct,
+                      price: e.target.value,
+                    })
+                  }
+                  fullWidth
+                />
+                <TextField
+                  label="Stock Quantity"
+                  type="number"
+                  value={editingProduct?.stock || ""}
+                  onChange={(e) =>
+                    setEditingProduct({
+                      ...editingProduct,
+                      stock: e.target.value,
+                    })
+                  }
+                  fullWidth
+                />
+                <TextField
+                  label="Low Stock Threshold"
+                  type="number"
+                  value={editingProduct?.lowStockThreshold || ""}
+                  onChange={(e) =>
+                    setEditingProduct({
+                      ...editingProduct,
+                      lowStockThreshold: e.target.value,
+                    })
+                  }
+                  fullWidth
+                />
+              </Box>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setEditingProduct(null)}>Cancel</Button>
+              <Button
+                variant="contained"
+                onClick={handleSaveProduct}
+                disabled={!editingProduct?.name || !editingProduct?.price}
+              >
+                Save Product
+              </Button>
+            </DialogActions>
+          </Dialog>
+        </Box>
       )}
-    </Container>
+    </Box>
   );
 };
 

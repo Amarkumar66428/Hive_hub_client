@@ -1,10 +1,10 @@
-import React, { 
-  useEffect, 
-  useState, 
-  useCallback, 
-  useMemo, 
+import React, {
+  useEffect,
+  useState,
+  useCallback,
+  useMemo,
   useRef,
-  memo 
+  memo,
 } from "react";
 import {
   Box,
@@ -58,249 +58,264 @@ const POSTS_PER_PAGE = 10;
 const INTERSECTION_THRESHOLD = 0.1;
 
 // Memoized Post Card Component
-const PostCard = memo(({ 
-  post, 
-  currentUser, 
-  onLike, 
-  onComment, 
-  onCommentLike, 
-  openCommentBox, 
-  setOpenCommentBox 
-}) => {
-  const [commentInput, setCommentInput] = useState("");
-  const [savingComment, setSavingComment] = useState(false);
+const PostCard = memo(
+  ({
+    post,
+    currentUser,
+    onLike,
+    onComment,
+    onCommentLike,
+    openCommentBox,
+    setOpenCommentBox,
+  }) => {
+    const [commentInput, setCommentInput] = useState("");
+    const [savingComment, setSavingComment] = useState(false);
 
-  const handleCommentSubmit = useCallback(async () => {
-    if (!commentInput.trim()) return;
-    
-    setSavingComment(true);
-    try {
-      await onComment(post._id, commentInput);
-      setCommentInput("");
-    } finally {
-      setSavingComment(false);
-    }
-  }, [commentInput, onComment, post._id]);
+    const handleCommentSubmit = useCallback(async () => {
+      if (!commentInput.trim()) return;
 
-  const isLiked = useMemo(() => 
-    post?.likes?.includes(currentUser._id), 
-    [post?.likes, currentUser._id]
-  );
+      setSavingComment(true);
+      try {
+        await onComment(post._id, commentInput);
+        setCommentInput("");
+      } finally {
+        setSavingComment(false);
+      }
+    }, [commentInput, onComment, post._id]);
 
-  const isCommentBoxOpen = openCommentBox === post._id;
+    const isLiked = useMemo(
+      () => post?.likes?.includes(currentUser._id),
+      [post?.likes, currentUser._id]
+    );
 
-  return (
-    <Fade in timeout={300}>
-      <Card
-        elevation={2}
-        sx={{
-          borderRadius: 3,
-          transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-          bgcolor: "background.paper",
-          border: 1,
-          borderColor: "divider",
-          overflow: "hidden",
-          "&:hover": {
-            elevation: 4,
-            transform: "translateY(-2px)",
-            borderColor: "primary.light",
-          },
-        }}
-      >
-        {/* Post Header */}
-        <CardContent sx={{ pb: 1 }}>
-          <Stack direction="row" spacing={2} alignItems="center" mb={2}>
-            <Avatar
-              src={post?.avatar}
-              alt={post?.author}
-              sx={{ 
-                width: 48, 
-                height: 48,
-                border: 2,
-                borderColor: "divider"
-              }}
-            />
-            <Box flex={1}>
-              <Typography variant="h6" fontWeight={600} color="text.primary">
-                {post?.author || "Unknown"}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                {formatDate(post?.createdAt)}
-              </Typography>
-            </Box>
-          </Stack>
+    const isCommentBoxOpen = openCommentBox === post._id;
 
-          {/* Post Content */}
-          <Typography variant="h5" fontWeight={700} gutterBottom color="text.primary">
-            {post.title}
-          </Typography>
-          <ContentWithReadMore 
-            content={post?.content} 
-            tags={post?.tags} 
-          />
-        </CardContent>
-
-        {/* Post Media */}
-        {post?.media?.length > 0 && (
-          <CardMedia
-            component="img"
-            image={post.media[0]?.url}
-            alt={post.title}
-            sx={{
-              height: { xs: 250, md: 350 },
-              objectFit: "cover",
-              bgcolor: "grey.100",
-            }}
-          />
-        )}
-
-        {/* Post Actions */}
-        <CardActions sx={{ px: 2, py: 1.5, bgcolor: "grey.50" }}>
-          <Stack direction="row" justifyContent="space-between" width="100%">
-            <Stack direction="row" spacing={3}>
-              {/* Like Button */}
-              <Stack direction="row" alignItems="center" spacing={0.5}>
-                <Tooltip title={isLiked ? "Unlike" : "Like"}>
-                  <IconButton
-                    size="small"
-                    onClick={() => onLike(post._id)}
-                    sx={{
-                      color: isLiked ? "error.main" : "text.secondary",
-                      "&:hover": {
-                        bgcolor: isLiked ? "error.50" : "grey.100",
-                      },
-                    }}
-                  >
-                    {isLiked ? <Favorite /> : <FavoriteBorder />}
-                  </IconButton>
-                </Tooltip>
-                <Typography variant="body2" color="text.secondary">
-                  {post?.likes?.length || 0}
-                </Typography>
-              </Stack>
-
-              {/* Comment Button */}
-              <Stack direction="row" alignItems="center" spacing={0.5}>
-                <Tooltip title="Comment">
-                  <IconButton
-                    size="small"
-                    onClick={() => setOpenCommentBox(
-                      isCommentBoxOpen ? null : post._id
-                    )}
-                    sx={{
-                      color: isCommentBoxOpen ? "primary.main" : "text.secondary",
-                      "&:hover": { bgcolor: "primary.50" },
-                    }}
-                  >
-                    <ChatBubbleOutline />
-                  </IconButton>
-                </Tooltip>
-                <Typography variant="body2" color="text.secondary">
-                  {post?.comments?.length || 0}
-                </Typography>
-              </Stack>
-            </Stack>
-
-            {/* Share Button */}
-            <Tooltip title="Share">
-              <IconButton size="small" sx={{ color: "text.secondary" }}>
-                <Share />
-              </IconButton>
-            </Tooltip>
-          </Stack>
-        </CardActions>
-
-        {/* Comments Section */}
-        <Collapse in={isCommentBoxOpen} timeout="auto">
-          <Paper 
-            elevation={0} 
-            sx={{ 
-              bgcolor: "grey.50", 
-              borderTop: 1, 
-              borderColor: "divider",
-              p: 2 
-            }}
-          >
-            {/* Comment Input */}
-            <Stack direction="row" spacing={2} mb={2}>
-              <Avatar 
-                src={currentUser?.avatar} 
-                sx={{ width: 32, height: 32 }} 
+    return (
+      <Fade in timeout={300}>
+        <Card
+          elevation={2}
+          sx={{
+            borderRadius: 3,
+            bgcolor: "background.paper",
+            border: 1,
+            borderColor: "divider",
+            overflow: "hidden",
+            "&:hover": {
+              transform: "translateY(-4px)",
+              transition: "all 0.2s ease-in-out",
+            },
+          }}
+        >
+          {/* Post Header */}
+          <CardContent sx={{ pb: 1 }}>
+            <Stack direction="row" spacing={2} alignItems="center" mb={2}>
+              <Avatar
+                src={post?.avatar}
+                alt={post?.author}
+                sx={{
+                  width: 48,
+                  height: 48,
+                  border: 2,
+                  borderColor: "divider",
+                }}
               />
               <Box flex={1}>
-                <TextAreaE1
-                  placeholder="Write a comment..."
-                  value={commentInput}
-                  onChange={(e) => setCommentInput(e.target.value)}
-                  autoSize={{ minRows: 1, maxRows: 4 }}
-                  style={{ width: "100%" }}
-                />
+                <Typography variant="h6" fontWeight={600} color="text.primary">
+                  {post?.author || "Unknown"}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {formatDate(post?.createdAt)}
+                </Typography>
               </Box>
-              <Button
-                variant="contained"
-                size="small"
-                onClick={handleCommentSubmit}
-                disabled={savingComment || !commentInput.trim()}
-                startIcon={savingComment ? <CircularProgress size={16} /> : <Send />}
-                sx={{ alignSelf: "flex-end" }}
-              >
-                {savingComment ? "Posting..." : "Post"}
-              </Button>
             </Stack>
 
-            {/* Comments List */}
-            <CommentsSection 
-              comments={post?.comments || []}
-              currentUser={currentUser}
-              onCommentLike={onCommentLike}
-              postId={post._id}
-            />
-          </Paper>
-        </Collapse>
-      </Card>
-    </Fade>
-  );
-});
+            {/* Post Content */}
+            <Typography
+              variant="h5"
+              fontWeight={700}
+              gutterBottom
+              color="text.primary"
+            >
+              {post.title}
+            </Typography>
+            <ContentWithReadMore content={post?.content} tags={post?.tags} />
+          </CardContent>
 
-// Memoized Comments Section
-const CommentsSection = memo(({ comments, currentUser, onCommentLike, postId }) => {
-  if (comments.length === 0) {
-    return (
-      <Typography variant="body2" color="text.secondary" textAlign="center" py={2}>
-        No comments yet. Be the first to comment!
-      </Typography>
+          {/* Post Media */}
+          {post?.media?.length > 0 && (
+            <CardMedia
+              component="img"
+              image={post.media[0]?.url}
+              alt={post.title}
+              sx={{
+                height: { xs: 250, md: 350 },
+                objectFit: "cover",
+                bgcolor: "grey.100",
+              }}
+            />
+          )}
+
+          {/* Post Actions */}
+          <CardActions sx={{ px: 2, py: 1.5, bgcolor: "grey.50" }}>
+            <Stack direction="row" justifyContent="space-between" width="100%">
+              <Stack direction="row" spacing={3}>
+                {/* Like Button */}
+                <Stack direction="row" alignItems="center" spacing={0.5}>
+                  <Tooltip title={isLiked ? "Unlike" : "Like"}>
+                    <IconButton
+                      size="small"
+                      onClick={() => onLike(post._id)}
+                      sx={{
+                        color: isLiked ? "error.main" : "text.secondary",
+                        "&:hover": {
+                          bgcolor: isLiked ? "error.50" : "grey.100",
+                        },
+                      }}
+                    >
+                      {isLiked ? <Favorite /> : <FavoriteBorder />}
+                    </IconButton>
+                  </Tooltip>
+                  <Typography variant="body2" color="text.secondary">
+                    {post?.likes?.length || 0}
+                  </Typography>
+                </Stack>
+
+                {/* Comment Button */}
+                <Stack direction="row" alignItems="center" spacing={0.5}>
+                  <Tooltip title="Comment">
+                    <IconButton
+                      size="small"
+                      onClick={() =>
+                        setOpenCommentBox(isCommentBoxOpen ? null : post._id)
+                      }
+                      sx={{
+                        color: isCommentBoxOpen
+                          ? "primary.main"
+                          : "text.secondary",
+                        "&:hover": { bgcolor: "primary.50" },
+                      }}
+                    >
+                      <ChatBubbleOutline />
+                    </IconButton>
+                  </Tooltip>
+                  <Typography variant="body2" color="text.secondary">
+                    {post?.comments?.length || 0}
+                  </Typography>
+                </Stack>
+              </Stack>
+
+              {/* Share Button */}
+              <Tooltip title="Share">
+                <IconButton size="small" sx={{ color: "text.secondary" }}>
+                  <Share />
+                </IconButton>
+              </Tooltip>
+            </Stack>
+          </CardActions>
+
+          {/* Comments Section */}
+          <Collapse in={isCommentBoxOpen} timeout="auto">
+            <Paper
+              elevation={0}
+              sx={{
+                bgcolor: "grey.50",
+                borderTop: 1,
+                borderColor: "divider",
+                p: 2,
+              }}
+            >
+              {/* Comment Input */}
+              <Stack direction="row" spacing={2} mb={2}>
+                <Avatar
+                  src={currentUser?.avatar}
+                  sx={{ width: 32, height: 32 }}
+                />
+                <Box flex={1}>
+                  <TextAreaE1
+                    placeholder="Write a comment..."
+                    value={commentInput}
+                    onChange={(e) => setCommentInput(e.target.value)}
+                    autoSize={{ minRows: 1, maxRows: 4 }}
+                    style={{ width: "100%" }}
+                  />
+                </Box>
+                <Button
+                  variant="contained"
+                  size="small"
+                  onClick={handleCommentSubmit}
+                  disabled={savingComment || !commentInput.trim()}
+                  startIcon={
+                    savingComment ? <CircularProgress size={16} /> : <Send />
+                  }
+                  sx={{ alignSelf: "flex-end" }}
+                >
+                  {savingComment ? "Posting..." : "Post"}
+                </Button>
+              </Stack>
+
+              {/* Comments List */}
+              <CommentsSection
+                comments={post?.comments || []}
+                currentUser={currentUser}
+                onCommentLike={onCommentLike}
+                postId={post._id}
+              />
+            </Paper>
+          </Collapse>
+        </Card>
+      </Fade>
     );
   }
+);
 
-  return (
-    <Stack spacing={2} maxHeight={300} overflow="auto">
-      {comments.map((comment) => (
-        <CommentItem
-          key={comment._id}
-          comment={comment}
-          currentUser={currentUser}
-          onLike={() => onCommentLike(postId, comment._id)}
-        />
-      ))}
-    </Stack>
-  );
-});
+// Memoized Comments Section
+const CommentsSection = memo(
+  ({ comments, currentUser, onCommentLike, postId }) => {
+    if (comments.length === 0) {
+      return (
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          textAlign="center"
+          py={2}
+        >
+          No comments yet. Be the first to comment!
+        </Typography>
+      );
+    }
+
+    return (
+      <Stack spacing={2} maxHeight={300} overflow="auto">
+        {comments.map((comment) => (
+          <CommentItem
+            key={comment._id}
+            comment={comment}
+            currentUser={currentUser}
+            onLike={() => onCommentLike(postId, comment._id)}
+          />
+        ))}
+      </Stack>
+    );
+  }
+);
 
 // Memoized Comment Item
 const CommentItem = memo(({ comment, currentUser, onLike }) => {
   const isLiked = comment.likes?.includes(currentUser._id);
 
   return (
-    <Paper elevation={0} sx={{ p: 1.5, bgcolor: "background.paper", borderRadius: 2 }}>
+    <Paper
+      elevation={0}
+      sx={{ p: 1.5, bgcolor: "background.paper", borderRadius: 2 }}
+    >
       <Stack direction="row" spacing={1.5}>
-        <Avatar
-          src={comment.avatar}
-          sx={{ width: 32, height: 32 }}
-        />
+        <Avatar src={comment.avatar} sx={{ width: 32, height: 32 }} />
         <Box flex={1}>
           <Stack direction="row" alignItems="center" spacing={1} mb={0.5}>
             <Typography variant="body2" fontWeight={600}>
-              {comment.userId === currentUser._id ? "You" : comment.author || comment.userId}
+              {comment.userId === currentUser._id
+                ? "You"
+                : comment.author || comment.userId}
             </Typography>
             <Typography variant="caption" color="text.secondary">
               {formatDate(comment.createdAt)}
@@ -345,12 +360,12 @@ const ContentWithReadMore = memo(({ content, tags, maxChars = 150 }) => {
           <Button
             size="small"
             onClick={() => setExpanded(!expanded)}
-            sx={{ 
-              minWidth: "auto", 
-              p: 0, 
+            sx={{
+              minWidth: "auto",
+              p: 0,
               ml: 1,
               textTransform: "none",
-              fontSize: "inherit"
+              fontSize: "inherit",
             }}
           >
             {expanded ? "Show Less" : "...Read More"}
@@ -366,10 +381,10 @@ const ContentWithReadMore = memo(({ content, tags, maxChars = 150 }) => {
               label={`#${tag}`}
               size="small"
               variant="outlined"
-              sx={{ 
+              sx={{
                 fontSize: "0.75rem",
                 height: 24,
-                "& .MuiChip-label": { px: 1 }
+                "& .MuiChip-label": { px: 1 },
               }}
             />
           ))}
@@ -412,7 +427,7 @@ const PostSkeleton = memo(() => (
 const Community = () => {
   const currentUser = useAuth();
   const { showSnackbar } = useSnackbar();
-  
+
   // State
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -432,57 +447,62 @@ const Community = () => {
   const open = Boolean(anchorEl);
 
   // Fetch posts function
-  const fetchPosts = useCallback(async (pageNum = 1, isLoadMore = false) => {
-    try {
-      if (isLoadMore) {
-        setLoadingMore(true);
-      } else {
-        setLoading(true);
-        setError(null);
-      }
+  const fetchPosts = useCallback(
+    async (pageNum = 1, isLoadMore = false) => {
+      try {
+        if (isLoadMore) {
+          setLoadingMore(true);
+        } else {
+          setLoading(true);
+          setError(null);
+        }
 
-      const params = `?page=${pageNum}&limit=${POSTS_PER_PAGE}`;
-      const response = await communityService.getAllCommunities(params);
-      
-      const newPosts = response?.posts || [];
-      
-      if (isLoadMore) {
-        setPosts(prev => [...prev, ...newPosts]);
-      } else {
-        setPosts(newPosts);
+        const params = `?page=${pageNum}&limit=${POSTS_PER_PAGE}`;
+        const response = await communityService.getAllCommunities(params);
+
+        const newPosts = response?.posts || [];
+
+        if (isLoadMore) {
+          setPosts((prev) => [...prev, ...newPosts]);
+        } else {
+          setPosts(newPosts);
+        }
+
+        setHasMore(newPosts.length === POSTS_PER_PAGE);
+        setPage(pageNum);
+      } catch (err) {
+        console.error("Error fetching posts:", err);
+        setError("Failed to load posts. Please try again.");
+        showSnackbar("Failed to load posts", "error");
+      } finally {
+        setLoading(false);
+        setLoadingMore(false);
       }
-      
-      setHasMore(newPosts.length === POSTS_PER_PAGE);
-      setPage(pageNum);
-      
-    } catch (err) {
-      console.error("Error fetching posts:", err);
-      setError("Failed to load posts. Please try again.");
-      showSnackbar("Failed to load posts", "error");
-    } finally {
-      setLoading(false);
-      setLoadingMore(false);
-    }
-  }, [showSnackbar]);
+    },
+    [showSnackbar]
+  );
 
   // Intersection Observer callback
-  const handleObserver = useCallback((entries) => {
-    const target = entries[0];
-    if (target.isIntersecting && hasMore && !loadingMore && !loading) {
-      fetchPosts(page + 1, true);
-    }
-  }, [hasMore, loadingMore, loading, page, fetchPosts]);
+  const handleObserver = useCallback(
+    (entries) => {
+      const target = entries[0];
+      if (target.isIntersecting && hasMore && !loadingMore && !loading) {
+        fetchPosts(page + 1, true);
+      }
+    },
+    [hasMore, loadingMore, loading, page, fetchPosts]
+  );
 
   // Setup intersection observer
   useEffect(() => {
     const option = {
       root: null,
       rootMargin: "20px",
-      threshold: INTERSECTION_THRESHOLD
+      threshold: INTERSECTION_THRESHOLD,
     };
-    
+
     observerRef.current = new IntersectionObserver(handleObserver, option);
-    
+
     return () => {
       if (observerRef.current) {
         observerRef.current.disconnect();
@@ -495,7 +515,7 @@ const Community = () => {
     if (lastPostElementRef.current && observerRef.current) {
       observerRef.current.observe(lastPostElementRef.current);
     }
-    
+
     return () => {
       if (lastPostElementRef.current && observerRef.current) {
         observerRef.current.unobserve(lastPostElementRef.current);
@@ -509,94 +529,116 @@ const Community = () => {
   }, [fetchPosts]);
 
   // Optimized handlers
-  const handleLike = useCallback(async (postId) => {
-    try {
-      // Optimistic update
-      setPosts(prev => prev.map(post => 
-        post._id === postId
-          ? {
-              ...post,
-              likes: post.likes?.includes(currentUser._id)
-                ? post.likes.filter(id => id !== currentUser._id)
-                : [...(post.likes || []), currentUser._id]
-            }
-          : post
-      ));
-      
-      await communityService.likeOnPost(postId);
-    } catch (err) {
-      console.error("Error liking post:", err);
-      // Revert optimistic update on error
-      setPosts(prev => prev.map(post => 
-        post._id === postId
-          ? {
-              ...post,
-              likes: post.likes?.includes(currentUser._id)
-                ? [...(post.likes || []), currentUser._id]
-                : post.likes?.filter(id => id !== currentUser._id) || []
-            }
-          : post
-      ));
-      showSnackbar("Failed to like post", "error");
-    }
-  }, [currentUser._id, showSnackbar]);
+  const handleLike = useCallback(
+    async (postId) => {
+      try {
+        // Optimistic update
+        setPosts((prev) =>
+          prev.map((post) =>
+            post._id === postId
+              ? {
+                  ...post,
+                  likes: post.likes?.includes(currentUser._id)
+                    ? post.likes.filter((id) => id !== currentUser._id)
+                    : [...(post.likes || []), currentUser._id],
+                }
+              : post
+          )
+        );
 
-  const handleComment = useCallback(async (postId, commentText) => {
-    try {
-      const comment = { content: commentText };
-      const response = await communityService.commentOnPost(postId, comment);
-      
-      if (response) {
-        setPosts(prev => prev.map(post => {
-          if (post._id !== postId) return post;
-          
-          const existingIds = new Set(post.comments?.map(c => c._id) || []);
-          const newComments = [...(post.comments || [])];
-          
-          response.post.comments?.forEach(c => {
-            if (!existingIds.has(c._id)) {
-              newComments.push(c);
-            }
-          });
-          
-          return { ...post, comments: newComments };
-        }));
-        
-        showSnackbar("Comment added successfully", "success");
+        await communityService.likeOnPost(postId);
+      } catch (err) {
+        console.error("Error liking post:", err);
+        // Revert optimistic update on error
+        setPosts((prev) =>
+          prev.map((post) =>
+            post._id === postId
+              ? {
+                  ...post,
+                  likes: post.likes?.includes(currentUser._id)
+                    ? [...(post.likes || []), currentUser._id]
+                    : post.likes?.filter((id) => id !== currentUser._id) || [],
+                }
+              : post
+          )
+        );
+        showSnackbar("Failed to like post", "error");
       }
-    } catch (err) {
-      console.error("Error adding comment:", err);
-      showSnackbar("Failed to add comment", "error");
-    }
-  }, [showSnackbar]);
+    },
+    [currentUser._id, showSnackbar]
+  );
 
-  const handleCommentLike = useCallback(async (postId, commentId) => {
-    try {
-      // Optimistic update
-      setPosts(prev => prev.map(post =>
-        post._id === postId
-          ? {
-              ...post,
-              comments: post.comments?.map(comment =>
-                comment._id === commentId
-                  ? {
-                      ...comment,
-                      likes: comment.likes?.includes(currentUser._id)
-                        ? comment.likes.filter(id => id !== currentUser._id)
-                        : [...(comment.likes || []), currentUser._id]
-                    }
-                  : comment
-              ) || []
-            }
-          : post
-      ));
-      
-      await communityService.likeOnPostComment(postId, commentId);
-    } catch (err) {
-      console.error("Error liking comment:", err);
-      showSnackbar("Failed to like comment", "error");
-    }
-  }, [currentUser._id, showSnackbar]);
+  const handleComment = useCallback(
+    async (postId, commentText) => {
+      try {
+        const comment = { content: commentText };
+        const response = await communityService.commentOnPost(postId, comment);
+
+        if (response) {
+          setPosts((prev) =>
+            prev.map((post) => {
+              if (post._id !== postId) return post;
+
+              const existingIds = new Set(
+                post.comments?.map((c) => c._id) || []
+              );
+              const newComments = [...(post.comments || [])];
+
+              response.post.comments?.forEach((c) => {
+                if (!existingIds.has(c._id)) {
+                  newComments.push(c);
+                }
+              });
+
+              return { ...post, comments: newComments };
+            })
+          );
+
+          showSnackbar("Comment added successfully", "success");
+        }
+      } catch (err) {
+        console.error("Error adding comment:", err);
+        showSnackbar("Failed to add comment", "error");
+      }
+    },
+    [showSnackbar]
+  );
+
+  const handleCommentLike = useCallback(
+    async (postId, commentId) => {
+      try {
+        // Optimistic update
+        setPosts((prev) =>
+          prev.map((post) =>
+            post._id === postId
+              ? {
+                  ...post,
+                  comments:
+                    post.comments?.map((comment) =>
+                      comment._id === commentId
+                        ? {
+                            ...comment,
+                            likes: comment.likes?.includes(currentUser._id)
+                              ? comment.likes.filter(
+                                  (id) => id !== currentUser._id
+                                )
+                              : [...(comment.likes || []), currentUser._id],
+                          }
+                        : comment
+                    ) || [],
+                }
+              : post
+          )
+        );
+
+        await communityService.likeOnPostComment(postId, commentId);
+      } catch (err) {
+        console.error("Error liking comment:", err);
+        showSnackbar("Failed to like comment", "error");
+      }
+    },
+    [currentUser._id, showSnackbar]
+  );
 
   const fetchMyPosts = useCallback(async () => {
     try {
@@ -613,23 +655,26 @@ const Community = () => {
     }
   }, [currentUser._id]);
 
-  const handleMenuItemClick = useCallback((action) => {
-    setAnchorEl(null);
-    
-    switch (action) {
-      case "create-post":
-        setCreatePostModal(true);
-        break;
-      case "my-posts":
-        fetchMyPosts();
-        break;
-      case "my-profile":
-        // Navigate to profile
-        break;
-      default:
-        break;
-    }
-  }, [fetchMyPosts]);
+  const handleMenuItemClick = useCallback(
+    (action) => {
+      setAnchorEl(null);
+
+      switch (action) {
+        case "create-post":
+          setCreatePostModal(true);
+          break;
+        case "my-posts":
+          fetchMyPosts();
+          break;
+        case "my-profile":
+          // Navigate to profile
+          break;
+        default:
+          break;
+      }
+    },
+    [fetchMyPosts]
+  );
 
   const handleRefresh = useCallback(() => {
     setPage(1);
@@ -641,8 +686,8 @@ const Community = () => {
   if (error && posts.length === 0) {
     return (
       <Container maxWidth="md" sx={{ mt: 4 }}>
-        <Alert 
-          severity="error" 
+        <Alert
+          severity="error"
           action={
             <Button color="inherit" size="small" onClick={handleRefresh}>
               <Refresh sx={{ mr: 1 }} />
@@ -671,22 +716,27 @@ const Community = () => {
         }}
       >
         <Container maxWidth="md">
-          <Stack 
-            direction="row" 
-            justifyContent="space-between" 
-            alignItems="center" 
+          <Stack
+            direction="row"
+            justifyContent="space-between"
+            alignItems="center"
             py={2}
           >
             <Box>
-              <Typography variant="h5" fontWeight={700} color="primary" gutterBottom>
+              <Typography
+                variant="h5"
+                fontWeight={700}
+                color="primary"
+                gutterBottom
+              >
                 Join Our Thriving Community
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Learn from real store owners, share your journey, and get inspired
-                by stories of success in the eCommerce world.
+                Learn from real store owners, share your journey, and get
+                inspired by stories of success in the eCommerce world.
               </Typography>
             </Box>
-            
+
             <Button
               onClick={(e) => setAnchorEl(e.currentTarget)}
               sx={{
@@ -711,20 +761,26 @@ const Community = () => {
               anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
               PaperProps={{
                 elevation: 3,
-                sx: { mt: 1, minWidth: 200 }
+                sx: { mt: 1, minWidth: 200 },
               }}
             >
               <MenuItem onClick={() => handleMenuItemClick("create-post")}>
-                <ListItemIcon><Add /></ListItemIcon>
+                <ListItemIcon>
+                  <Add />
+                </ListItemIcon>
                 <ListItemText>Create Post</ListItemText>
               </MenuItem>
               <MenuItem onClick={() => handleMenuItemClick("my-posts")}>
-                <ListItemIcon><Article /></ListItemIcon>
+                <ListItemIcon>
+                  <Article />
+                </ListItemIcon>
                 <ListItemText>My Posts</ListItemText>
               </MenuItem>
               <Divider />
               <MenuItem onClick={() => handleMenuItemClick("my-profile")}>
-                <ListItemIcon><Person /></ListItemIcon>
+                <ListItemIcon>
+                  <Person />
+                </ListItemIcon>
                 <ListItemText>My Community Profile</ListItemText>
               </MenuItem>
             </Menu>
@@ -741,13 +797,13 @@ const Community = () => {
             ))}
           </Stack>
         ) : posts.length === 0 ? (
-          <Paper 
-            elevation={0} 
-            sx={{ 
-              textAlign: "center", 
+          <Paper
+            elevation={0}
+            sx={{
+              textAlign: "center",
               py: 8,
               bgcolor: "grey.50",
-              borderRadius: 3
+              borderRadius: 3,
             }}
           >
             <Typography variant="h6" color="text.secondary" gutterBottom>
@@ -756,8 +812,8 @@ const Community = () => {
             <Typography variant="body2" color="text.secondary" mb={3}>
               Be the first to share something with the community!
             </Typography>
-            <Button 
-              variant="contained" 
+            <Button
+              variant="contained"
               startIcon={<Add />}
               onClick={() => setCreatePostModal(true)}
             >
@@ -782,7 +838,7 @@ const Community = () => {
                 />
               </div>
             ))}
-            
+
             {/* Loading more indicator */}
             {loadingMore && (
               <Box display="flex" justifyContent="center" py={3}>
@@ -794,16 +850,16 @@ const Community = () => {
                 </Stack>
               </Box>
             )}
-            
+
             {/* End of posts indicator */}
             {!hasMore && posts.length > 0 && (
-              <Paper 
-                elevation={0} 
-                sx={{ 
-                  textAlign: "center", 
+              <Paper
+                elevation={0}
+                sx={{
+                  textAlign: "center",
                   py: 3,
                   bgcolor: "grey.50",
-                  borderRadius: 2
+                  borderRadius: 2,
                 }}
               >
                 <Typography variant="body2" color="text.secondary">

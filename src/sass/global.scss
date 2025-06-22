@@ -357,3 +357,11 @@ figure {
     background-color: #ff4d4f !important;
   }
 }
+
+.store-editor {
+  .color-picker {
+    .ant-color-picker-color-block {
+      width: 100%;
+    }
+  }
+}
