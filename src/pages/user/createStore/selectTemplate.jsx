@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Box,
   Typography,
@@ -32,10 +32,10 @@ const templates = [
     id: 1,
     title: "E-Commerce",
     image: img2,
-    isPublished: true,
+    isPublished: false,
     path: "/templates/e-commerce",
   },
-    {
+  {
     id: 2,
     title: "E-Commerce",
     image: img4,
@@ -55,51 +55,6 @@ const TemplateSelector = ({ setCurrentStep, setSelectedTemplate }) => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All Categories");
-  const [open, setOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    id: null,
-    name: "",
-    subdomain: "",
-    icon: null,
-    iconUrl: "",
-  });
-
-  // Cleanup object URL to avoid memory leaks
-  useEffect(() => {
-    return () => {
-      if (formData.iconUrl) {
-        URL.revokeObjectURL(formData.iconUrl);
-      }
-    };
-  }, [formData.iconUrl]);
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const objectUrl = URL.createObjectURL(file);
-      setFormData((prev) => ({
-        ...prev,
-        icon: file,
-        iconUrl: objectUrl,
-      }));
-    }
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Submit logic or API call here
-    navigate("/user/home/create-store/editor", {
-      state: {
-        template: formData,
-      },
-    });
-    setOpen(false);
-  };
 
   // Filter templates based on search and category
   const filteredTemplates = templates.filter((template) => {
@@ -298,11 +253,7 @@ const TemplateSelector = ({ setCurrentStep, setSelectedTemplate }) => {
                         variant="text"
                         color="error"
                         onClick={() => {
-                          setOpen(true);
-                          setFormData((prev) => ({
-                            ...prev,
-                            id: template.id,
-                          }));
+                          navigate("/user/home/create-store/editor");
                         }}
                         sx={{
                           py: 0,
@@ -333,74 +284,6 @@ const TemplateSelector = ({ setCurrentStep, setSelectedTemplate }) => {
           ))}
         </Grid>
       </Box>
-      <Modal open={open} onClose={() => setOpen(false)}>
-        <Box
-          component="form"
-          onSubmit={handleSubmit}
-          sx={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: 400,
-            bgcolor: "background.paper",
-            borderRadius: 2,
-            boxShadow: 24,
-            p: 4,
-            display: "flex",
-            flexDirection: "column",
-            gap: 2,
-          }}
-        >
-          <Typography variant="h5" fontWeight="bold">
-            Create Own Store
-          </Typography>
-
-          <TextField
-            label="Title"
-            name="name"
-            value={formData.name}
-            onChange={handleInputChange}
-            fullWidth
-            required
-          />
-
-          <TextField
-            label="Subdomain"
-            name="subdomain"
-            value={formData.subdomain}
-            onChange={handleInputChange}
-            fullWidth
-            required
-          />
-
-          <Button variant="outlined" component="label">
-            Upload Icon
-            <input
-              type="file"
-              accept="image/*"
-              hidden
-              onChange={handleFileChange}
-            />
-          </Button>
-
-          {formData.iconUrl && (
-            <Box display="flex" alignItems="center" gap={2}>
-              <Avatar src={formData.iconUrl} alt="Icon Preview" />
-              <Typography variant="body2" color="textSecondary">
-                {formData.icon.name}
-              </Typography>
-            </Box>
-          )}
-
-          <Box display="flex" justifyContent="flex-end" gap={1} mt={2}>
-            <Button onClick={() => setOpen(false)}>Cancel</Button>
-            <Button type="submit" variant="contained">
-              Save
-            </Button>
-          </Box>
-        </Box>
-      </Modal>
     </Box>
   );
 };
