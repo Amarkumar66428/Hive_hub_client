@@ -31,6 +31,7 @@ const ManageStores = () => {
   };
 
   const handleDeleteProduct = (productId) => {
+    console.log('productId: ', productId);
     // Add your delete logic here
   };
 

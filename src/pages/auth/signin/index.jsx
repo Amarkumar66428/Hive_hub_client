@@ -253,14 +253,6 @@ const Signin = () => {
             Sign Up
           </Link>
         </Typography>
-        <Typography variant="body2" sx={{ color: "#fff" }}>
-          <Link
-            to="/admin/auth/signin"
-            style={{ color: "white", textDecoration: "underline" }}
-          >
-            Admin Login
-          </Link>
-        </Typography>
       </Box>
     </section>
   );
