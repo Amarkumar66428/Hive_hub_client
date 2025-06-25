@@ -22,12 +22,6 @@ export const authRouters = [
     showInMenu: false,
   },
   {
-    path: "/admin/auth/signin",
-    component: asyncComponent(() => import("../pages/admin/auth/index.jsx")),
-    isLayout: false,
-    showInMenu: false,
-  },
-  {
     path: "/auth/signin",
     component: asyncComponent(() => import("../pages/auth/signin/index.jsx")),
     isLayout: false,
@@ -84,13 +78,12 @@ export const appRouters = [
     path: "/admin/home/dashboard",
     role: [SUPER_ADMIN],
     title: "Dashboard",
-    subMenuTitle: "Home",
     icon: React.createElement(Dashboard),
     component: asyncComponent(() =>
       import("../pages/admin/home/dashboard.jsx")
     ),
     isLayout: true,
-    showInSubMenu: true,
+    showInSubMenu: false,
   },
   {
     path: "/admin/manage-plans",
@@ -135,24 +128,10 @@ export const appRouters = [
     path: "/user/home/dashboard",
     role: [STORE_OWNER],
     title: "Dashboard",
-    subMenuTitle: "Home",
     icon: React.createElement(Dashboard),
     component: asyncComponent(() => import("../pages/user/home/index.jsx")),
     isLayout: true,
-    showInSubMenu: true,
-  },
-  {
-    path: "/user/home/create-store",
-    role: [STORE_OWNER],
-    title: "Create Store",
-    subMenuTitle: "Home",
-    icon: React.createElement(DesignServicesRounded),
-    component: asyncComponent(() =>
-      import("../pages/user/createStore/index.jsx")
-    ),
-    isLayout: true,
-    showInSubMenu: true,
-    subscriptionRequired: true,
+    showInMenu: true,
   },
   {
     path: "/user/home/create-store/editor",
@@ -182,6 +161,39 @@ export const appRouters = [
     component: asyncComponent(() => import("../pages/user/stores/index.jsx")),
     isLayout: true,
     showInMenu: true,
+    subMenu: true,
+  },
+  {
+    path: "/user/manage-store/create-store",
+    role: [STORE_OWNER],
+    title: "Create Store",
+    subMenuTitle: "Manage Store",
+    icon: React.createElement(DesignServicesRounded),
+    component: asyncComponent(() =>
+      import("../pages/user/createStore/index.jsx")
+    ),
+    isLayout: true,
+    showInSubMenu: true,
+  },
+  {
+    path: "/user/manage-store/products",
+    role: [STORE_OWNER],
+    title: "Products",
+    subMenuTitle: "Manage Store",
+    icon: React.createElement(Storefront),
+    component: asyncComponent(() => import("../pages/user/stores/product.jsx")),
+    isLayout: true,
+    showInSubMenu: true,
+  },
+  {
+    path: "/user/manage-store/orders",
+    role: [STORE_OWNER],
+    title: "Orders",
+    subMenuTitle: "Manage Store",
+    icon: React.createElement(Storefront),
+    component: asyncComponent(() => import("../pages/user/stores/orders.jsx")),
+    isLayout: true,
+    showInSubMenu: true,
   },
   {
     path: "/user/notifications",
@@ -255,4 +267,4 @@ export const publicRouters = [
   },
 ];
 
-export const routers = [...authRouters, ...appRouters , ...publicRouters];
+export const routers = [...authRouters, ...appRouters, ...publicRouters];

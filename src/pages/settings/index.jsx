@@ -4,210 +4,412 @@ import {
   Box,
   Button,
   Card,
+  CardActions,
+  CardContent,
+  Chip,
   Container,
+  Divider,
   IconButton,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Paper,
+  Skeleton,
   TextField,
   Typography,
 } from "@mui/material";
-import { styled } from "@mui/system";
+import { Grid, Stack, styled } from "@mui/system";
 import EditIcon from "@mui/icons-material/Edit";
 import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
 import useAuth from "../../hooks/useAuth";
+import { useDispatch } from "react-redux";
+import { clearUserData } from "../../reducer/authSlice";
+import userService from "../../services/userService";
+import { formatDate } from "../../utils/helper";
+import {
+  CalendarToday,
+  CheckCircle,
+  CheckCircleOutline,
+  LocalOffer,
+  Logout,
+  Star,
+  Upgrade,
+} from "@mui/icons-material";
 
 const Input = styled("input")({
   display: "none",
 });
 
 const ProfileSettings = () => {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const userData = useAuth();
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    phone: "",
-    email: "",
-    image: "",
-  });
+  const [plansLoading, setPlansLoading] = useState(false);
+  const [plans, setPlans] = useState({});
+
+  const fetchPlans = async () => {
+    try {
+      setPlansLoading(true);
+      const response = await userService?.getMySubscription();
+      console.log("response: ", response);
+      setPlans(response?.subscription || {});
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setPlansLoading(false);
+    }
+  };
 
   // Load user data from localStorage on mount
   useEffect(() => {
-    if (userData) {
-      try {
-        const user = JSON.parse(userData);
-        setFormData({
-          firstName: user.firstName || "",
-          lastName: user.lastName || "",
-          phone: user.phone || "",
-          email: user.email || "",
-          image: user.image || "",
-        });
-      } catch {
-        // ignore JSON parse errors
-      }
-    }
+    fetchPlans();
   }, []);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+  const savingsPercentage = (plan) => {
+    const savings = plan?.price - plan?.offer;
+
+    return Math.round((savings / plan?.price) * 100);
   };
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const imageUrl = URL.createObjectURL(file);
-      setFormData((prev) => ({ ...prev, image: imageUrl }));
-    }
+  const daysRemaining = (subscription) =>
+    Math.ceil(
+      (new Date(subscription?.endDate) - new Date()) / (1000 * 60 * 60 * 24)
+    );
+
+  const handleUpgradePlan = () => {
+    console.log("handleUpgradePlan");
+    navigate("/subscription/plans");
   };
 
   const logout = () => {
     Cookies.remove("access_token");
-    localStorage.removeItem("user");
+    dispatch(clearUserData());
     navigate("/auth/signin");
   };
 
   return (
-    <Container maxWidth="sm">
-      <Box
+    <Box
+      sx={{ p: 2 }}
+      component="main"
+      role="main"
+      display={"flex"}
+      flexDirection={"column"}
+      gap={2}
+      flexGrow={1}
+    >
+      {plansLoading ? (
+        <PlanSkeleton />
+      ) : (
+        <Card elevation={3}>
+          <CardContent sx={{ p: 4 }}>
+            <Box
+              display="flex"
+              flexDirection="column"
+              alignItems="flex-start"
+              justifyContent="center"
+              textAlign="center"
+              border="1px solid #ccc"
+              borderRadius={2}
+              p={2}
+              gap={1} // spacing between text elements
+            >
+              <Typography
+                variant="h6"
+                fontWeight={600}
+                color="primary"
+                gutterBottom
+              >
+                Name : {userData.name}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Email : {userData.email}
+              </Typography>
+            </Box>
+
+            {Object.keys(plans).length > 0 ? (
+              <>
+                {/* Header Section */}
+
+                <Box sx={{ my: 2, textAlign: "center" }}>
+                  <Typography variant="h6" component="h4" gutterBottom>
+                    Current Subscription
+                  </Typography>
+                </Box>
+
+                <Divider sx={{ mb: 2 }} />
+
+                {/* Plan Details Section */}
+                <Box sx={{ mb: 2 }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <Typography
+                      variant="h5"
+                      gutterBottom
+                      sx={{ fontWeight: "bold" }}
+                    >
+                      {plans?.planId?.name}
+                    </Typography>
+                    <Chip
+                      label={plans?.isActive ? "Active" : "Inactive"}
+                      color={plans?.isActive ? "success" : "error"}
+                      icon={<CheckCircleOutline />}
+                    />
+                  </Box>
+
+                  {/* Pricing */}
+                  <Paper
+                    elevation={1}
+                    sx={(theme) => ({
+                      p: 3,
+                      mb: 3,
+                      background: `linear-gradient(135deg,  #000 0%, ${theme.palette.primary.main} 100%)`,
+                      color: "white",
+                    })}
+                  >
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <Box>
+                        <Typography
+                          variant="h3"
+                          component="span"
+                          sx={{ fontWeight: "bold" }}
+                        >
+                          ${plans?.planId?.offer}
+                        </Typography>
+                        <Typography
+                          variant="h6"
+                          component="span"
+                          sx={{
+                            textDecoration: "line-through",
+                            ml: 2,
+                            opacity: 0.7,
+                          }}
+                        >
+                          ${plans?.planId?.price}
+                        </Typography>
+                      </Box>
+                      <Box sx={{ textAlign: "right" }}>
+                        <Chip
+                          label={`Save ${savingsPercentage(plans?.planId)}%`}
+                          color="warning"
+                          icon={<LocalOffer />}
+                          sx={{ mb: 1 }}
+                        />
+                        <Typography variant="body2">
+                          You save $
+                          {plans?.planId?.price - plans?.planId?.offer}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </Paper>
+
+                  {/* Features */}
+                  <Typography
+                    variant="h6"
+                    gutterBottom
+                    sx={{ fontWeight: "bold" }}
+                  >
+                    Plan Features
+                  </Typography>
+                  <List
+                    sx={{
+                      bgcolor: "background.paper",
+                      borderRadius: 2,
+                      border: "1px solid #e0e0e0",
+                    }}
+                  >
+                    {plans?.planId?.features?.map((feature, index) => (
+                      <ListItem key={index} sx={{ py: 0 }}>
+                        <ListItemIcon>
+                          <CheckCircle color="success" />
+                        </ListItemIcon>
+                        <ListItemText primary={feature} />
+                      </ListItem>
+                    ))}
+                  </List>
+                </Box>
+
+                {/* Subscription Timeline */}
+                <Box sx={{ mb: 2 }}>
+                  <Typography
+                    variant="h6"
+                    gutterBottom
+                    sx={{ fontWeight: "bold" }}
+                  >
+                    Subscription Details
+                  </Typography>
+                  <Stack spacing={2}>
+                    <Paper elevation={1} sx={{ p: 2 }}>
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", mb: 1 }}
+                      >
+                        <CalendarToday sx={{ mr: 1, color: "primary.main" }} />
+                        <Typography
+                          variant="subtitle1"
+                          sx={{ fontWeight: "bold" }}
+                        >
+                          Subscription Period
+                        </Typography>
+                      </Box>
+                      <Typography variant="body2" color="text.secondary">
+                        Started: {formatDate(plans.startDate)}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Expires: {formatDate(plans?.planId?.durationInDays)}
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{ mt: 1, fontWeight: "bold" }}
+                      >
+                        {daysRemaining(plans) > 0
+                          ? `${daysRemaining(plans)} days remaining`
+                          : "Expired"}
+                      </Typography>
+                    </Paper>
+                  </Stack>
+                </Box>
+
+                {/* Action Buttons */}
+                <Box sx={{ display: "flex", gap: 2, justifyContent: "center" }}>
+                  <Button
+                    variant="contained"
+                    size="medium"
+                    startIcon={<Upgrade />}
+                    onClick={handleUpgradePlan}
+                    sx={{
+                      background:
+                        "linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)",
+                      boxShadow: "0 3px 5px 2px rgba(255, 105, 135, .3)",
+                      px: 2,
+                      py: 1,
+                    }}
+                  >
+                    Upgrade Plan
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    size="medium"
+                    color="primary"
+                    sx={{ px: 2, py: 1 }}
+                  >
+                    View All Plans
+                  </Button>
+                </Box>
+              </>
+            ) : (
+              <>
+                <Typography
+                  variant="h6"
+                  gutterBottom
+                  sx={{ fontWeight: "bold" }}
+                >
+                  Subscription Plan
+                </Typography>
+                <Typography variant="body1" gutterBottom>
+                  You are currently not subscribed to any plan.
+                </Typography>
+                <Typography variant="body1" gutterBottom>
+                  Please subscribe to a plan to access all features.
+                </Typography>
+                <Button
+                  variant="contained"
+                  size="medium"
+                  startIcon={<Upgrade />}
+                  onClick={handleUpgradePlan}
+                  sx={{
+                    background:
+                      "linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)",
+                    boxShadow: "0 3px 5px 2px rgba(255, 105, 135, .3)",
+                    px: 2,
+                    py: 1,
+                  }}
+                >
+                  Upgrade Plan
+                </Button>
+              </>
+            )}
+          </CardContent>
+        </Card>
+      )}
+      <Card
+        elevation={2}
         sx={{
-          p: 4,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          minHeight: "100vh",
+          background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
         }}
       >
-        <Card
-          sx={{
-            width: "100%",
-            backgroundColor: "#ffffff",
-            padding: 4,
-            boxSizing: "border-box",
-          }}
-        >
-          <Typography
-            variant="h5"
-            fontWeight={600}
-            color="primary"
-            gutterBottom
-            textAlign="center"
-          >
-            Profile Settings
+        <CardContent>
+          <Typography variant="h6" gutterBottom>
+            Need Help?
           </Typography>
-
-          <Box sx={{ textAlign: "center", my: 4, position: "relative" }}>
-            <Avatar
-              src={formData.image}
-              alt="Profile"
-              sx={{
-                width: 100,
-                height: 100,
-                mx: "auto",
-                border: "3px solid",
-                borderColor: "primary.main",
-              }}
-            />
-            <label htmlFor="upload-photo">
-              <Input
-                accept="image/*"
-                id="upload-photo"
-                type="file"
-                onChange={handleImageChange}
-              />
-              <IconButton
-                component="span"
-                sx={{
-                  position: "absolute",
-                  bottom: 0,
-                  left: "calc(50% + 25px)",
-                  bgcolor: "background.paper",
-                  border: "1px solid",
-                  borderColor: "grey.300",
-                  boxShadow: 1,
-                  "&:hover": {
-                    bgcolor: "grey.100",
-                  },
-                }}
-              >
-                <EditIcon fontSize="small" />
-              </IconButton>
-            </label>
-          </Box>
-
-          <Box
-            component="form"
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 3,
-              maxWidth: 400,
-              mx: "auto",
-            }}
-          >
-            <TextField
-              fullWidth
-              label="First Name"
-              name="firstName"
-              value={formData.firstName}
-              onChange={handleChange}
-              variant="outlined"
-            />
-
-            <TextField
-              fullWidth
-              label="Last Name"
-              name="lastName"
-              value={formData.lastName}
-              onChange={handleChange}
-              variant="outlined"
-            />
-
-            <TextField
-              fullWidth
-              label="Email"
-              name="email"
-              type="email"
-              value={formData.email}
-              onChange={handleChange}
-              variant="outlined"
-            />
-
-            <TextField
-              fullWidth
-              label="Phone"
-              name="phone"
-              type="tel"
-              value={formData.phone}
-              onChange={handleChange}
-              variant="outlined"
-            />
-
-            <Button
-              fullWidth
-              variant="contained"
-              color="primary"
-              size="large"
-              sx={{ borderRadius: 2 }}
-              onClick={() => alert("Save logic here")}
-            >
-              Save Changes
-            </Button>
-            <Button
-              fullWidth
-              variant="outlined"
-              color="error"
-              size="large"
-              sx={{ borderRadius: 2 }}
-              onClick={logout}
-            >
-              Logout
-            </Button>
-          </Box>
-        </Card>
-      </Box>
-    </Container>
+          <Typography variant="body2" color="text.secondary">
+            Contact our support team if you have any questions about your
+            subscription or need assistance with upgrading your plan.
+          </Typography>
+          <Button variant="text" color="primary" sx={{ mt: 1 }}>
+            Contact Support
+          </Button>
+        </CardContent>
+      </Card>
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={logout}
+        startIcon={<Logout />}
+      >
+        Logout
+      </Button>
+    </Box>
   );
 };
 
 export default ProfileSettings;
+
+const PlanSkeleton = () => (
+  <Card sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
+    <CardContent sx={{ flexGrow: 1 }}>
+      <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+        <Skeleton variant="circular" width={40} height={40} />
+        <Box sx={{ ml: 2, flexGrow: 1 }}>
+          <Skeleton variant="text" width="60%" height={28} />
+          <Skeleton variant="text" width="80%" height={20} />
+        </Box>
+      </Box>
+
+      <Skeleton
+        variant="rectangular"
+        height={100}
+        sx={{ borderRadius: 2, mb: 2 }}
+      />
+
+      <Stack spacing={1}>
+        {[...Array(5)].map((_, index) => (
+          <Box key={index} sx={{ display: "flex", alignItems: "center" }}>
+            <Skeleton variant="circular" width={20} height={20} />
+            <Skeleton variant="text" width="70%" sx={{ ml: 1 }} />
+          </Box>
+        ))}
+      </Stack>
+    </CardContent>
+
+    <CardActions sx={{ p: 2 }}>
+      <Skeleton
+        variant="rectangular"
+        width="100%"
+        height={48}
+        sx={{ borderRadius: 1 }}
+      />
+    </CardActions>
+  </Card>
+);

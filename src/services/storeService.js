@@ -47,17 +47,38 @@ export const getMyStore = async () => {
 export const addItem = async (items) => {
   const formData = new FormData();
 
-  const itemsWithoutImages = items.map(({ image, ...rest }) => rest);
+  // Add item data (excluding image field) as JSON
+  const itemsData = items.map(({ image, ...rest }) => rest);
+  formData.append("items", JSON.stringify(itemsData));
 
-  formData.append("items", JSON.stringify(itemsWithoutImages));
-
-  items.forEach(({ image }, idx) => {
-    if (image && image instanceof File) {
-      formData.append(`itemImage${idx}`, image);
+  // Append images if available
+  items.forEach(({ image }) => {
+    if (image instanceof File) {
+      formData.append(`images`, image);
     }
   });
+
   const response = await api.post("/user/createProduct", formData, {
-    headers: { "Content-Type": "multipart/form-data" },
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
   });
+
   return response.data;
 };
+
+const getMyInventory = async () => {
+  const response = await api.get("/user/getMyInventory");
+  return response.data;
+};
+
+const storeService = {
+  getStores,
+  getPlans,
+  createStore,
+  getMyStore,
+  addItem,
+  getMyInventory,
+};
+
+export default storeService;

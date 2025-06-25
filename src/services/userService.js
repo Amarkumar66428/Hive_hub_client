@@ -10,7 +10,11 @@ const getUserdata = async () => {
   return response.data;
 };
 
+const getMySubscription = async () => {
+  const response = await api.get("/user/getMySubscription");
+  return response.data;
+};
 
-const userService = { buySubscription, getUserdata };
+const userService = { buySubscription, getUserdata, getMySubscription };
 
 export default userService;

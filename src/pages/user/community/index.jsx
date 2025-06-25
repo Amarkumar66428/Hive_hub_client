@@ -111,7 +111,7 @@ const PostCard = memo(
             <Stack direction="row" spacing={2} alignItems="center" mb={2}>
               <Avatar
                 src={post?.avatar}
-                alt={post?.author}
+                alt={post?.authorName}
                 sx={{
                   width: 48,
                   height: 48,
@@ -121,7 +121,7 @@ const PostCard = memo(
               />
               <Box flex={1}>
                 <Typography variant="h6" fontWeight={600} color="text.primary">
-                  {post?.author || "Unknown"}
+                  {post?.authorName || "Unknown"}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
                   {formatDate(post?.createdAt)}
