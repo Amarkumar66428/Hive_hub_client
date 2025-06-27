@@ -8,13 +8,13 @@ const ServerError = () => {
   const serverError = useSelector((state) => state.serverError);
 
   return (
-    <Modal open={serverError?.isError} footer={null} closable={false}>
+    <Modal open={serverError?.isError || false} footer={null} closable={false}>
       <Result
-        status={serverError?.code}
-        title={serverError?.code}
-        subTitle={serverError?.message}
+        status={serverError?.code || '500'}
+        title={serverError?.code || '500'}
+        subTitle={serverError?.message || 'Internal Server Error'}
         extra={
-          [500, 502].includes(serverError?.code) ? (
+          [500, 502].includes(serverError?.code || 500) ? (
             <>
               <Button
                 variant="outlined"

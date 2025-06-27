@@ -53,8 +53,8 @@ const ManagePlans = ({ setOpen, selectPlan, setSelectPlan }) => {
 
   const handleDelete = async () => {
     try {
-      setLoading({ type: "delete", planId: confirmDelete.id });
-      const response = await deletePlan(confirmDelete.id);
+      setLoading({ type: "delete", planId: confirmDelete?.id });
+      const response = await deletePlan(confirmDelete?.id);
       if (response) {
         showSnackbar(
           response?.message || "Plan deleted successfully",
@@ -159,9 +159,7 @@ const ManagePlans = ({ setOpen, selectPlan, setSelectPlan }) => {
               <Grid
                 key={plan._id}
                 item
-                xs={12}
-                sm={6}
-                md={4}
+                sizes={{ xs: 12, sm: 6, md: 4, lg: 3 }}
                 sx={{
                   position: "relative",
                   display: "flex",

@@ -1,117 +1,140 @@
 import React, { useState } from "react";
 import {
-  Box,
-  Button,
-  Typography,
-  CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
   TextField,
+  Button,
+  CircularProgress,
+  Box,
+  Stack,
+  Typography,
 } from "@mui/material";
-import { createInviteCode } from "../../../services/adminService"; // must accept { name, email, phone }
+import { createInviteCode } from "../../../services/adminService";
 import { useSnackbar } from "../../../features/snackBar";
 import { useNavigate } from "react-router-dom";
 
-const InviteCode = () => {
+const InviteCodeModal = ({ open, onClose }) => {
   const { showSnackbar } = useSnackbar();
   const navigate = useNavigate();
+
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-  });
+  const [formData, setFormData] = useState({ name: "", email: "" });
+  const [errors, setErrors] = useState({ name: false, email: false });
 
   const handleChange = (field) => (e) => {
-    setFormData({ ...formData, [field]: e.target.value });
+    setFormData((prev) => ({ ...prev, [field]: e.target.value }));
+    setErrors((prev) => ({ ...prev, [field]: false }));
   };
 
   const validate = () => {
     const { name, email } = formData;
+    const newErrors = {
+      name: !name.trim(),
+      email: !email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email),
+    };
+    setErrors(newErrors);
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-    if (!name || !email) {
-      setError(true);
-      showSnackbar("Please fill in all fields", "error");
-      return false;
-    }
-
-    if (!emailRegex.test(email)) {
-      setError(true);
-      showSnackbar("Please provide a valid email address", "error");
+    if (newErrors.name || newErrors.email) {
+      showSnackbar("Please provide valid input in all fields", "error");
       return false;
     }
 
     return true;
   };
 
-  const generateInviteCode = async () => {
+  const handleSubmit = async () => {
     if (!validate()) return;
 
     setLoading(true);
-    setError(false);
     try {
       const response = await createInviteCode(formData);
       if (response) {
         showSnackbar("Invite code generated successfully", "success");
+        onClose();
         navigate("/admin/manage-invite");
       } else {
-        showSnackbar(response?.message, "error");
+        showSnackbar(response?.message || "Unknown error occurred", "error");
       }
-    } catch (error) {
-      console.error("Failed to generate invite code:", error);
-      setError(true);
-      showSnackbar("Failed to generate code. Try again.", "error");
+    } catch (err) {
+      console.error("Invite Error:", err);
+      showSnackbar("Failed to generate invite code", "error");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Box sx={{ p: 4, display: "flex", flexDirection: "column", gap: 2 }}>
-      <Typography variant="h4">Invite New User</Typography>
-      <Box
-        sx={{ display: "flex", flexDirection: "column", gap: 2, width: "50%" }}
-      >
-        <TextField
-          fullWidth
-          label="Name"
-          value={formData.name}
-          onChange={handleChange("name")}
-          sx={{ mb: 2 }}
-          error={error && !formData.name}
-          helperText={error && !formData.name ? "Please provide a name" : ""}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              generateInviteCode();
-            }
-          }}
-        />
-        <TextField
-          fullWidth
-          label="Email"
-          value={formData.email}
-          onChange={handleChange("email")}
-          sx={{ mb: 2 }}
-          error={error && !formData.email}
-          helperText={error && !formData.email ? "Please provide an email" : ""}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              generateInviteCode();
-            }
-          }}
-        />
+    <Dialog
+      open={open}
+      onClose={onClose}
+      fullWidth
+      maxWidth="sm"
+      PaperProps={{
+        sx: {
+          borderRadius: 3,
+          px: { xs: 2, sm: 4 },
+          py: 3,
+        },
+      }}
+    >
+      <DialogTitle>Invite New User</DialogTitle>
+      <DialogContent>
+        <Stack spacing={3} mt={1}>
+          <TextField
+            label="Full Name"
+            fullWidth
+            value={formData.name}
+            onChange={handleChange("name")}
+            error={errors.name}
+            helperText={errors.name ? "Name is required" : ""}
+            autoComplete="off"
+            size="medium"
+            variant="outlined"
+          />
+
+          <TextField
+            label="Email Address"
+            fullWidth
+            value={formData.email}
+            onChange={handleChange("email")}
+            error={errors.email}
+            helperText={errors.email ? "Enter a valid email address" : ""}
+            autoComplete="off"
+            size="medium"
+            variant="outlined"
+          />
+        </Stack>
+      </DialogContent>
+
+      <DialogActions sx={{ px: 4, pb: 2, justifyContent: "space-between" }}>
+        <Button onClick={onClose} variant="text" color="secondary">
+          Cancel
+        </Button>
         <Button
           variant="contained"
-          color="primary"
-          onClick={generateInviteCode}
+          onClick={handleSubmit}
           disabled={loading}
-          sx={{ alignSelf: "flex-start", fontSize: "1.2rem", padding: "10px 20px" }}
+          sx={{
+            minWidth: 140,
+            fontWeight: 600,
+            textTransform: "none",
+            fontSize: "1rem",
+            px: 3,
+            py: 1.2,
+            borderRadius: 2,
+          }}
         >
-          {loading ? <CircularProgress size={24} /> : "Send Invite"}
+          {loading ? (
+            <CircularProgress size={24} color="inherit" />
+          ) : (
+            "Send Invite"
+          )}
         </Button>
-      </Box>
-    </Box>
+      </DialogActions>
+    </Dialog>
   );
 };
 
-export default InviteCode;
+export default InviteCodeModal;

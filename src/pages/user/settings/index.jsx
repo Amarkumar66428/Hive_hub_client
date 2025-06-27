@@ -1,40 +1,34 @@
 import React, { useState, useEffect } from "react";
 import {
-  Avatar,
   Box,
   Button,
   Card,
   CardActions,
   CardContent,
   Chip,
-  Container,
   Divider,
-  IconButton,
   List,
   ListItem,
   ListItemIcon,
   ListItemText,
   Paper,
   Skeleton,
-  TextField,
   Typography,
 } from "@mui/material";
-import { Grid, Stack, styled } from "@mui/system";
-import EditIcon from "@mui/icons-material/Edit";
+import { Stack, styled } from "@mui/system";
 import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
-import useAuth from "../../hooks/useAuth";
+import useAuth from "../../../hooks/useAuth";
 import { useDispatch } from "react-redux";
-import { clearUserData } from "../../reducer/authSlice";
-import userService from "../../services/userService";
-import { formatDate } from "../../utils/helper";
+import { clearUserData } from "../../../reducer/authSlice";
+import userService from "../../../services/userService";
+import { formatDate } from "../../../utils/helper";
 import {
   CalendarToday,
   CheckCircle,
   CheckCircleOutline,
   LocalOffer,
   Logout,
-  Star,
   Upgrade,
 } from "@mui/icons-material";
 

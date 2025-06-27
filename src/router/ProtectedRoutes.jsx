@@ -7,8 +7,14 @@ import usePlan from "../hooks/useSubscription";
 import userService from "../services/userService";
 import { setUserData } from "../reducer/authSlice";
 import AppLoading from "../pages/hiveloading";
+import adminService from "../services/adminService";
+import { decryptData } from "../utils/encryption";
 
-const ProtectedRoute = ({ children, role = [], subscriptionRequired = false }) => {
+const ProtectedRoute = ({
+  children,
+  role = [],
+  subscriptionRequired = false,
+}) => {
   const location = useLocation();
   const dispatch = useDispatch();
 
@@ -20,17 +26,37 @@ const ProtectedRoute = ({ children, role = [], subscriptionRequired = false }) =
 
   useEffect(() => {
     if (!user && token) {
-      userService.getUserdata()
-        .then((data) => {
-          if (data) {
-            dispatch(setUserData({
-              user: data?.user,
-              subscription: data.subscription,
-            }));
-          }
-        })
-        .catch(console.error)
-        .finally(() => setLoading(false));
+      const role = decryptData(localStorage.getItem("role"));
+      if (role === "admin") {
+        adminService
+          .getAdminData()
+          .then((data) => {
+            if (data) {
+              dispatch(
+                setUserData({
+                  user: data?.data,
+                })
+              );
+            }
+          })
+          .catch(console.error)
+          .finally(() => setLoading(false));
+      } else {
+        userService
+          .getUserdata()
+          .then((data) => {
+            if (data) {
+              dispatch(
+                setUserData({
+                  user: data?.user,
+                  subscription: data.subscription,
+                })
+              );
+            }
+          })
+          .catch(console.error)
+          .finally(() => setLoading(false));
+      }
     } else {
       setLoading(false);
     }
@@ -39,7 +65,7 @@ const ProtectedRoute = ({ children, role = [], subscriptionRequired = false }) =
   const isAuthenticated = !!token && role.includes(user?.role);
   const isSubscribed = plan?.isActive;
 
-  if (loading) return <AppLoading />; // or a small loader component
+  if (loading) return <AppLoading />;
 
   if (!isAuthenticated) {
     return <Navigate to="/auth/signin" state={{ from: location }} replace />;

@@ -14,3 +14,17 @@ export const blockStore = async (storeId) => {
   const response = await api.post(`admin/approveStore/${storeId}/block`);
   return response.data;
 };
+
+const getAdminData = async () => {
+  const response = await api.get("/admin/getAdminData");
+  return response.data;
+};
+
+const adminService = {
+  createInviteCode,
+  approveStore,
+  blockStore,
+  getAdminData,
+};
+
+export default adminService;

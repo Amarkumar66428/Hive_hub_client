@@ -10,7 +10,7 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import { FcGoogle } from "react-icons/fc";
 import CodeInput from "../../../components/CustomInput/codeInput";
-import { signUp } from "../../../services/authService";
+import authService from "../../../services/authService";
 import { useSnackbar } from "../../../features/snackBar";
 
 const Signup = () => {
@@ -26,8 +26,7 @@ const Signup = () => {
   });
 
   const validatePassword = (password) => {
-    const regex =
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
     return regex.test(password);
   };
 
@@ -54,7 +53,12 @@ const Signup = () => {
 
     try {
       setIsLoading(true);
-      const response = await signUp({ name, email, inviteCode, password });
+      const response = await authService?.signUp({
+        name,
+        email,
+        inviteCode,
+        password,
+      });
       if (response) {
         showSnackbar("Signup successful", "success");
         navigate("/auth/signin");
@@ -121,8 +125,18 @@ const Signup = () => {
           {[
             { label: "Full Name", field: "name", placeholder: "John Doe" },
             { label: "Email", field: "email", placeholder: "demo@example.com" },
-            { label: "Password", field: "password", placeholder: "", type: "password" },
-            { label: "Confirm Password", field: "confirmPassword", placeholder: "", type: "password" },
+            {
+              label: "Password",
+              field: "password",
+              placeholder: "",
+              type: "password",
+            },
+            {
+              label: "Confirm Password",
+              field: "confirmPassword",
+              placeholder: "",
+              type: "password",
+            },
           ].map(({ label, field, placeholder, type = "text" }) => (
             <Box key={field}>
               <label style={{ fontWeight: 500, color: "#fff" }}>{label}</label>

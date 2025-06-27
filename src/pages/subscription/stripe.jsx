@@ -109,7 +109,7 @@ const StripePaymentForm = ({
       setPaymentSucceeded(true);
       setLoading(false);
       localStorage.setItem("isSubscribed", true);
-      navigate("/user/home/dashboard");
+      navigate("/user/dashboard");
       showSnackbar("Payment successful", "success");
       if (onPaymentSuccess) onPaymentSuccess(response);
     }
