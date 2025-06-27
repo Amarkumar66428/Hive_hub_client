@@ -1,18 +1,28 @@
 import React from "react";
-import { Box, Button, Card, CardContent, Typography } from "@mui/material";
-import Cookies from "js-cookie";
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Typography,
+} from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import useAuth from "../../../hooks/useAuth";
 import { useDispatch } from "react-redux";
 import { clearUserData } from "../../../reducer/authSlice";
 import { Logout } from "@mui/icons-material";
+import ConfirmDialog from "../../../components/confirmDialog";
+import Cookies from "js-cookie";
 
 const ProfileSettings = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const userData = useAuth();
 
+  const [openLogoutDialog, setOpenLogoutDialog] = React.useState(false);
+
   const logout = () => {
+    localStorage.clear();
     Cookies.remove("access_token");
     dispatch(clearUserData());
     navigate("/auth/signin");
@@ -29,7 +39,15 @@ const ProfileSettings = () => {
       flexGrow={1}
     >
       <Card elevation={3}>
-        <CardContent sx={{ p: 4 }}>
+        <CardContent
+          sx={{
+            p: 4,
+            display: "flex",
+            justifyContent: "space-between",
+            gap: 2,
+            flexDirection: "column",
+          }}
+        >
           <Box
             display="flex"
             flexDirection="column"
@@ -56,16 +74,25 @@ const ProfileSettings = () => {
               Role : {userData?.role || "Admin"}
             </Typography>
           </Box>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => setOpenLogoutDialog(true)}
+            startIcon={<Logout />}
+            sx={{ alignSelf: "flex-start" }}
+          >
+            Logout
+          </Button>
         </CardContent>
       </Card>
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={logout}
-        startIcon={<Logout />}
-      >
-        Logout
-      </Button>
+      <ConfirmDialog
+        open={openLogoutDialog}
+        title="Logout"
+        description="Are you sure you want to logout?"
+        confirmText="Yes"
+        onConfirm={logout}
+        onCancel={() => setOpenLogoutDialog(false)}
+      />
     </Box>
   );
 };

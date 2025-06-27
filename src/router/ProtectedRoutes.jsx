@@ -5,7 +5,7 @@ import { useDispatch } from "react-redux";
 import useAuth from "../hooks/useAuth";
 import usePlan from "../hooks/useSubscription";
 import userService from "../services/userService";
-import { setUserData } from "../reducer/authSlice";
+import { clearUserData, setUserData } from "../reducer/authSlice";
 import AppLoading from "../pages/hiveloading";
 import adminService from "../services/adminService";
 import { decryptData } from "../utils/encryption";
@@ -68,6 +68,9 @@ const ProtectedRoute = ({
   if (loading) return <AppLoading />;
 
   if (!isAuthenticated) {
+    localStorage.clear();
+    Cookies.remove("access_token");
+    dispatch(clearUserData());
     return <Navigate to="/auth/signin" state={{ from: location }} replace />;
   }
 

@@ -8,6 +8,8 @@ import {
   InputAdornment,
   TextField,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
 import { FcGoogle } from "react-icons/fc";
@@ -38,9 +40,6 @@ const textFieldStyles = {
       color: "#fff",
       caretColor: "#fff",
     },
-    "&:hover input": {
-      caretColor: "#fff",
-    },
   },
 };
 
@@ -48,59 +47,56 @@ const Signin = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [isAdminSignIn, setIsAdminSignIn] = useState(false);
-
   const { showSnackbar } = useSnackbar();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [form, setForm] = useState({ email: "", password: "" });
 
-  const [form, setForm] = useState({
-    email: "",
-    password: "",
-  });
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
-  const handleSignIn = async () => {
-    if (form.email === "" || form.password === "") {
+  const handleSignIn = async (e) => {
+    e.preventDefault();
+    if (!form.email || !form.password) {
       showSnackbar("Please fill all the fields", "error");
       return;
     }
+
     try {
       setIsLoading(true);
-      const body = {
-        email: form.email,
-        password: form.password,
-      };
+      const body = { email: form.email, password: form.password };
 
       if (isAdminSignIn) {
         const response = await authService?.adminSignIn(body);
         if (!response?.data) return;
+
         Cookies.set("access_token", response?.data?.token, { expires: 1 });
         const role = encryptData("admin");
         localStorage.setItem("role", role);
-        const user = {
-          user: response?.data,
-        };
-        dispatch(setUserData(user));
+
+        dispatch(setUserData({ user: response?.data }));
         showSnackbar("Login successful", "success");
         navigate("/admin/dashboard");
       } else {
         const response = await authService?.signIn(body);
-        if (response?.data || response?.data?.token) return;
+        if (!response?.data?.token) return;
+
         Cookies.set("access_token", response?.data?.token, { expires: 1 });
+
         const userData = await userService.getUserdata();
         if (userData) {
-          const user = {
-            user: userData?.user,
-            subscription: userData?.subscription,
-          };
-          dispatch(setUserData(user));
+          dispatch(
+            setUserData({
+              user: userData?.user,
+              subscription: userData?.subscription,
+            })
+          );
           showSnackbar("Login successful", "success");
           navigate("/user/dashboard");
         }
       }
     } catch (error) {
-      if (error?.message) {
-        showSnackbar(error?.message, "error");
-      }
+      showSnackbar(error?.message || "Login failed", "error");
       console.error(error);
     } finally {
       setIsLoading(false);
@@ -114,27 +110,33 @@ const Signin = () => {
         flexDirection="column"
         alignItems="center"
         justifyContent="center"
-        width={400}
+        width="100%"
+        maxWidth={400}
         mx="auto"
         gap={2}
-        px={2}
-        py={4}
+        px={isMobile ? 2 : 4}
+        py={6}
         sx={{
           fontFamily: "Open Sans",
         }}
       >
-        <Typography variant="h1" sx={{ color: "#fff" }}>
-          Signin
+        <Typography
+          variant="h4"
+          sx={{ color: "#fff", textAlign: "center", fontWeight: 600 }}
+        >
+          Sign In
         </Typography>
+
         <Button
           variant="outlined"
           startIcon={<FcGoogle />}
+          fullWidth
           sx={{
             textTransform: "none",
             borderRadius: 2,
             fontWeight: 500,
-            paddingX: 2,
-            paddingY: 1,
+            px: 2,
+            py: 1,
             fontSize: "1rem",
             borderColor: "#ccc",
             color: "black",
@@ -151,27 +153,19 @@ const Signin = () => {
         <Divider
           sx={{
             width: "100%",
-            color: "#fff", // text color
+            color: "#fff",
             "&::before, &::after": {
-              borderColor: "#fff", // line color
+              borderColor: "#fff",
             },
           }}
         >
           OR
         </Divider>
-        <form style={{ width: "100%" }}>
-          <Box display="flex" flexDirection="column" gap={4}>
+
+        <form style={{ width: "100%" }} onSubmit={handleSignIn}>
+          <Box display="flex" flexDirection="column" gap={3}>
             <Box display="flex" flexDirection="column" gap={1}>
-              <label
-                style={{
-                  fontWeight: 500,
-                  marginBottom: 2,
-                  color: "#fff",
-                  display: "block",
-                }}
-              >
-                Email
-              </label>
+              <label style={{ fontWeight: 500, color: "#fff" }}>Email</label>
               <TextField
                 variant="outlined"
                 placeholder="demo@example.com"
@@ -181,17 +175,9 @@ const Signin = () => {
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
               />
             </Box>
-            <Box display="flex" flexDirection="column" gap={1} width="100%">
-              <label
-                style={{
-                  fontWeight: 500,
-                  marginBottom: 2,
-                  color: "#fff",
-                  display: "block",
-                }}
-              >
-                Password
-              </label>
+
+            <Box display="flex" flexDirection="column" gap={1}>
+              <label style={{ fontWeight: 500, color: "#fff" }}>Password</label>
               <TextField
                 type={showPassword ? "text" : "password"}
                 variant="outlined"
@@ -215,11 +201,11 @@ const Signin = () => {
                 }}
               />
             </Box>
+
             <Button
               type="submit"
               variant="contained"
               disabled={isLoading}
-              onClick={handleSignIn}
               startIcon={
                 isLoading ? (
                   <CircularProgress size={20} color="inherit" />
@@ -229,13 +215,12 @@ const Signin = () => {
                 textTransform: "none",
                 borderRadius: 2,
                 fontWeight: 500,
-                paddingX: 2,
-                paddingY: 1,
+                px: 2,
+                py: 1.2,
                 fontSize: "1rem",
                 backgroundImage:
-                  "linear-gradient(to bottom, #801B7C 0%, #651562 46%, #4E104C 69%, #450E42 78%, #1A0519 100%)",
+                  "linear-gradient(to bottom, #801B7C, #651562, #4E104C, #1A0519)",
                 color: "#fff",
-
                 "&:hover": {
                   opacity: 0.9,
                 },
@@ -256,20 +241,21 @@ const Signin = () => {
             color: "#fff",
             textAlign: "center",
             fontFamily: "Open Sans",
-            letterSpacing: "normal",
           }}
         >
-          Don't have an account?{" "}
+          Don’t have an account?{" "}
           <Link
             to="/auth/signup"
-            underline="none"
             style={{
               color: "#801B7C",
+              textDecoration: "none",
+              fontWeight: 500,
             }}
           >
             Sign Up
           </Link>
         </Typography>
+
         <Button
           variant="text"
           onClick={() => setIsAdminSignIn((prev) => !prev)}
@@ -279,7 +265,6 @@ const Signin = () => {
             fontWeight: 500,
             fontSize: "0.875rem",
             fontFamily: "Open Sans",
-            letterSpacing: "normal",
             "&:hover": {
               textDecoration: "underline",
             },

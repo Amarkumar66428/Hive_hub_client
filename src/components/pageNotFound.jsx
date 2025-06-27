@@ -1,9 +1,20 @@
 import React from "react";
 import { Box, Typography, Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import Cookies from "js-cookie";
+import { useDispatch } from "react-redux";
+import { clearUserData } from "../reducer/authSlice";
 
 const NotFoundPage = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const logout = () => {
+    localStorage.clear();
+    Cookies.remove("access_token");
+    dispatch(clearUserData());
+    navigate("/auth/signin");
+  };
 
   return (
     <Box
@@ -24,10 +35,15 @@ const NotFoundPage = () => {
       <Typography variant="h5" gutterBottom>
         Oops! The page you are looking for does not exist.
       </Typography>
-      <Typography variant="body1" color="text.secondary" sx={{ mb: 4, maxWidth: 400 }}>
-        The page might have been moved or deleted, or you may have typed the URL incorrectly.
+      <Typography
+        variant="body1"
+        color="text.secondary"
+        sx={{ mb: 4, maxWidth: 400 }}
+      >
+        The page might have been moved or deleted, or you may have typed the URL
+        incorrectly.
       </Typography>
-      <Button variant="contained" color="primary" onClick={() => navigate("/auth/signin")}>
+      <Button variant="contained" color="primary" onClick={() => logout()}>
         Go to Login
       </Button>
     </Box>
