@@ -26,12 +26,12 @@ import {
   blockUnblockInvite,
 } from "../../../services/adminUserSevices";
 import { formatDate } from "../../../utils/helper";
-import { useNavigate } from "react-router-dom";
+import InviteCodeModal from "./createInvite";
 
 const ManageInvite = () => {
-  const navigate = useNavigate();
   const [invites, setInvites] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [openModal, setOpenModal] = useState(false);
   const [actionLoading, setActionLoading] = useState({
     type: null,
     inviteId: null,
@@ -103,10 +103,11 @@ const ManageInvite = () => {
         <Button
           variant="contained"
           color="primary"
-          onClick={() => navigate("/admin/invite-new-user")}
+          onClick={() => setOpenModal(true)}
         >
           Invite New User
         </Button>
+        <InviteCodeModal open={openModal} onClose={() => setOpenModal(false)} />
       </Box>
 
       <TableContainer component={Paper} sx={{ maxHeight: "80vh" }}>

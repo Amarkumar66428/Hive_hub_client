@@ -32,6 +32,7 @@ import {
   Fade,
   Paper,
   Stack,
+  styled,
 } from "@mui/material";
 import {
   Add,
@@ -56,6 +57,16 @@ import useAuth from "../../../hooks/useAuth";
 // Constants
 const POSTS_PER_PAGE = 10;
 const INTERSECTION_THRESHOLD = 0.1;
+
+const ProductCard = styled(Card)(({ theme }) => ({
+  display: "flex",
+  flexDirection: "column",
+  transition: "transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out",
+  "&:hover": {
+    transform: "translateY(-4px)",
+    boxShadow: theme.shadows[8],
+  },
+}));
 
 // Memoized Post Card Component
 const PostCard = memo(
@@ -92,20 +103,7 @@ const PostCard = memo(
 
     return (
       <Fade in timeout={300}>
-        <Card
-          elevation={2}
-          sx={{
-            borderRadius: 3,
-            bgcolor: "background.paper",
-            border: 1,
-            borderColor: "divider",
-            overflow: "hidden",
-            "&:hover": {
-              transform: "translateY(-4px)",
-              transition: "all 0.2s ease-in-out",
-            },
-          }}
-        >
+        <ProductCard >
           {/* Post Header */}
           <CardContent sx={{ pb: 1 }}>
             <Stack direction="row" spacing={2} alignItems="center" mb={2}>
@@ -262,7 +260,7 @@ const PostCard = memo(
               />
             </Paper>
           </Collapse>
-        </Card>
+        </ProductCard>
       </Fade>
     );
   }
@@ -396,7 +394,7 @@ const ContentWithReadMore = memo(({ content, tags, maxChars = 150 }) => {
 
 // Optimized Skeleton Component
 const PostSkeleton = memo(() => (
-  <Card elevation={2} sx={{ borderRadius: 3, overflow: "hidden" }}>
+  <Card sx={{ overflow: "hidden" }}>
     <CardContent>
       <Stack direction="row" spacing={2} mb={2}>
         <Skeleton variant="circular" width={48} height={48} />
@@ -711,81 +709,79 @@ const Community = () => {
           position: "sticky",
           top: 0,
           zIndex: 100,
-          borderBottom: 1,
           borderColor: "divider",
+          px: 2,
         }}
       >
-        <Container maxWidth="md">
-          <Stack
-            direction="row"
-            justifyContent="space-between"
-            alignItems="center"
-            py={2}
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          alignItems="center"
+          py={2}
+        >
+          <Box>
+            <Typography
+              variant="h5"
+              fontWeight={700}
+              color="primary"
+              gutterBottom
+            >
+              Join Our Thriving Community
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Learn from real store owners, share your journey, and get inspired
+              by stories of success in the eCommerce world.
+            </Typography>
+          </Box>
+
+          <Button
+            onClick={(e) => setAnchorEl(e.currentTarget)}
+            sx={{
+              borderRadius: 3,
+              px: 2,
+              py: 1,
+              "&:hover": { bgcolor: "action.hover" },
+            }}
           >
-            <Box>
-              <Typography
-                variant="h5"
-                fontWeight={700}
-                color="primary"
-                gutterBottom
-              >
-                Join Our Thriving Community
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Learn from real store owners, share your journey, and get
-                inspired by stories of success in the eCommerce world.
-              </Typography>
-            </Box>
+            <Avatar
+              src="https://randomuser.me/api/portraits/women/44.jpg"
+              sx={{ width: 40, height: 40, mr: 1 }}
+            />
+            <ExpandMore />
+          </Button>
 
-            <Button
-              onClick={(e) => setAnchorEl(e.currentTarget)}
-              sx={{
-                borderRadius: 3,
-                px: 2,
-                py: 1,
-                "&:hover": { bgcolor: "action.hover" },
-              }}
-            >
-              <Avatar
-                src="https://randomuser.me/api/portraits/women/44.jpg"
-                sx={{ width: 40, height: 40, mr: 1 }}
-              />
-              <ExpandMore />
-            </Button>
-
-            <Menu
-              anchorEl={anchorEl}
-              open={open}
-              onClose={() => setAnchorEl(null)}
-              transformOrigin={{ horizontal: "right", vertical: "top" }}
-              anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
-              PaperProps={{
-                elevation: 3,
-                sx: { mt: 1, minWidth: 200 },
-              }}
-            >
-              <MenuItem onClick={() => handleMenuItemClick("create-post")}>
-                <ListItemIcon>
-                  <Add />
-                </ListItemIcon>
-                <ListItemText>Create Post</ListItemText>
-              </MenuItem>
-              <MenuItem onClick={() => handleMenuItemClick("my-posts")}>
-                <ListItemIcon>
-                  <Article />
-                </ListItemIcon>
-                <ListItemText>My Posts</ListItemText>
-              </MenuItem>
-              <Divider />
-              <MenuItem onClick={() => handleMenuItemClick("my-profile")}>
-                <ListItemIcon>
-                  <Person />
-                </ListItemIcon>
-                <ListItemText>My Community Profile</ListItemText>
-              </MenuItem>
-            </Menu>
-          </Stack>
-        </Container>
+          <Menu
+            anchorEl={anchorEl}
+            open={open}
+            onClose={() => setAnchorEl(null)}
+            transformOrigin={{ horizontal: "right", vertical: "top" }}
+            anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+            PaperProps={{
+              elevation: 3,
+              sx: { mt: 1, minWidth: 200 },
+            }}
+          >
+            <MenuItem onClick={() => handleMenuItemClick("create-post")}>
+              <ListItemIcon>
+                <Add />
+              </ListItemIcon>
+              <ListItemText>Create Post</ListItemText>
+            </MenuItem>
+            <MenuItem onClick={() => handleMenuItemClick("my-posts")}>
+              <ListItemIcon>
+                <Article />
+              </ListItemIcon>
+              <ListItemText>My Posts</ListItemText>
+            </MenuItem>
+            <Divider />
+            <MenuItem onClick={() => handleMenuItemClick("my-profile")}>
+              <ListItemIcon>
+                <Person />
+              </ListItemIcon>
+              <ListItemText>My Community Profile</ListItemText>
+            </MenuItem>
+          </Menu>
+        </Stack>
       </Paper>
 
       {/* Content */}

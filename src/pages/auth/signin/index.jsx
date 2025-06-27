@@ -12,12 +12,13 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import { FcGoogle } from "react-icons/fc";
 import Cookies from "js-cookie";
-import { signIn } from "../../../services/authService";
+import authService from "../../../services/authService";
 import { useSnackbar } from "../../../features/snackBar";
-import { Subscript, Visibility, VisibilityOff } from "@mui/icons-material";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 import userService from "../../../services/userService";
 import { useDispatch } from "react-redux";
 import { setUserData } from "../../../reducer/authSlice";
+import { encryptData } from "../../../utils/encryption";
 
 const textFieldStyles = {
   "& .MuiOutlinedInput-root": {
@@ -46,6 +47,7 @@ const textFieldStyles = {
 const Signin = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [isAdminSignIn, setIsAdminSignIn] = useState(false);
 
   const { showSnackbar } = useSnackbar();
   const [isLoading, setIsLoading] = useState(false);
@@ -67,23 +69,38 @@ const Signin = () => {
         email: form.email,
         password: form.password,
       };
-      const response = await signIn(body);
-      if (response?.data) {
+
+      if (isAdminSignIn) {
+        const response = await authService?.adminSignIn(body);
+        if (!response?.data) return;
         Cookies.set("access_token", response?.data?.token, { expires: 1 });
-        if (response?.data?.token) {
-          const userData = await userService.getUserdata();
-          if (userData) {
-            const user = {
-              user: userData?.user,
-              subscription: userData?.subscription,
-            };
-            dispatch(setUserData(user));
-            showSnackbar("Login successful", "success");
-            navigate("/user/home/dashboard");
-          }
+        const role = encryptData("admin");
+        localStorage.setItem("role", role);
+        const user = {
+          user: response?.data,
+        };
+        dispatch(setUserData(user));
+        showSnackbar("Login successful", "success");
+        navigate("/admin/dashboard");
+      } else {
+        const response = await authService?.signIn(body);
+        if (response?.data || response?.data?.token) return;
+        Cookies.set("access_token", response?.data?.token, { expires: 1 });
+        const userData = await userService.getUserdata();
+        if (userData) {
+          const user = {
+            user: userData?.user,
+            subscription: userData?.subscription,
+          };
+          dispatch(setUserData(user));
+          showSnackbar("Login successful", "success");
+          navigate("/user/dashboard");
         }
       }
     } catch (error) {
+      if (error?.message) {
+        showSnackbar(error?.message, "error");
+      }
       console.error(error);
     } finally {
       setIsLoading(false);
@@ -253,6 +270,23 @@ const Signin = () => {
             Sign Up
           </Link>
         </Typography>
+        <Button
+          variant="text"
+          onClick={() => setIsAdminSignIn((prev) => !prev)}
+          sx={{
+            color: "#fff",
+            textTransform: "none",
+            fontWeight: 500,
+            fontSize: "0.875rem",
+            fontFamily: "Open Sans",
+            letterSpacing: "normal",
+            "&:hover": {
+              textDecoration: "underline",
+            },
+          }}
+        >
+          Switch to {!isAdminSignIn ? "Admin" : "User"} Signin
+        </Button>
       </Box>
     </section>
   );

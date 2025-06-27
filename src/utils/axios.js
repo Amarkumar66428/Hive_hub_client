@@ -22,34 +22,41 @@ api.interceptors.request.use(
   },
   (error) => {
     console.log("error::::::: ", error);
-    return;
+    return error;
   }
 );
 
 api.interceptors.response.use(
-  (response) => {
-    return response;
-  },
+  (response) => response,
   (error) => {
-    if ([401, 403, 500, 502, 504]?.includes(error?.response?.status)) {
+    const status = error?.response?.status || 500;
+    const code = error?.code || "ERR_INTERNAL";
+
+    if ([403, 500, 502].includes(status)) {
+      Cookies.remove("access_token");
+
       store.dispatch(
         setServerError({
           isError: true,
-          code: error?.response?.status || 500,
-          message: error?.response?.data?.message || "Internal Server Error",
+          code: status,
+          message:
+            error?.response?.data?.message ||
+            error?.message ||
+            "Something went wrong",
         })
       );
     }
-    if (["ECONNABORTED", "ECONNREFUSED"].includes(error?.code)) {
-      store.dispatch(
-        setServerError({
-          isError: true,
-          code: 500,
-          message: "Internal Server Error",
-        })
-      );
-    }
-    return Promise.reject(error);
+
+    const formattedError = {
+      message:
+        error?.response?.data?.message ||
+        error?.message ||
+        "Internal Server Error",
+      status,
+      code,
+    };
+
+    return Promise.reject(formattedError);
   }
 );
 

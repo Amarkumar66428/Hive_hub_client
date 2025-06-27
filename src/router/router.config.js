@@ -75,12 +75,12 @@ export const appRouters = [
     subMenu: true,
   },
   {
-    path: "/admin/home/dashboard",
+    path: "/admin/dashboard",
     role: [SUPER_ADMIN],
     title: "Dashboard",
     icon: React.createElement(Dashboard),
     component: asyncComponent(() =>
-      import("../pages/admin/home/dashboard.jsx")
+      import("../pages/admin/dashboard/dashboard.jsx")
     ),
     isLayout: true,
     showInSubMenu: false,
@@ -125,11 +125,13 @@ export const appRouters = [
     showInMenu: true,
   },
   {
-    path: "/user/home/dashboard",
+    path: "/user/dashboard",
     role: [STORE_OWNER],
     title: "Dashboard",
     icon: React.createElement(Dashboard),
-    component: asyncComponent(() => import("../pages/user/home/index.jsx")),
+    component: asyncComponent(() =>
+      import("../pages/user/dashboard/index.jsx")
+    ),
     isLayout: true,
     showInMenu: true,
   },
@@ -208,11 +210,20 @@ export const appRouters = [
     showInMenu: true,
   },
   {
-    path: "/settings",
-    role: [SUPER_ADMIN, STORE_OWNER],
+    path: "/admin/settings",
+    role: [SUPER_ADMIN],
     title: "Settings",
     icon: React.createElement(SettingsOutlined),
-    component: asyncComponent(() => import("../pages/settings/index.jsx")),
+    component: asyncComponent(() => import("../pages/admin/settings/index.jsx")),
+    isLayout: true,
+    showInMenu: true,
+  },
+  {
+    path: "/user/settings",
+    role: [STORE_OWNER],
+    title: "Settings",
+    icon: React.createElement(SettingsOutlined),
+    component: asyncComponent(() => import("../pages/user/settings/index.jsx")),
     isLayout: true,
     showInMenu: true,
   },
