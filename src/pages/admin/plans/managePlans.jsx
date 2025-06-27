@@ -8,6 +8,7 @@ import {
   List,
   ListItem,
   IconButton,
+  Card,
 } from "@mui/material";
 import PlanCard from "../../../components/plansCards";
 import {
@@ -89,8 +90,13 @@ const ManagePlans = ({ setOpen, selectPlan, setSelectPlan }) => {
       setLoading({ type: "activateORDeactivate", planId });
       const response = await activateORDeactivatePlan(planId);
       if (response) {
-        showSnackbar(response?.message || "Plan updated successfully", "success");
-        setPlans(plans.map((plan) => (plan._id === planId ? response?.plan : plan)));
+        showSnackbar(
+          response?.message || "Plan updated successfully",
+          "success"
+        );
+        setPlans(
+          plans.map((plan) => (plan._id === planId ? response?.plan : plan))
+        );
       } else {
         showSnackbar(response?.message || "Something went wrong", "error");
       }
@@ -175,7 +181,10 @@ const ManagePlans = ({ setOpen, selectPlan, setSelectPlan }) => {
                 />
                 <Switch
                   className="plan-active-switch"
-                  loading={loading.type === "activateORDeactivate" && loading.planId === plan._id}
+                  loading={
+                    loading.type === "activateORDeactivate" &&
+                    loading.planId === plan._id
+                  }
                   checked={plan?.isActive}
                   onChange={() => handleToggleActive(plan._id)}
                   checkedChildren={"Active"}
@@ -191,23 +200,27 @@ const ManagePlans = ({ setOpen, selectPlan, setSelectPlan }) => {
           </Grid>
         )}
       </Box>
-      <Box
+      <Card
         sx={{
           position: "sticky",
           bottom: "2em",
           left: 0,
           right: 0,
           backgroundColor: "#000",
-          padding: 2,
-          width: "20%",
+          padding: "0.6em 2em",
           borderRadius: "50px",
           margin: "auto",
+          transition: "all 0.1s ease-in-out",
+          '&:hover': {
+            boxShadow: "0 0 10px rgba(0, 0, 0, 0.5)",
+            transform: "translateY(-5px)",
+          },
         }}
       >
         <List
           sx={{
             display: "flex",
-            gap: 2,
+            gap: "4em",
             justifyContent: "space-between",
             padding: 0,
             margin: 0,
@@ -243,7 +256,7 @@ const ManagePlans = ({ setOpen, selectPlan, setSelectPlan }) => {
             </IconButton>
           </ListItem>
         </List>
-      </Box>
+      </Card>
       <DeleteConfirm
         confirmDelete={confirmDelete}
         setConfirmDelete={setConfirmDelete}

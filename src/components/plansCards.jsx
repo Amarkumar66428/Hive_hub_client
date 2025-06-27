@@ -16,7 +16,7 @@ const label = { inputProps: { "aria-label": "Checkbox demo" } };
 const PlanCard = ({ plan, selectPlan, setSelectPlan, size }) => {
   return (
     <Paper
-      onClick={() => setSelectPlan(plan)}
+      onClick={() => setSelectPlan(prev => prev?._id === plan?._id ? null : plan)}
       elevation={6}
       sx={{
         cursor: "pointer",
