@@ -5,10 +5,13 @@ import {
   DesignServicesRounded,
   Explore,
   HomeOutlined,
+  LocalMallOutlined,
   LocalOffer,
+  LocalOfferOutlined,
   NotificationsOutlined,
   SettingsOutlined,
   Storefront,
+  WebOutlined,
 } from "@mui/icons-material";
 import { SUPER_ADMIN, STORE_OWNER } from "../constant/LookupConst.js";
 import asyncComponent from "../utils/asyncComponent.jsx";
@@ -72,7 +75,6 @@ export const appRouters = [
     icon: React.createElement(HomeOutlined),
     isLayout: true,
     showInMenu: true,
-    subMenu: true,
   },
   {
     path: "/admin/dashboard",
@@ -168,9 +170,18 @@ export const appRouters = [
   {
     path: "/user/manage-store/create-store",
     role: [STORE_OWNER],
-    title: "Create Store",
-    subMenuTitle: "Manage Store",
     icon: React.createElement(DesignServicesRounded),
+    component: asyncComponent(() =>
+      import("../pages/user/createStore/index.jsx")
+    ),
+    isLayout: true,
+  },
+  {
+    path: "/user/manage-store/create-store",
+    role: [STORE_OWNER],
+    title: "My Store",
+    subMenuTitle: "Manage Store",
+    icon: React.createElement(WebOutlined),
     component: asyncComponent(() =>
       import("../pages/user/createStore/index.jsx")
     ),
@@ -182,7 +193,7 @@ export const appRouters = [
     role: [STORE_OWNER],
     title: "Products",
     subMenuTitle: "Manage Store",
-    icon: React.createElement(Storefront),
+    icon: React.createElement(LocalOfferOutlined),
     component: asyncComponent(() => import("../pages/user/stores/product.jsx")),
     isLayout: true,
     showInSubMenu: true,
@@ -192,7 +203,7 @@ export const appRouters = [
     role: [STORE_OWNER],
     title: "Orders",
     subMenuTitle: "Manage Store",
-    icon: React.createElement(Storefront),
+    icon: React.createElement(LocalMallOutlined),
     component: asyncComponent(() => import("../pages/user/stores/orders.jsx")),
     isLayout: true,
     showInSubMenu: true,
