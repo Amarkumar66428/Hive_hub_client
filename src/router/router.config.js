@@ -80,10 +80,10 @@ export const appRouters = [
     title: "Dashboard",
     icon: React.createElement(Dashboard),
     component: asyncComponent(() =>
-      import("../pages/admin/dashboard/dashboard.jsx")
+      import("../pages/admin/dashboard/index.jsx")
     ),
     isLayout: true,
-    showInSubMenu: false,
+    showInMenu: true,
   },
   {
     path: "/admin/manage-plans",
@@ -214,7 +214,9 @@ export const appRouters = [
     role: [SUPER_ADMIN],
     title: "Settings",
     icon: React.createElement(SettingsOutlined),
-    component: asyncComponent(() => import("../pages/admin/settings/index.jsx")),
+    component: asyncComponent(() =>
+      import("../pages/admin/settings/index.jsx")
+    ),
     isLayout: true,
     showInMenu: true,
   },

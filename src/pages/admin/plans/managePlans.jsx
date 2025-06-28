@@ -127,8 +127,11 @@ const ManagePlans = ({ setOpen, selectPlan, setSelectPlan }) => {
         <Typography variant="h4">Manage Plans</Typography>
         <Button
           variant="contained"
-          color="primary"
           onClick={() => setOpen(true)}
+          sx={{
+            backgroundColor: "primary.main",
+            color: "white",
+          }}
         >
           Create Plan
         </Button>
@@ -160,12 +163,12 @@ const ManagePlans = ({ setOpen, selectPlan, setSelectPlan }) => {
           </Box>
         ) : (
           // Data Grid
-          <Grid container spacing={3}>
+          <Grid container spacing={2}>
             {plans.map((plan) => (
               <Grid
                 key={plan._id}
                 item
-                sizes={{ xs: 12, sm: 6, md: 4, lg: 3 }}
+                size={{ xs: 12, sm: 6, md: 4, lg: 3 }}
                 sx={{
                   position: "relative",
                   display: "flex",
@@ -178,21 +181,9 @@ const ManagePlans = ({ setOpen, selectPlan, setSelectPlan }) => {
                   plan={plan}
                   selectPlan={selectPlan}
                   setSelectPlan={setSelectPlan}
-                />
-                <Switch
-                  className="plan-active-switch"
-                  loading={
-                    loading.type === "activateORDeactivate" &&
-                    loading.planId === plan._id
-                  }
-                  checked={plan?.isActive}
-                  onChange={() => handleToggleActive(plan._id)}
-                  checkedChildren={"Active"}
-                  unCheckedChildren={"Inactive"}
-                  style={{
-                    position: "absolute",
-                    bottom: 5,
-                    right: 5,
+                  isAdmin={{
+                    loading,
+                    handleToggleActive,
                   }}
                 />
               </Grid>
@@ -211,7 +202,7 @@ const ManagePlans = ({ setOpen, selectPlan, setSelectPlan }) => {
           borderRadius: "50px",
           margin: "auto",
           transition: "all 0.1s ease-in-out",
-          '&:hover': {
+          "&:hover": {
             boxShadow: "0 0 10px rgba(0, 0, 0, 0.5)",
             transform: "translateY(-5px)",
           },

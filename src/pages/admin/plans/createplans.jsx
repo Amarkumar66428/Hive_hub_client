@@ -111,14 +111,13 @@ const CreateTier = ({ setOpen, selectPlan, setSelectPlan }) => {
 
   const handleOnChange = (e) => {
     const { name, value } = e.target;
-    console.log('name: ', name);
 
     if (name === "name") {
       // Restrict to 25 words - but don't block input harshly
       const words = value.trim().split(/\s+/);
       const trimmed = words.slice(0, 25).join(" ");
       setPlan((prev) => ({ ...prev, name: trimmed }));
-    }else if (name === "price") {
+    } else if (name === "price") {
       // Only allow numbers (no letters, no 'e', no dots)
       const isNumeric = /^\d{0,10}$/.test(value);
       if (isNumeric) {
@@ -139,20 +138,17 @@ const CreateTier = ({ setOpen, selectPlan, setSelectPlan }) => {
       <Box
         sx={{ padding: 4, display: "flex", flexDirection: "column", gap: 2 }}
       >
-        <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            <Button
-              variant="outlined"
-              onClick={handleBack}
-              startIcon={<ArrowBack />}
-            >
-              Back
-            </Button>
-            <Typography variant="h4">Create a new Tier</Typography>
-          </Box>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <Typography variant="h4">Create a new Tier</Typography>
           <Button
             variant="contained"
-            onClick={() => setOpen(false)}
+            onClick={handleBack}
             sx={{
               backgroundColor: "primary.main",
               color: "white",

@@ -26,7 +26,7 @@ const ProtectedRoute = ({
 
   useEffect(() => {
     if (!user && token) {
-      const role = decryptData(localStorage.getItem("role"));
+      const role = decryptData(localStorage.getItem("role") || "");
       if (role === "admin") {
         adminService
           .getAdminData()

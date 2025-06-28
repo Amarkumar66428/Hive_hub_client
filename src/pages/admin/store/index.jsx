@@ -10,11 +10,11 @@ import {
   Paper,
   Typography,
   CircularProgress,
-  Switch,
-  IconButton,
 } from "@mui/material";
 import { getStores } from "../../../services/storeService";
 import { approveStore, blockStore } from "../../../services/adminService";
+import { Switch } from "antd";
+import TableSkeleton from "../../../components/tableSkeleton";
 
 const ManageStores = () => {
   const [stores, setStores] = useState([]);
@@ -92,11 +92,7 @@ const ManageStores = () => {
 
           <TableBody>
             {loading ? (
-              <TableRow>
-                <TableCell colSpan={5} align="center">
-                  <CircularProgress />
-                </TableCell>
-              </TableRow>
+              <TableSkeleton rows={5} columns={5} showActions={true} />
             ) : stores.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} align="center">
@@ -111,31 +107,31 @@ const ManageStores = () => {
                   <TableCell>{store.subdomain || "N/A"}</TableCell>
 
                   <TableCell>
-                    {actionLoading.type === "approve" &&
-                    actionLoading.storeId === store._id ? (
-                      <CircularProgress size={20} />
-                    ) : (
-                      <Switch
-                        checked={store.isApproved}
-                        onChange={() =>
-                          handleApprove(store._id, store.isApproved)
-                        }
-                      />
-                    )}
+                    <Switch
+                      className="plan-active-switch"
+                      loading={
+                        actionLoading.type === "approve" &&
+                        actionLoading.storeId === store._id
+                      }
+                      checked={store.isApproved}
+                      onChange={() =>
+                        handleApprove(store._id, store.isApproved)
+                      }
+                    />
                   </TableCell>
 
                   <TableCell>
-                    {actionLoading.type === "block" &&
-                    actionLoading.storeId === store._id ? (
-                      <CircularProgress size={20} />
-                    ) : (
-                      <Switch
-                        checked={!store.isBlocked}
-                        onChange={() =>
-                          handleBlockToggle(store._id, store.isBlocked)
-                        }
-                      />
-                    )}
+                    <Switch
+                      className="plan-active-switch"
+                      loading={
+                        actionLoading.type === "block" &&
+                        actionLoading.storeId === store._id
+                      }
+                      checked={!store.isBlocked}
+                      onChange={() =>
+                        handleBlockToggle(store._id, store.isBlocked)
+                      }
+                    />
                   </TableCell>
                 </TableRow>
               ))

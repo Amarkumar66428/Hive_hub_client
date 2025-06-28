@@ -10,31 +10,44 @@ import {
 } from "@mui/material";
 import { CheckCircleOutlined } from "@mui/icons-material";
 import cardTop from "../assets/svg/cardTop.svg";
+import { useCallback } from "react";
+import { Switch } from "antd";
 
 const label = { inputProps: { "aria-label": "Checkbox demo" } };
 
-const PlanCard = ({ plan, selectPlan, setSelectPlan, size }) => {
+const PlanCard = ({ plan, selectPlan, setSelectPlan, size, isAdmin = {} }) => {
+  const { loading = false, handleToggleActive = () => {} } = isAdmin;
+
+  const onToggle = useCallback(() => {
+    handleToggleActive(plan._id);
+  }, [handleToggleActive, plan._id]);
+
   return (
     <Paper
-      onClick={() => setSelectPlan(prev => prev?._id === plan?._id ? null : plan)}
-      elevation={6}
-      sx={{
+      onClick={() =>
+        setSelectPlan((prev) => (prev?._id === plan?._id ? null : plan))
+      }
+      sx={(theme) => ({
         cursor: "pointer",
         position: "relative",
-        width: size === "large" ? 380 : 280,
-        height: size === "large" ? 400 : 300,
+        width: size === "large" ? "30em" : "90%",
+        height: size === "large" ? "36em" : "26em",
         borderRadius: 3,
         background:
           plan?.tier === "Premium"
             ? "linear-gradient(to top,rgb(116, 82, 24) 15%,rgb(114, 86, 29) 20%,rgb(104, 76, 25) 25%,rgb(85, 60, 23) 55%,rgb(0, 0, 0) 100%)"
             : "linear-gradient(to top, #801b7c 5%, #651562 15%, #4e104c 25%, #450e42 30%, #1a0519 70%)",
         color: "white",
-        padding: 3,
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "space-between",
-      }}
+        transition: "transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out",
+        "&:hover": {
+          transform: "translateY(-4px)",
+          boxShadow: theme.shadows[8],
+        },
+      })}
     >
       {/* Top banner for plan name */}
       <Box
@@ -54,7 +67,7 @@ const PlanCard = ({ plan, selectPlan, setSelectPlan, size }) => {
           src={cardTop}
           alt="Card Top"
           sx={{
-            width: "60%",
+            width: "50%",
             height: "100%",
             objectFit: "contain",
             zIndex: 0,
@@ -127,6 +140,7 @@ const PlanCard = ({ plan, selectPlan, setSelectPlan, size }) => {
           display: "flex",
           alignItems: "end",
           justifyContent: "center",
+          pb: 1,
         }}
       >
         ${plan.price || "10,000"}
@@ -137,9 +151,11 @@ const PlanCard = ({ plan, selectPlan, setSelectPlan, size }) => {
         dense
         sx={{
           height: "60%",
+          width: "80%",
           px: 0,
           "& .MuiListItem-root": {
-            gap: 0.5,
+            gap:  size === "large" ? "30px" : "10px",
+            pt: 1.4,
           },
         }}
       >
@@ -155,15 +171,35 @@ const PlanCard = ({ plan, selectPlan, setSelectPlan, size }) => {
             }}
           >
             <ListItemIcon sx={{ minWidth: 32 }}>
-              <CheckCircleOutlined sx={{ color: "#2ee82e", fontSize: 20 }} />
+              <CheckCircleOutlined
+                sx={{ color: "#2ee82e", fontSize: size === "large" ? 30 : 20 }}
+              />
             </ListItemIcon>
             <ListItemText
               primary={feature}
-              primaryTypographyProps={{ fontSize: 14 }}
+              primaryTypographyProps={{ fontSize:  size === "large" ? 18 : 14 }}
             />
           </ListItem>
         ))}
       </List>
+      {Object.keys(isAdmin).length > 0 && (
+        <Switch
+          className="plan-active-switch"
+          loading={
+            loading.type === "activateORDeactivate" &&
+            loading.planId === plan._id
+          }
+          checked={plan?.isActive}
+          onChange={onToggle}
+          checkedChildren="Active"
+          unCheckedChildren="Inactive"
+          style={{
+            position: "absolute",
+            bottom: 5,
+            right: 5,
+          }}
+        />
+      )}
     </Paper>
   );
 };
