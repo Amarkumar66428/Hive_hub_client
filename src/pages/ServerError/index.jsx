@@ -78,7 +78,7 @@ const ServerError = () => {
       footer={null}
       closable={false}
       centered
-      bodyStyle={{
+      style={{
         padding: 24,
         maxWidth: 480,
         margin: "0 auto",

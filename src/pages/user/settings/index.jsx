@@ -15,7 +15,7 @@ import {
   Skeleton,
   Typography,
 } from "@mui/material";
-import { Stack, styled } from "@mui/system";
+import { Stack } from "@mui/system";
 import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
 import useAuth from "../../../hooks/useAuth";
@@ -32,10 +32,6 @@ import {
   Upgrade,
 } from "@mui/icons-material";
 
-const Input = styled("input")({
-  display: "none",
-});
-
 const ProfileSettings = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -47,7 +43,6 @@ const ProfileSettings = () => {
     try {
       setPlansLoading(true);
       const response = await userService?.getMySubscription();
-      console.log("response: ", response);
       setPlans(response?.subscription || {});
     } catch (error) {
       console.log(error);
@@ -73,7 +68,6 @@ const ProfileSettings = () => {
     );
 
   const handleUpgradePlan = () => {
-    console.log("handleUpgradePlan");
     navigate("/subscription/plans");
   };
 

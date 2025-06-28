@@ -7,13 +7,7 @@ import {
   DialogContentText,
   DialogActions,
   Button,
-  Slide,
 } from "@mui/material";
-
-// Slide Transition (Optional)
-const Transition = React.forwardRef(function Transition(props, ref) {
-  return <Slide direction="up" ref={ref} {...props} />;
-});
 
 const ConfirmDialog = ({
   open,
@@ -28,7 +22,6 @@ const ConfirmDialog = ({
   return (
     <Dialog
       open={open}
-      TransitionComponent={Transition}
       keepMounted
       onClose={onCancel}
       aria-describedby="confirm-dialog-description"

@@ -10,7 +10,6 @@ import {
   Paper,
   Typography,
   CircularProgress,
-  Switch,
   IconButton,
   Dialog,
   DialogTitle,
@@ -27,6 +26,8 @@ import {
 } from "../../../services/adminUserSevices";
 import { formatDate } from "../../../utils/helper";
 import InviteCodeModal from "./createInvite";
+import { Switch } from "antd";
+import TableSkeleton from "../../../components/tableSkeleton";
 
 const ManageInvite = () => {
   const [invites, setInvites] = useState([]);
@@ -124,11 +125,7 @@ const ManageInvite = () => {
 
           <TableBody>
             {loading ? (
-              <TableRow>
-                <TableCell colSpan={5} align="center">
-                  <CircularProgress />
-                </TableCell>
-              </TableRow>
+              <TableSkeleton rows={5} columns={5} showActions={true} />
             ) : invites.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} align="center">
@@ -142,17 +139,17 @@ const ManageInvite = () => {
                   <TableCell>{invite.code || "N/A"}</TableCell>
                   <TableCell>{formatDate(invite.createdAt) || "N/A"}</TableCell>
                   <TableCell>
-                    {actionLoading.type === "toggle" &&
-                    actionLoading.inviteId === invite._id ? (
-                      <CircularProgress size={20} />
-                    ) : (
-                      <Switch
-                        checked={invite.isBlocked}
-                        onChange={() =>
-                          handleToggleBlocked(invite._id, invite.isBlocked)
-                        }
-                      />
-                    )}
+                    <Switch
+                      className="plan-active-switch"
+                      loading={
+                        actionLoading.type === "toggle" &&
+                        actionLoading.inviteId === invite._id
+                      }
+                      checked={!invite.isBlocked}
+                      onChange={() =>
+                        handleToggleBlocked(invite._id, invite.isBlocked)
+                      }
+                    />
                   </TableCell>
                   <TableCell>
                     <IconButton onClick={() => handleConfirmDelete(invite._id)}>

@@ -68,7 +68,7 @@ const NotificationCenter = () => {
                 {notifications.map((notification, index) => (
                   <React.Fragment key={notification.id}>
                     <ListItem
-                      button
+                      button={true}
                       selected={notification.id === selectedNotification.id}
                       onClick={() => setSelectedNotification(notification)}
                       alignItems="flex-start"
