@@ -44,24 +44,47 @@ export const getMyStore = async () => {
   return response.data;
 };
 
-export const addItem = async (items) => {
+export const addItem = async ([item]) => {
   const formData = new FormData();
 
-  // Add item data (excluding image field) as JSON
-  const itemsData = items.map(({ image, ...rest }) => rest);
-  formData.append("items", JSON.stringify(itemsData));
-
-  // Append images if available
-  items.forEach(({ image }) => {
-    if (image instanceof File) {
-      formData.append(`images`, image);
+  Object.entries(item).forEach(([key, value]) => {
+    if (key !== "images") {
+      formData.append(
+        key,
+        typeof value === "object" ? JSON.stringify(value) : value
+      );
     }
   });
 
+  item.images?.forEach((file) => {
+    if (file instanceof File) formData.append("images", file);
+  });
+
   const response = await api.post("/user/createProduct", formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+
+  return response.data;
+};
+
+export const updateItem = async (id, data) => {
+  const formData = new FormData();
+
+  data.images?.forEach((file) => {
+    if (file instanceof File) formData.append("images", file);
+  });
+
+  const updates = {};
+  Object.entries(data).forEach(([key, value]) => {
+    if (key !== "images") {
+      updates[key] = value;
+    }
+  });
+
+  formData.append("updates", JSON.stringify(updates));
+
+  const response = await api.patch(`/user/updateProduct/${id}`, formData, {
+    headers: { "Content-Type": "multipart/form-data" },
   });
 
   return response.data;
@@ -78,6 +101,7 @@ const storeService = {
   createStore,
   getMyStore,
   addItem,
+  updateItem,
   getMyInventory,
 };
 

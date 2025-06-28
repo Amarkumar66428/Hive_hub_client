@@ -10,30 +10,52 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  IconButton,
+  Grid,
+  Card,
+  CardHeader,
+  CardActions,
+  CardContent,
+  List,
+  ListItemText,
+  ListItem,
+  Divider,
+  Container,
+  Tooltip,
+  Skeleton,
 } from "@mui/material";
 import { getMyStore } from "../../../services/storeService";
 import { Link } from "react-router-dom";
-import { Delete, Edit } from "@mui/icons-material";
+import {
+  Delete,
+  Edit,
+  RadioButtonCheckedOutlined,
+  Visibility,
+} from "@mui/icons-material";
+import webPage from "../../../assets/storePage/image4.png";
+import { formatDate } from "../../../utils/helper";
+
+const storeEditHistory = [
+  {
+    field: "Store Name",
+    date: "6 June, 2023",
+    timeAgo: "Updated 2 days ago",
+  },
+  {
+    field: "Store Address",
+    date: "4 June, 2023",
+    timeAgo: "Updated 4 days ago",
+  },
+  {
+    field: "Contact Number",
+    date: "1 June, 2023",
+    timeAgo: "Updated 7 days ago",
+  },
+];
 
 const ManageStores = () => {
   const [store, setStore] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [products, setProducts] = useState([]);
-  const [editingProduct, setEditingProduct] = useState(null);
-
-  const handleEditProduct = (product) => {
-    setEditingProduct({ ...product });
-  };
-
-  const handleSaveProduct = () => {
-    // Add your save logic here
-    setEditingProduct(null);
-  };
-
-  const handleDeleteProduct = (productId) => {
-    console.log('productId: ', productId);
-    // Add your delete logic here
-  };
 
   useEffect(() => {
     const fetchStore = async () => {
@@ -51,289 +73,307 @@ const ManageStores = () => {
   }, []);
 
   return (
-    <Box sx={{ width: "100%" }}>
+    <Box sx={{ height: "100vh" }}>
       {loading ? (
-        <Box display="flex" justifyContent="center" mt={6}>
-          <CircularProgress />
-        </Box>
-      ) : !store ? (
-        <Typography align="center" color="text.secondary">
-          No store found.
-        </Typography>
+        <StorePageSkeleton />
       ) : (
-        <Box sx={{ p: 2 }}>
-          {/* Store Header Section */}
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              p: 2,
-              mb: 2,
-              bgcolor: "background.paper",
-              borderRadius: 2,
-              boxShadow: "0 2px 10px rgba(0,0,0,0.05)",
-            }}
-          >
-            <Box
-              sx={{
-                gap: 2,
-                width: "100%",
-              }}
-            >
-              <Box
-                sx={{
-                  py: 2,
-                  borderBottom: "1px solid",
-                  borderColor: "divider",
-                }}
-              >
-                <Typography variant="h5" fontWeight="600">
-                  Store Details
-                </Typography>
-              </Box>
-              <Box
-                sx={{
-                  py: 2,
-                }}
-              >
-                <Typography variant="h4" fontWeight="600">
-                  Store Name: {store.name || "Untitled Store"}
-                </Typography>
-                <Typography variant="body1" color="text.secondary">
-                  Subdomain:{" "}
-                  {store.subdomain
-                    ? `${store.subdomain}.yourdomain.com`
-                    : "Not set"}
-                </Typography>
-                <Box
-                  sx={{ display: "flex", alignItems: "center", gap: 1, mt: 1 }}
-                >
-                  <Typography variant="body1" color="text.secondary">
-                    Approval:{" "}
-                  </Typography>
-                  <Chip
-                    label={store.isApproved ? "Approved" : "Pending"}
-                    color={store.isApproved ? "success" : "warning"}
-                    size="small"
-                  />
-                  {store.isApproved && (
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      component={Link}
-                      to={`/hive/${store.subdomain}`}
-                      startIcon={<Visibility />}
-                    >
-                      View Store
-                    </Button>
-                  )}
-                </Box>
-              </Box>
-            </Box>
-          </Box>
-
-          {/* Products Section */}
-          <Box
-            sx={{
-              bgcolor: "background.paper",
-              borderRadius: 2,
-              overflow: "hidden",
-              boxShadow: "0 2px 10px rgba(0,0,0,0.05)",
-            }}
-          >
-            {/* Section Header */}
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                p: 3,
-                borderBottom: "1px solid",
-                borderColor: "divider",
-              }}
-            >
-              <Typography variant="h5" fontWeight="600">
-                Store Inventory
-              </Typography>
-            </Box>
-
-            {/* Product List */}
-            {products.length > 0 ? (
-              <Box>
-                {products.map((product) => (
+        <Container
+          maxWidth={false}
+          disableGutters
+          sx={{
+            height: "100%",
+            display: "flex",
+            flexDirection: "column",
+            p: 2,
+            gap: 2,
+          }}
+        >
+          <Grid container spacing={2}>
+            {/* Left Panel with Store Preview */}
+            <Grid item size={{ xs: 12, md: 6 }}>
+              <Card>
+                <CardContent sx={{ display: "flex", gap: 2 }}>
                   <Box
-                    key={product.id}
                     sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      p: 3,
-                      borderBottom: "1px solid",
-                      borderColor: "divider",
-                      "&:hover": { bgcolor: "action.hover" },
+                      width: "30%",
+                      height: "16em",
+                      objectFit: "cover",
+                      borderRadius: 1,
+                      boxShadow: 1,
+                      cursor: "pointer",
+                    }}
+                    onClick={() => {
+                      window.open(
+                        `https://hive-world.netlify.app/hive/${store?.subdomain}`,
+                        "_blank"
+                      );
                     }}
                   >
-                    <Box sx={{ flex: 1 }}>
-                      <Typography variant="subtitle1" fontWeight="500">
-                        {product.name}
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        color="text.secondary"
-                        sx={{ mt: 0.5 }}
-                      >
-                        SKU: {product.sku || "N/A"} | Price: ${product.price}
-                      </Typography>
-                    </Box>
+                    <img src={webPage} alt="Store Preview" />
+                  </Box>
+                  <Box
+                    sx={{
+                      flex: 1,
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 1.5,
+                    }}
+                  >
+                    {/* Store Name */}
+                    <Typography
+                      variant="h5"
+                      fontWeight={700}
+                      color="text.primary"
+                    >
+                      {store?.name || "Store Name"}
+                    </Typography>
 
+                    {/* Store URL with status icon */}
                     <Box
+                      component="a"
+                      href={`https://hive-world.netlify.app/hive/${store?.subdomain}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       sx={{
                         display: "flex",
                         alignItems: "center",
-                        gap: 2,
-                        mr: 4,
+                        color: "primary.main",
+                        textDecoration: "none",
+                        "&:hover": { textDecoration: "underline" },
                       }}
                     >
-                      <Box sx={{ textAlign: "center" }}>
-                        <Typography variant="body2" color="text.secondary">
-                          Stock
-                        </Typography>
-                        <Typography
-                          fontWeight="500"
-                          color={
-                            product.stock <= product.lowStockThreshold
-                              ? "error.main"
-                              : "inherit"
-                          }
-                        >
-                          {product.stock}
-                        </Typography>
-                      </Box>
-                      <Box sx={{ textAlign: "center" }}>
-                        <Typography variant="body2" color="text.secondary">
-                          Threshold
-                        </Typography>
-                        <Typography fontWeight="500">
-                          {product.lowStockThreshold}
-                        </Typography>
-                      </Box>
+                      <Tooltip title={store?.isApproved ? "Live" : "Pending"}>
+                        <RadioButtonCheckedOutlined
+                          fontSize="small"
+                          sx={{
+                            color: store?.isApproved
+                              ? "success.main"
+                              : "warning.main",
+                            mr: 1,
+                          }}
+                        />
+                      </Tooltip>
+                      <Typography variant="body2" fontWeight={500} noWrap>
+                        {store?.subdomain
+                          ? `https://hive-world.netlify.app/hive/${store.subdomain}`
+                          : "Store URL not set"}
+                      </Typography>
                     </Box>
 
-                    <Box sx={{ display: "flex", gap: 1 }}>
-                      <IconButton
-                        color="primary"
-                        onClick={() => handleEditProduct(product)}
-                      >
-                        <Edit />
-                      </IconButton>
-                      <IconButton
-                        color="error"
-                        onClick={() => handleDeleteProduct(product.id)}
-                      >
-                        <Delete />
-                      </IconButton>
+                    {/* Divider */}
+                    <Divider sx={{ my: 1 }} />
+
+                    {/* Store Status */}
+                    <Box display="flex" alignItems="center" gap={1}>
+                      <Typography variant="body2" color="text.secondary">
+                        Status:
+                      </Typography>
+                      <Chip
+                        label={
+                          store?.isApproved ? "Approved" : "Pending Approval"
+                        }
+                        color={store?.isApproved ? "success" : "warning"}
+                        size="small"
+                        sx={{
+                          fontWeight: 600,
+                          textTransform: "capitalize",
+                          px: 1,
+                        }}
+                      />
+                    </Box>
+
+                    {/* Created At */}
+                    <Box display="flex" alignItems="center" gap={1}>
+                      <Typography variant="body2" color="text.secondary">
+                        Created on:
+                      </Typography>
+                      <Typography variant="body2" fontWeight={500}>
+                        {formatDate(store?.createdAt)}
+                      </Typography>
+                    </Box>
+
+                    {/* Deployed At */}
+                    <Box display="flex" alignItems="center" gap={1}>
+                      <Typography variant="body2" color="text.secondary">
+                        Deployed on:
+                      </Typography>
+                      <Typography variant="body2" fontWeight={500}>
+                        {formatDate(store?.updatedAt)}
+                      </Typography>
                     </Box>
                   </Box>
-                ))}
-              </Box>
-            ) : (
-              <Box sx={{ p: 4, textAlign: "center" }}>
-                <Typography variant="body1" color="text.secondary">
-                  No products available. Add your first product to get started.
-                </Typography>
-              </Box>
-            )}
-          </Box>
+                </CardContent>
+              </Card>
+            </Grid>
 
-          {/* Product Edit Modal */}
-          <Dialog
-            open={Boolean(editingProduct)}
-            onClose={() => setEditingProduct(null)}
-            fullWidth
-            maxWidth="sm"
-          >
-            <DialogTitle>
-              {editingProduct ? "Edit Product" : "Add Product"}
-            </DialogTitle>
-            <DialogContent>
-              <Box
-                sx={{ display: "flex", flexDirection: "column", gap: 3, pt: 2 }}
+            {/* Right Panel with Store Analytics */}
+            <Grid item size={{ xs: 12, md: 6 }}>
+              <Card
+                sx={{
+                  height: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
+                }}
               >
-                <TextField
-                  label="Product Name"
-                  value={editingProduct?.name || ""}
-                  onChange={(e) =>
-                    setEditingProduct({
-                      ...editingProduct,
-                      name: e.target.value,
-                    })
+                <CardHeader
+                  title={
+                    <Typography variant="h4" fontWeight={600}>
+                      Store Analytics
+                    </Typography>
                   }
-                  fullWidth
                 />
-                <TextField
-                  label="SKU"
-                  value={editingProduct?.sku || ""}
-                  onChange={(e) =>
-                    setEditingProduct({
-                      ...editingProduct,
-                      sku: e.target.value,
-                    })
-                  }
-                  fullWidth
-                />
-                <TextField
-                  label="Price"
-                  type="number"
-                  value={editingProduct?.price || ""}
-                  onChange={(e) =>
-                    setEditingProduct({
-                      ...editingProduct,
-                      price: e.target.value,
-                    })
-                  }
-                  fullWidth
-                />
-                <TextField
-                  label="Stock Quantity"
-                  type="number"
-                  value={editingProduct?.stock || ""}
-                  onChange={(e) =>
-                    setEditingProduct({
-                      ...editingProduct,
-                      stock: e.target.value,
-                    })
-                  }
-                  fullWidth
-                />
-                <TextField
-                  label="Low Stock Threshold"
-                  type="number"
-                  value={editingProduct?.lowStockThreshold || ""}
-                  onChange={(e) =>
-                    setEditingProduct({
-                      ...editingProduct,
-                      lowStockThreshold: e.target.value,
-                    })
-                  }
-                  fullWidth
-                />
-              </Box>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={() => setEditingProduct(null)}>Cancel</Button>
-              <Button
-                variant="contained"
-                onClick={handleSaveProduct}
-                disabled={!editingProduct?.name || !editingProduct?.price}
-              >
-                Save Product
-              </Button>
-            </DialogActions>
-          </Dialog>
-        </Box>
+                <CardContent sx={{ mt: 1, flex: 1 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    Get a deeper understanding of your project with detailed
+                    analytics including page views, unique visitors, and top
+                    pages.{" "}
+                    <Typography
+                      component="span"
+                      sx={{
+                        color: "primary.main",
+                        cursor: "pointer",
+                        textDecoration: "underline",
+                        fontWeight: 500,
+                        "&:hover": { textDecoration: "none" },
+                      }}
+                    >
+                      Learn more
+                    </Typography>
+                  </Typography>
+                </CardContent>
+                <CardActions>
+                  <Button variant="contained" color="primary">
+                    Upgrade to Enable
+                  </Button>
+                </CardActions>
+              </Card>
+            </Grid>
+          </Grid>
+
+          {/* Store Edit History */}
+          <Grid item size={{ xs: 12 }} sx={{ flexGrow: 1 }}>
+            <Card sx={{ height: "100%" }}>
+              <CardHeader
+                title={
+                  <Typography variant="h5" fontWeight={600}>
+                    Store Edit History
+                  </Typography>
+                }
+                sx={{ pb: 0 }}
+              />
+              <CardContent sx={{ pt: 1 }}>
+                <List disablePadding>
+                  {storeEditHistory.map((item, index) => (
+                    <Box key={index}>
+                      <ListItem
+                        secondaryAction={
+                          <Box display="flex" alignItems="center" gap={2}>
+                            <Typography
+                              variant="body2"
+                              color="text.secondary"
+                              minWidth="100px"
+                              textAlign="right"
+                            >
+                              {item.date}
+                            </Typography>
+                          </Box>
+                        }
+                      >
+                        <ListItemText
+                          primary={item.field}
+                          secondary={item.timeAgo}
+                        />
+                      </ListItem>
+                      <Divider />
+                    </Box>
+                  ))}
+                </List>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Container>
       )}
     </Box>
   );
 };
 
 export default ManageStores;
+
+const StorePageSkeleton = () => {
+  return (
+    <Box sx={{ p: 2 }}>
+      {/* Top Section: Store Info & Analytics */}
+      <Grid container spacing={2}>
+        {/* Store Info */}
+        <Grid item size={{ xs: 12, md: 6 }}>
+          <Card>
+            <CardContent>
+              <Box sx={{ display: "flex", gap: 2 }}>
+                {/* Image Skeleton */}
+                <Skeleton
+                  variant="rectangular"
+                  width={120}
+                  height={140}
+                  sx={{ borderRadius: 1 }}
+                />
+
+                {/* Text Content Skeleton */}
+                <Box
+                  sx={{
+                    flex: 1,
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 1,
+                  }}
+                >
+                  <Skeleton variant="text" width="50%" height={28} />
+                  <Skeleton variant="text" width="80%" height={20} />
+                  <Divider sx={{ my: 1 }} />
+                  <Skeleton variant="rounded" width={120} height={28} />
+                  <Skeleton variant="text" width="60%" height={20} />
+                  <Skeleton variant="text" width="60%" height={20} />
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Analytics */}
+        <Grid item size={{ xs: 12, md: 6 }}>
+          <Card sx={{ height: "100%" }}>
+            <CardContent>
+              <Skeleton variant="text" width="40%" height={28} />
+              <Skeleton variant="text" width="90%" height={20} />
+              <Skeleton variant="text" width="70%" height={20} />
+              <Box mt={2}>
+                <Skeleton variant="rounded" width={150} height={36} />
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+
+      {/* Store Edit History */}
+      <Box mt={3}>
+        <Card>
+          <CardContent>
+            <Typography variant="h6" fontWeight={600} gutterBottom>
+              Store Edit History
+            </Typography>
+            <List>
+              {[1, 2, 3].map((item) => (
+                <ListItem key={item} divider>
+                  <ListItemText
+                    primary={<Skeleton variant="text" width="30%" />}
+                    secondary={<Skeleton variant="text" width="20%" />}
+                  />
+                </ListItem>
+              ))}
+            </List>
+          </CardContent>
+        </Card>
+      </Box>
+    </Box>
+  );
+};
