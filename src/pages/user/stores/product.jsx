@@ -10,16 +10,14 @@ import {
   Box,
   Chip,
   IconButton,
-  Paper,
   Skeleton,
   Menu,
   MenuItem,
 } from "@mui/material";
-import { Add, MoreVert, Edit, Delete, Visibility } from "@mui/icons-material";
+import { MoreVert, Edit, Delete, Visibility } from "@mui/icons-material";
 import { styled } from "@mui/material/styles";
 import storeService from "../../../services/storeService";
-import ProductAddExample from "../../../components/addProductModal";
-import ProductStepperExample from "../../../components/addProductModal";
+import ProductAdd from "../../../components/addProductModal";
 
 // Styled Components
 const ProductCard = styled(Card)(({ theme }) => ({
@@ -78,65 +76,129 @@ const CurrentPrice = styled(Typography)(({ theme }) => ({
   fontSize: "1rem",
 }));
 
-// Sample product data
-const sampleProducts = [
-  {
-    id: 1,
-    name: "Double Bed & Side Tables",
-    originalPrice: 230.0,
-    currentPrice: 200.0,
-    discount: 15,
-    image: null, // placeholder for now
-    status: "active",
-  },
-  {
-    id: 2,
-    name: "Double Bed & Side Tables",
-    originalPrice: 230.0,
-    currentPrice: 200.0,
-    discount: 15,
-    image: null,
-    status: "active",
-  },
-  {
-    id: 3,
-    name: "Double Bed & Side Tables",
-    originalPrice: 230.0,
-    currentPrice: 200.0,
-    discount: 15,
-    image: null,
-    status: "active",
-  },
-  {
-    id: 4,
-    name: "Double Bed & Side Tables",
-    originalPrice: 230.0,
-    currentPrice: 200.0,
-    discount: 15,
-    image: null,
-    status: "active",
-  },
-  {
-    id: 5,
-    name: "Double Bed & Side Tables",
-    originalPrice: 230.0,
-    currentPrice: 200.0,
-    discount: 15,
-    image: null,
-    status: "active",
-  },
-  {
-    id: 6,
-    name: "Double Bed & Side Tables",
-    originalPrice: 230.0,
-    currentPrice: 200.0,
-    discount: 15,
-    image: null,
-    status: "active",
-  },
-];
+// Main Product List Component
+const Products = () => {
+  const [products, setProducts] = useState([]);
+  const [editProduct, setEditProduct] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
 
-// Product Card Component
+  const handleEditProduct = (product) => {
+    setModalOpen(true);
+    setEditProduct(product || {});
+  };
+
+  const handleDeleteProduct = (product) => {
+    console.log("Delete product:", product);
+  };
+
+  const handleViewProduct = (product) => {
+    console.log("View product:", product);
+    // Implement view product logic
+  };
+
+  const fetchStore = async () => {
+    try {
+      setLoading(true);
+      const response = await storeService.getMyStore();
+       setProducts(response?.products || null);
+    } catch (error) {
+      console.error("Error fetching stores:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchStore();
+  }, []);
+
+  return (
+    <Container maxWidth={false} disableGutters sx={{ p: 2 }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 2,
+        }}
+      >
+        <Typography variant="h4" gutterBottom sx={{ m: 0 }}>
+          Your Listed Products
+        </Typography>
+        <ProductAdd
+          modalOpen={modalOpen}
+          setModalOpen={setModalOpen}
+          fetchStore={fetchStore}
+          editProduct={editProduct}
+          setEditProduct={setEditProduct}
+        />
+      </Box>
+      {loading ? (
+        <Grid container spacing={3}>
+          {[...Array(6)].map((_, index) => (
+            <Grid item size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={index}>
+              <Card>
+                <Skeleton variant="rectangular" height={200} />
+                <CardContent>
+                  <Skeleton variant="text" height={32} width="80%" />
+                  <Skeleton variant="text" height={24} width="60%" />
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      ) : products?.length === 0 ? (
+        <Box
+          sx={{
+            textAlign: "center",
+            border: "2px dashed #e0e0e0",
+            borderRadius: 2,
+            backgroundColor: "#fafafa",
+            p: 4,
+          }}
+        >
+          <Typography variant="h6" color="text.secondary" gutterBottom>
+            No products found
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            Start by adding your first product
+          </Typography>
+          <ProductAdd
+            modalOpen={modalOpen}
+            setModalOpen={setModalOpen}
+            fetchStore={fetchStore}
+          />
+        </Box>
+      ) : (
+        <Grid container spacing={3}>
+          {products.map((product) => (
+            <Grid item size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={product?.id}>
+              <ProductCardComponent
+                product={product}
+                onEdit={handleEditProduct}
+                onDelete={handleDeleteProduct}
+                onView={handleViewProduct}
+              />
+            </Grid>
+          ))}
+        </Grid>
+      )}
+
+      {/* Load More Button (if needed) */}
+      {products.length > 0 && (
+        <Box sx={{ textAlign: "center", mt: 4 }}>
+          <Button variant="outlined" size="large">
+            Load More Products
+          </Button>
+        </Box>
+      )}
+    </Container>
+  );
+};
+
+export default Products;
+
 const ProductCardComponent = ({ product, onEdit, onDelete, onView }) => {
   const [imageLoading, setImageLoading] = useState(true);
   const [menuAnchor, setMenuAnchor] = useState(null);
@@ -150,21 +212,26 @@ const ProductCardComponent = ({ product, onEdit, onDelete, onView }) => {
   };
 
   const calculateDiscount = () => {
-    return Math.round(
-      ((product.originalPrice - product.currentPrice) / product.originalPrice) *
-        100
-    );
+    const price = Number(product?.basePrice);
+
+    if (!price || isNaN(price) || price <= 0) return 0;
+
+    // Example logic — assuming discountAmount or comparePrice exists
+    const originalPrice = Number(product?.comparePrice || price);
+    const discount = ((originalPrice - price) / originalPrice) * 100;
+
+    return discount > 0 ? `-${Math.round(discount)}` : 0;
   };
 
   return (
     <ProductCard>
       <ProductImage>
-        {product.image ? (
+        {product?.images?.length > 0 ? (
           <CardMedia
             component="img"
             height="200"
-            image={product.image}
-            alt={product.name}
+            image={product?.images[0]}
+            alt={product.basePrice}
             onLoad={() => setImageLoading(false)}
             sx={{ display: imageLoading ? "none" : "block" }}
           />
@@ -174,11 +241,11 @@ const ProductCardComponent = ({ product, onEdit, onDelete, onView }) => {
           </Typography>
         )}
 
-        {imageLoading && product.image && (
+        {imageLoading && product?.images?.length === 0 && (
           <Skeleton variant="rectangular" width="100%" height={200} />
         )}
 
-        <DiscountBadge label={`-${calculateDiscount()}%`} />
+        <DiscountBadge label={`${calculateDiscount()}%`} />
       </ProductImage>
       <CardContent sx={{ flexGrow: 1, pb: 1 }}>
         <Box
@@ -194,12 +261,12 @@ const ProductCardComponent = ({ product, onEdit, onDelete, onView }) => {
               component="h3"
               sx={{ fontSize: "1rem", fontWeight: 500, mb: 1 }}
             >
-              {product.name}
+              {product.title || "Unknown Product"}
             </Typography>
 
             <PriceContainer>
-              <OriginalPrice>${product.originalPrice.toFixed(2)}</OriginalPrice>
-              <CurrentPrice>${product.currentPrice.toFixed(2)}</CurrentPrice>
+              <OriginalPrice>${product.basePrice.toFixed(2)}</OriginalPrice>
+              <CurrentPrice>${product.basePrice.toFixed(2)}</CurrentPrice>
             </PriceContainer>
           </Box>
 
@@ -257,124 +324,3 @@ const ProductCardComponent = ({ product, onEdit, onDelete, onView }) => {
     </ProductCard>
   );
 };
-
-// Main Product List Component
-const Products = () => {
-  const [products, setProducts] = useState(sampleProducts);
-  const [loading, setLoading] = useState(false);
-
-  const handleEditProduct = (product) => {
-    console.log("Edit product:", product);
-    // Implement edit product logic
-  };
-
-  const handleDeleteProduct = (product) => {
-    console.log("Delete product:", product);
-    // Implement delete product logic
-    setProducts(products.filter((p) => p.id !== product.id));
-  };
-
-  const handleViewProduct = (product) => {
-    console.log("View product:", product);
-    // Implement view product logic
-  };
-
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        setLoading(true);
-        const response = await storeService?.getMyInventory();
-        console.log("response: ", response);
-      } catch (error) {
-        console.error("Error fetching products:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProducts();
-  }, []);
-
-  if (loading) {
-    return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Grid container spacing={3}>
-          {[...Array(6)].map((_, index) => (
-            <Grid item size={{ xs: 12, sm: 6, md: 4 }} key={index}>
-              <Card>
-                <Skeleton variant="rectangular" height={200} />
-                <CardContent>
-                  <Skeleton variant="text" height={32} width="80%" />
-                  <Skeleton variant="text" height={24} width="60%" />
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-      </Container>
-    );
-  }
-
-  return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      {/* Header */}
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          mb: 4,
-        }}
-      >
-        <Typography variant="h4" component="h1" fontWeight="bold">
-          Your Listed Products
-        </Typography>
-        <ProductAddExample />
-      </Box>
-
-      {/* Products Grid */}
-      {products.length === 0 ? (
-        <Box
-          sx={{
-            textAlign: "center",
-            py: 8,
-            border: "2px dashed #e0e0e0",
-            borderRadius: 2,
-            backgroundColor: "#fafafa",
-          }}
-        >
-          <Typography variant="h6" color="text.secondary" gutterBottom>
-            No products found
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            Start by adding your first product
-          </Typography>
-          <ProductStepperExample />
-        </Box>
-      ) : (
-        <Grid container spacing={3}>
-          {products.map((product) => (
-            <Grid item size={{ xs: 12, sm: 6, md: 4 }} key={product.id}>
-              <ProductCardComponent
-                product={product}
-                onEdit={handleEditProduct}
-                onDelete={handleDeleteProduct}
-                onView={handleViewProduct}
-              />
-            </Grid>
-          ))}
-        </Grid>
-      )}
-
-      {/* Load More Button (if needed) */}
-      {products.length > 0 && (
-        <Box sx={{ textAlign: "center", mt: 4 }}>
-          <Button variant="outlined" size="large">
-            Load More Products
-          </Button>
-        </Box>
-      )}
-    </Container>
-  );
-};
-
-export default Products;

@@ -11,9 +11,6 @@ import {
   Typography,
   IconButton,
   FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   Paper,
   InputAdornment,
   CircularProgress,
@@ -27,6 +24,10 @@ import {
   FormHelperText,
   Tooltip,
   Chip,
+  Autocomplete,
+  styled,
+  StepConnector,
+  stepConnectorClasses,
 } from "@mui/material";
 import {
   Close,
@@ -36,7 +37,6 @@ import {
   Save,
   NavigateNext,
   NavigateBefore,
-  CheckCircle,
   Info,
   ShoppingCart,
   Image as ImageIcon,
@@ -45,31 +45,102 @@ import {
 } from "@mui/icons-material";
 import storeService from "../services/storeService";
 
+const ColorlibConnector = styled(StepConnector)(({ theme }) => ({
+  [`&.${stepConnectorClasses.alternativeLabel}`]: {
+    top: 22,
+  },
+  [`&.${stepConnectorClasses.active}`]: {
+    [`& .${stepConnectorClasses.line}`]: {
+      backgroundImage: `linear-gradient( 95deg,  ${theme.palette.primary.main} 0%,${theme.palette.secondary.main} 100%)`,
+    },
+  },
+  [`&.${stepConnectorClasses.completed}`]: {
+    [`& .${stepConnectorClasses.line}`]: {
+      backgroundImage: `linear-gradient( 95deg,  ${theme.palette.primary.main} 0%,${theme.palette.secondary.main} 100%)`,
+    },
+  },
+  [`& .${stepConnectorClasses.line}`]: {
+    height: 3,
+    border: 0,
+    backgroundColor: "#eaeaf0",
+    borderRadius: 1,
+    ...theme.applyStyles("dark", {
+      backgroundColor: theme.palette.grey[800],
+    }),
+  },
+}));
+
+const ColorlibStepIconRoot = styled("div")(({ theme }) => ({
+  backgroundColor: "#ccc",
+  zIndex: 1,
+  color: "#fff",
+  width: 50,
+  height: 50,
+  display: "flex",
+  borderRadius: "50%",
+  justifyContent: "center",
+  alignItems: "center",
+  ...theme.applyStyles("dark", {
+    backgroundColor: theme.palette.grey[700],
+  }),
+  variants: [
+    {
+      props: ({ ownerState }) => ownerState.active,
+      style: {
+        backgroundImage: `linear-gradient( 136deg, ${theme.palette.primary.main} 20%, ${theme.palette.secondary.main} 100%)`,
+        boxShadow: "0 4px 10px 0 rgba(0,0,0,.25)",
+      },
+    },
+    {
+      props: ({ ownerState }) => ownerState.completed,
+      style: {
+        backgroundImage: `linear-gradient( 136deg, ${theme.palette.primary.main} 20%, ${theme.palette.secondary.main} 100%)`,
+      },
+    },
+  ],
+}));
+
+function ColorlibStepIcon(props) {
+  const { active, completed, className } = props;
+
+  const icons = {
+    1: <Info />,
+    2: <ShoppingCart />,
+    3: <ImageIcon />,
+    4: <Settings />,
+    5: <Preview />,
+  };
+
+  return (
+    <ColorlibStepIconRoot
+      ownerState={{ completed, active }}
+      className={className}
+    >
+      {icons[String(props.icon)]}
+    </ColorlibStepIconRoot>
+  );
+}
+
 // Steps configuration
 const steps = [
   {
     label: "Product Information",
     description: "Basic product details",
-    icon: <Info />,
   },
   {
-    label: "Pricing & Inventory",
+    label: "Pricing & tags",
     description: "Set pricing and stock details",
-    icon: <ShoppingCart />,
   },
   {
     label: "Product Images",
     description: "Upload product photos",
-    icon: <ImageIcon />,
   },
   {
     label: "Attributes & Variants",
-    icon: <Settings />,
   },
   {
     label: "Review & Submit",
     description: "Review and finalize product",
-    icon: <Preview />,
   },
 ];
 
@@ -85,23 +156,61 @@ const categories = [
   "Automotive",
 ];
 
-const AddProductStepperModal = ({ open, onClose, onSubmit }) => {
+// Example usage
+const ProductAdd = ({
+  modalOpen,
+  setModalOpen,
+  fetchStore,
+  editProduct,
+  setEditProduct,
+}) => {
+  return (
+    <Box>
+      <Button
+        variant="contained"
+        startIcon={<Add />}
+        onClick={() => setModalOpen(true)}
+        size="large"
+      >
+        Add Product
+      </Button>
+
+      <AddProductStepperModal
+        open={modalOpen}
+        fetchStore={fetchStore}
+        editProduct={editProduct}
+        onClose={() => setModalOpen(false)}
+        setEditProduct={setEditProduct}
+      />
+    </Box>
+  );
+};
+
+export default ProductAdd;
+
+const AddProductStepperModal = ({
+  open,
+  onClose,
+  fetchStore,
+  editProduct,
+  setEditProduct,
+}) => {
   const [activeStep, setActiveStep] = useState(0);
   const [attributeKey, setAttributeKey] = useState("");
   const [attributeValue, setAttributeValue] = useState("");
 
   const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    category: "",
-    brand: "",
-    basePrice: "",
-    sku: "",
-    stock: "",
-    tags: "",
-    images: [],
-    attributes: '{"material":"Cotton","fit":"Regular"}',
-    variants: [
+    title: editProduct?.title || "",
+    description: editProduct?.description || "",
+    basePrice: editProduct?.basePrice || "",
+    attributes: editProduct?.attributes || {
+      material: "Cotton",
+      fit: "Regular",
+    },
+    tags: editProduct?.tags || "",
+    category: editProduct?.category || "",
+    images: editProduct?.images || [],
+    variants: editProduct?.variants || [
       { size: "M", color: "Red", stock: 10, price: 599, discount: 10 },
     ],
   });
@@ -131,25 +240,19 @@ const AddProductStepperModal = ({ open, onClose, onSubmit }) => {
         if (!formData.description.trim())
           newErrors.description = "Description is required";
         if (!formData.category) newErrors.category = "Category is required";
-        if (!formData.brand.trim()) newErrors.brand = "Brand is required";
         break;
       case 1: // Pricing & Inventory
         if (!formData.basePrice || parseFloat(formData.basePrice) <= 0)
           newErrors.basePrice = "Valid price is required";
-        if (!formData.stock || parseInt(formData.stock) < 0)
-          newErrors.stock = "Valid stock quantity is required";
         break;
       case 2: // Images
         if (formData.images.length === 0)
           newErrors.images = "At least one product image is required";
         break;
-      case 3: // Attributes & Variants
-        try {
-          JSON.parse(formData.attributes);
-        } catch (e) {
-          console.log("e: ", e);
+      case 3:
+        // Attributes & Variants
+        if (Object.keys(formData.attributes).length === 0)
           newErrors.attributes = "Invalid JSON format";
-        }
         break;
     }
 
@@ -235,21 +338,39 @@ const AddProductStepperModal = ({ open, onClose, onSubmit }) => {
 
     setLoading(true);
     try {
+      const {
+        title,
+        description,
+        basePrice,
+        category,
+        tags,
+        attributes,
+        variants,
+        images,
+      } = formData;
+
       const productData = {
-        ...formData,
-        attributes: JSON.parse(formData.attributes),
-        basePrice: parseFloat(formData.basePrice),
-        stock: parseInt(formData.stock),
-        tags: formData.tags
+        title: title.trim(),
+        description: description.trim(),
+        basePrice: parseFloat(basePrice),
+        category: category.trim(),
+        tags: tags
           .split(",")
           .map((tag) => tag.trim())
           .filter(Boolean),
-        image: formData.images?.[0]?.file || null, // attach only first image file
+        attributes,
+        variants,
+        images: images?.map((img) => img.file).filter(Boolean),
       };
 
-      const response = await storeService.addItem([productData]);
-      console.log("response: ", response);
+      if (Object.keys(editProduct).length === 0) {
+        await storeService.addItem([productData]);
+      } else {
+        await storeService.updateItem(editProduct?._id, productData);
+      }
+
       handleClose();
+      fetchStore();
     } catch (error) {
       console.error("Error:", error);
     } finally {
@@ -264,33 +385,33 @@ const AddProductStepperModal = ({ open, onClose, onSubmit }) => {
       title: "",
       description: "",
       category: "",
-      brand: "",
       basePrice: "",
-      sku: "",
-      stock: "",
       tags: "",
       images: [],
-      attributes: '{"material":"Cotton","fit":"Regular"}',
+      attributes: { material: "Cotton", fit: "Regular" },
       variants: [
         { size: "M", color: "Red", stock: 10, price: 599, discount: 10 },
       ],
     });
     setErrors({});
     onClose();
+    if (Object.keys(editProduct).length > 0) {
+      setEditProduct({});
+    }
   };
 
   // Handler to add a key-value pair
   const handleAddAttribute = () => {
     if (attributeKey.trim() && attributeValue.trim()) {
       try {
-        const current = JSON.parse(formData.attributes || "{}");
+        const current = formData.attributes || {};
         const updated = {
           ...current,
           [attributeKey.trim()]: attributeValue.trim(),
         };
         setFormData((prev) => ({
           ...prev,
-          attributes: JSON.stringify(updated),
+          attributes: updated,
         }));
         setAttributeKey("");
         setAttributeValue("");
@@ -307,15 +428,14 @@ const AddProductStepperModal = ({ open, onClose, onSubmit }) => {
   // Handler to remove a key
   const removeAttribute = (key) => {
     try {
-      const current = JSON.parse(formData.attributes || "{}");
+      const current = formData.attributes || {};
       delete current[key];
       setFormData((prev) => ({
         ...prev,
-        attributes: JSON.stringify(current),
+        attributes: current,
       }));
     } catch (e) {
       console.log("e: ", e);
-      // silently fail
     }
   };
 
@@ -325,7 +445,7 @@ const AddProductStepperModal = ({ open, onClose, onSubmit }) => {
       case 0:
         return (
           <Box sx={{ mt: 2 }}>
-            <Stack container spacing={3} columns={{ xs: 12, md: 12 }}>
+            <Stack spacing={3} columns={{ xs: 12, md: 12 }}>
               <TextField
                 fullWidth
                 label="Product Title"
@@ -338,32 +458,32 @@ const AddProductStepperModal = ({ open, onClose, onSubmit }) => {
               />
               <Box sx={{ display: "flex", gap: 2 }}>
                 <FormControl fullWidth error={!!errors.category} required>
-                  <InputLabel>Category</InputLabel>
-                  <Select
+                  <Autocomplete
+                    freeSolo
+                    options={categories}
                     value={formData.category}
-                    onChange={handleChange("category")}
-                    label="Category"
-                  >
-                    {categories.map((cat) => (
-                      <MenuItem key={cat} value={cat}>
-                        {cat}
-                      </MenuItem>
-                    ))}
-                  </Select>
+                    onChange={(event, newValue) => {
+                      handleChange("category")({ target: { value: newValue } });
+                    }}
+                    onInputChange={(event, newInputValue) => {
+                      handleChange("category")({
+                        target: { value: newInputValue },
+                      });
+                    }}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Category"
+                        placeholder="Select or type a category"
+                        error={!!errors.category}
+                      />
+                    )}
+                  />
+
                   {errors.category && (
                     <FormHelperText>{errors.category}</FormHelperText>
                   )}
                 </FormControl>
-                <TextField
-                  fullWidth
-                  label="Brand"
-                  value={formData.brand}
-                  onChange={handleChange("brand")}
-                  error={!!errors.brand}
-                  helperText={errors.brand}
-                  placeholder="Enter brand name"
-                  required
-                />
               </Box>
 
               <TextField
@@ -385,7 +505,7 @@ const AddProductStepperModal = ({ open, onClose, onSubmit }) => {
       case 1:
         return (
           <Box sx={{ mt: 2 }}>
-            <Stack container spacing={3}>
+            <Stack spacing={3}>
               <Box sx={{ display: "flex", gap: 2 }}>
                 <TextField
                   fullWidth
@@ -395,33 +515,17 @@ const AddProductStepperModal = ({ open, onClose, onSubmit }) => {
                   onChange={handleChange("basePrice")}
                   error={!!errors.basePrice}
                   helperText={errors.basePrice}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">$</InputAdornment>
-                    ),
+                  slotProps={{
+                    input: {
+                      startAdornment: (
+                        <InputAdornment position="start">$</InputAdornment>
+                      ),
+                    },
                   }}
                   placeholder="0.00"
                   required
                 />
-                <TextField
-                  fullWidth
-                  label="Stock Quantity"
-                  type="number"
-                  value={formData.stock}
-                  onChange={handleChange("stock")}
-                  error={!!errors.stock}
-                  helperText={errors.stock}
-                  placeholder="0"
-                  required
-                />
               </Box>
-              <TextField
-                fullWidth
-                label="SKU (Optional)"
-                value={formData.sku}
-                onChange={handleChange("sku")}
-                placeholder="Product SKU"
-              />
               <TextField
                 fullWidth
                 label="Tags (Optional)"
@@ -554,16 +658,12 @@ const AddProductStepperModal = ({ open, onClose, onSubmit }) => {
       case 3:
         return (
           <Box sx={{ mt: 2 }}>
-            <Typography
-              variant="h6"
-              gutterBottom
-              sx={{ fontWeight: "bold", color: "#9c27b0" }}
-            >
+            <Typography variant="h6" gutterBottom>
               Product Attributes
             </Typography>
 
             <Grid container spacing={2} sx={{ mb: 1 }}>
-              <Grid item xs={5}>
+              <Grid item size={{ xs: 5, md: 3 }}>
                 <TextField
                   fullWidth
                   label="Key"
@@ -572,7 +672,7 @@ const AddProductStepperModal = ({ open, onClose, onSubmit }) => {
                   size="small"
                 />
               </Grid>
-              <Grid item xs={5}>
+              <Grid item size={{ xs: 5, md: 3 }}>
                 <TextField
                   fullWidth
                   label="Value"
@@ -581,7 +681,7 @@ const AddProductStepperModal = ({ open, onClose, onSubmit }) => {
                   size="small"
                 />
               </Grid>
-              <Grid item xs={2}>
+              <Grid item size={{ xs: 5, md: 3 }}>
                 <Button
                   fullWidth
                   variant="outlined"
@@ -596,17 +696,15 @@ const AddProductStepperModal = ({ open, onClose, onSubmit }) => {
 
             {/* Display attributes as chips */}
             <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mb: 2 }}>
-              {Object.entries(JSON.parse(formData.attributes || "{}")).map(
-                ([key, value]) => (
-                  <Chip
-                    key={key}
-                    label={`${key}: ${value}`}
-                    onDelete={() => removeAttribute(key)}
-                    variant="outlined"
-                    color="primary"
-                  />
-                )
-              )}
+              {Object.entries(formData.attributes || {}).map(([key, value]) => (
+                <Chip
+                  key={key}
+                  label={`${key}: ${value}`}
+                  onDelete={() => removeAttribute(key)}
+                  variant="outlined"
+                  color="primary"
+                />
+              ))}
             </Stack>
 
             {errors.attributes && (
@@ -664,7 +762,7 @@ const AddProductStepperModal = ({ open, onClose, onSubmit }) => {
                   </Box>
 
                   <Grid container spacing={2}>
-                    <Grid item xs={6} md={2.4}>
+                    <Grid item size={{ xs: 6, md: 2.4 }}>
                       <TextField
                         fullWidth
                         size="small"
@@ -676,7 +774,7 @@ const AddProductStepperModal = ({ open, onClose, onSubmit }) => {
                         placeholder="M"
                       />
                     </Grid>
-                    <Grid item xs={6} md={2.4}>
+                    <Grid item size={{ xs: 6, md: 2.4 }}>
                       <TextField
                         fullWidth
                         size="small"
@@ -688,24 +786,7 @@ const AddProductStepperModal = ({ open, onClose, onSubmit }) => {
                         placeholder="Red"
                       />
                     </Grid>
-                    <Grid item xs={4} md={2.4}>
-                      <TextField
-                        fullWidth
-                        size="small"
-                        label="Stock"
-                        type="number"
-                        value={variant.stock}
-                        onChange={(e) =>
-                          updateVariant(
-                            index,
-                            "stock",
-                            parseInt(e.target.value) || 0
-                          )
-                        }
-                        placeholder="10"
-                      />
-                    </Grid>
-                    <Grid item xs={4} md={2.4}>
+                    <Grid item size={{ xs: 4, md: 2.4 }}>
                       <TextField
                         fullWidth
                         size="small"
@@ -727,7 +808,7 @@ const AddProductStepperModal = ({ open, onClose, onSubmit }) => {
                         placeholder="599"
                       />
                     </Grid>
-                    <Grid item xs={4} md={2.4}>
+                    <Grid item size={{ xs: 4, md: 2.4 }}>
                       <TextField
                         fullWidth
                         size="small"
@@ -767,9 +848,6 @@ const AddProductStepperModal = ({ open, onClose, onSubmit }) => {
                   <strong>Title:</strong> {formData.title}
                 </Typography>
                 <Typography>
-                  <strong>Brand:</strong> {formData.brand}
-                </Typography>
-                <Typography>
                   <strong>Category:</strong> {formData.category}
                 </Typography>
                 <Typography>
@@ -783,12 +861,6 @@ const AddProductStepperModal = ({ open, onClose, onSubmit }) => {
                 </Typography>
                 <Typography>
                   <strong>Base Price:</strong> ${formData.basePrice}
-                </Typography>
-                <Typography>
-                  <strong>Stock:</strong> {formData.stock} units
-                </Typography>
-                <Typography>
-                  <strong>SKU:</strong> {formData.sku || "Not provided"}
                 </Typography>
                 <Typography>
                   <strong>Tags:</strong> {formData.tags || "None"}
@@ -861,11 +933,10 @@ const AddProductStepperModal = ({ open, onClose, onSubmit }) => {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
+          color: "primary.main",
         }}
       >
-        <Typography variant="h6" color="primary">
-          Add New Product
-        </Typography>
+        Add New Product
         <IconButton onClick={handleClose} size="small">
           <Close />
         </IconButton>
@@ -874,46 +945,29 @@ const AddProductStepperModal = ({ open, onClose, onSubmit }) => {
       <DialogContent sx={{ p: 0 }}>
         <Box sx={{ p: 3 }}>
           <Stepper
+            alternativeLabel
             activeStep={activeStep}
             orientation="horizontal"
             sx={{ mb: 4 }}
+            connector={<ColorlibConnector />}
           >
             {steps.map((step) => (
               <Step key={step.label}>
                 <StepLabel
-                  StepIconComponent={({ active, completed }) => (
-                    <Box
-                      sx={{
-                        width: 40,
-                        height: 40,
-                        borderRadius: "50%",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        backgroundColor: completed
-                          ? "success.main"
-                          : active
-                          ? "primary.main"
-                          : "grey.300",
-                        color: completed || active ? "white" : "text.secondary",
-                      }}
-                    >
-                      {completed ? (
-                        <CheckCircle />
-                      ) : (
-                        React.cloneElement(step.icon, { fontSize: "small" })
-                      )}
-                    </Box>
-                  )}
+                  StepIconComponent={ColorlibStepIcon}
+                  sx={{
+                    color: "#000",
+                    fontWeight: "bold",
+                    ".MuiStepLabel-label": { fontWeight: "600" },
+                  }}
                 >
-                  <Box>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                      {step.label}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {step.description}
-                    </Typography>
-                  </Box>
+                  {step.label}
+                  <Typography
+                    variant="caption"
+                    sx={{ display: "block", color: "text.secondary" }}
+                  >
+                    {step.description}
+                  </Typography>
                 </StepLabel>
               </Step>
             ))}
@@ -950,7 +1004,13 @@ const AddProductStepperModal = ({ open, onClose, onSubmit }) => {
             startIcon={loading ? <CircularProgress size={20} /> : <Save />}
             sx={{ minWidth: 140 }}
           >
-            {loading ? "Saving..." : "Save Product"}
+            {loading
+              ? Object.keys(editProduct).length > 0
+                ? "Updating..."
+                : "Saving..."
+              : Object.keys(editProduct).length > 0
+              ? "Update Product"
+              : "Save Product"}
           </Button>
         ) : (
           <Button
@@ -965,35 +1025,3 @@ const AddProductStepperModal = ({ open, onClose, onSubmit }) => {
     </Dialog>
   );
 };
-
-// Example usage
-const ProductStepperExample = () => {
-  const [modalOpen, setModalOpen] = useState(false);
-
-  const handleAddProduct = async (productData) => {
-    console.log("Product data:", productData);
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    alert("Product added successfully!");
-  };
-
-  return (
-    <Box sx={{ p: 4 }}>
-      <Button
-        variant="contained"
-        startIcon={<Add />}
-        onClick={() => setModalOpen(true)}
-        size="large"
-      >
-        Add Product
-      </Button>
-
-      <AddProductStepperModal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onSubmit={handleAddProduct}
-      />
-    </Box>
-  );
-};
-
-export default ProductStepperExample;

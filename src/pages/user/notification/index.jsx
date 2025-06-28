@@ -45,7 +45,7 @@ const NotificationCenter = () => {
   );
 
   return (
-    <Container maxWidth="s" sx={{ height: '100%' }}>
+    <Container maxWidth="s" sx={{ height: "100%" }}>
       <Box
         sx={{
           display: "flex",
@@ -53,7 +53,7 @@ const NotificationCenter = () => {
           height: "100%",
         }}
       >
-        <Typography variant="h4" color="primary" gutterBottom sx={{ py: 4, height: '40px' }}>
+        <Typography variant="h4" gutterBottom sx={{ py: 2, m: 0 }}>
           Notifications
         </Typography>
 
@@ -68,7 +68,7 @@ const NotificationCenter = () => {
                 {notifications.map((notification, index) => (
                   <React.Fragment key={notification.id}>
                     <ListItem
-                      button={true}
+                      button
                       selected={notification.id === selectedNotification.id}
                       onClick={() => setSelectedNotification(notification)}
                       alignItems="flex-start"

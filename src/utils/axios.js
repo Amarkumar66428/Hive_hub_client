@@ -33,8 +33,6 @@ api.interceptors.response.use(
     const code = error?.code || "ERR_INTERNAL";
 
     if ([403, 500, 502].includes(status)) {
-      Cookies.remove("access_token");
-
       store.dispatch(
         setServerError({
           isError: true,

@@ -158,11 +158,9 @@ export const appRouters = [
     showInMenu: true,
   },
   {
-    path: "/user/manage-store",
     role: [STORE_OWNER],
     title: "Manage Store",
     icon: React.createElement(Storefront),
-    component: asyncComponent(() => import("../pages/user/stores/index.jsx")),
     isLayout: true,
     showInMenu: true,
     subMenu: true,
@@ -177,14 +175,12 @@ export const appRouters = [
     isLayout: true,
   },
   {
-    path: "/user/manage-store/create-store",
+    path: "/user/manage-store/my-store",
     role: [STORE_OWNER],
     title: "My Store",
     subMenuTitle: "Manage Store",
     icon: React.createElement(WebOutlined),
-    component: asyncComponent(() =>
-      import("../pages/user/createStore/index.jsx")
-    ),
+    component: asyncComponent(() => import("../pages/user/stores/index.jsx")),
     isLayout: true,
     showInSubMenu: true,
   },
