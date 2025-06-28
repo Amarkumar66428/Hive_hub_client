@@ -23,7 +23,6 @@ import {
 } from "../../../services/adminPlansServices";
 import DeleteConfirm from "../../../components/deleteConfirm";
 import { useSnackbar } from "../../../features/snackBar";
-import { Switch } from "antd";
 
 const ManagePlans = ({ setOpen, selectPlan, setSelectPlan }) => {
   const { showSnackbar } = useSnackbar();
@@ -127,7 +126,12 @@ const ManagePlans = ({ setOpen, selectPlan, setSelectPlan }) => {
         <Typography variant="h4">Manage Plans</Typography>
         <Button
           variant="contained"
-          onClick={() => setOpen(true)}
+          onClick={() => {
+            if (selectPlan) {
+              setSelectPlan(null);
+            }
+            setOpen(true);
+          }}
           sx={{
             backgroundColor: "primary.main",
             color: "white",
