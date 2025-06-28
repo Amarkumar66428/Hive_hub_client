@@ -64,7 +64,6 @@ const steps = [
   },
   {
     label: "Attributes & Variants",
-    description: "Product specifications and variants",
     icon: <Settings />,
   },
   {
