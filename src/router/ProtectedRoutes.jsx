@@ -1,20 +1,17 @@
 import { Navigate, useLocation } from "react-router-dom";
-import Cookies from "js-cookie";
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
+import Cookies from "js-cookie";
+
 import useAuth from "../hooks/useAuth";
 import usePlan from "../hooks/useSubscription";
 import userService from "../services/userService";
-import { clearUserData, setUserData } from "../reducer/authSlice";
-import AppLoading from "../pages/hiveloading";
 import adminService from "../services/adminService";
+import { setUserData, clearUserData } from "../reducer/authSlice";
 import { decryptData } from "../utils/encryption";
+import AppLoading from "../pages/hiveloading";
 
-const ProtectedRoute = ({
-  children,
-  role = [],
-  subscriptionRequired = false,
-}) => {
+const ProtectedRoute = ({ children, role = [], subscriptionRequired = false }) => {
   const location = useLocation();
   const dispatch = useDispatch();
 
@@ -25,39 +22,36 @@ const ProtectedRoute = ({
   const [loading, setLoading] = useState(!user && !!token);
 
   useEffect(() => {
-    if (!user && token) {
-      const role = localStorage.getItem("role");
+    const fetchUserData = async () => {
+      try {
+        const storedRole = localStorage.getItem("role");
+        const decryptedRole = storedRole ? decryptData(storedRole) : null;
 
-      if (role && decryptData(role) === "admin") {
-        adminService
-          .getAdminData()
-          .then((data) => {
-            if (data) {
-              dispatch(
-                setUserData({
-                  user: data?.data,
-                })
-              );
-            }
-          })
-          .catch(console.error)
-          .finally(() => setLoading(false));
-      } else {
-        userService
-          .getUserdata()
-          .then((data) => {
-            if (data) {
-              dispatch(
-                setUserData({
-                  user: data?.user,
-                  subscription: data.subscription,
-                })
-              );
-            }
-          })
-          .catch(console.error)
-          .finally(() => setLoading(false));
+        if (decryptedRole === "admin") {
+          const res = await adminService.getAdminData();
+          if (res?.data) {
+            dispatch(setUserData({ user: res.data }));
+          }
+        } else {
+          const res = await userService.getUserdata();
+          if (res?.user) {
+            dispatch(
+              setUserData({
+                user: res.user,
+                subscription: res.subscription,
+              })
+            );
+          }
+        }
+      } catch (error) {
+        console.error("User fetch error:", error);
+      } finally {
+        setLoading(false);
       }
+    };
+
+    if (!user && token) {
+      fetchUserData();
     } else {
       setLoading(false);
     }
@@ -69,18 +63,19 @@ const ProtectedRoute = ({
   if (loading) return <AppLoading />;
 
   if (!isAuthenticated) {
-    localStorage.clear();
+    console.log("protected routes");
     Cookies.remove("access_token");
+    localStorage.clear();
     dispatch(clearUserData());
     return <Navigate to="/auth/signin" state={{ from: location }} replace />;
   }
 
-  if (subscriptionRequired && !isSubscribed) {
-    return <Navigate to="/subscription/plans" replace />;
-  }
-
   if (!role.length) {
     return <Navigate to="/exception?type=401" replace />;
+  }
+
+  if (subscriptionRequired && !isSubscribed) {
+    return <Navigate to="/subscription/plans" replace />;
   }
 
   return children;

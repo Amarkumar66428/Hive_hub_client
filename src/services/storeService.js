@@ -1,16 +1,16 @@
 import api from "../utils/axios";
 
-export const getStores = async () => {
+const getStores = async () => {
   const response = await api.get("admin/getAllStores");
   return response.data;
 };
 
-export const getPlans = async () => {
+const getPlans = async () => {
   const response = await api.get("/user/getAllPlans");
   return response.data;
 };
 
-export const createStore = async (storeData) => {
+const createStore = async (storeData) => {
   const formData = new FormData();
 
   // Append all fields except 'logo'
@@ -39,12 +39,12 @@ export const createStore = async (storeData) => {
   }
 };
 
-export const getMyStore = async () => {
+const getMyStore = async () => {
   const response = await api.get("/user/getMyStoreWithProducts");
   return response.data;
 };
 
-export const addItem = async ([item]) => {
+const addItem = async ([item]) => {
   const formData = new FormData();
 
   Object.entries(item).forEach(([key, value]) => {
@@ -67,7 +67,7 @@ export const addItem = async ([item]) => {
   return response.data;
 };
 
-export const updateItem = async (id, data) => {
+const updateItem = async (id, data) => {
   const formData = new FormData();
 
   data.images?.forEach((file) => {
@@ -95,6 +95,11 @@ const getMyInventory = async () => {
   return response.data;
 };
 
+const getAllOrders = async (params) => {
+  const response = await api.get(`/user/getAllOrdersForStoreOwner${params}`);
+  return response.data;
+};
+
 const storeService = {
   getStores,
   getPlans,
@@ -103,6 +108,7 @@ const storeService = {
   addItem,
   updateItem,
   getMyInventory,
+  getAllOrders,
 };
 
 export default storeService;
