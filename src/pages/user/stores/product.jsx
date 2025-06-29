@@ -13,11 +13,13 @@ import {
   Skeleton,
   Menu,
   MenuItem,
+  Paper,
 } from "@mui/material";
 import { MoreVert, Edit, Delete, Visibility } from "@mui/icons-material";
 import { styled } from "@mui/material/styles";
 import storeService from "../../../services/storeService";
 import ProductAdd from "../../../components/addProductModal";
+import { useNavigate } from "react-router-dom";
 
 // Styled Components
 const ProductCard = styled(Card)(({ theme }) => ({
@@ -78,6 +80,7 @@ const CurrentPrice = styled(Typography)(({ theme }) => ({
 
 // Main Product List Component
 const Products = () => {
+  const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [editProduct, setEditProduct] = useState({});
   const [loading, setLoading] = useState(false);
@@ -101,7 +104,7 @@ const Products = () => {
     try {
       setLoading(true);
       const response = await storeService.getMyStore();
-       setProducts(response?.products || null);
+      setProducts(response?.products || null);
     } catch (error) {
       console.error("Error fetching stores:", error);
     } finally {
@@ -114,92 +117,102 @@ const Products = () => {
   }, []);
 
   return (
-    <Container maxWidth={false} disableGutters sx={{ p: 2 }}>
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          mb: 2,
-        }}
-      >
-        <Typography variant="h4" gutterBottom sx={{ m: 0 }}>
-          Your Listed Products
-        </Typography>
-        <ProductAdd
-          modalOpen={modalOpen}
-          setModalOpen={setModalOpen}
-          fetchStore={fetchStore}
-          editProduct={editProduct}
-          setEditProduct={setEditProduct}
-        />
-      </Box>
-      {loading ? (
-        <Grid container spacing={3}>
-          {[...Array(6)].map((_, index) => (
-            <Grid item size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={index}>
-              <Card>
-                <Skeleton variant="rectangular" height={200} />
-                <CardContent>
-                  <Skeleton variant="text" height={32} width="80%" />
-                  <Skeleton variant="text" height={24} width="60%" />
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-      ) : products?.length === 0 ? (
-        <Box
-          sx={{
-            textAlign: "center",
-            border: "2px dashed #e0e0e0",
-            borderRadius: 2,
-            backgroundColor: "#fafafa",
-            p: 4,
-          }}
-        >
-          <Typography variant="h6" color="text.secondary" gutterBottom>
-            No products found
+    <>
+      <Paper sx={{ p: 2, mb: 2 }}>
+        <Box display="flex" justifyContent="space-between" gap={2}>
+          <Typography variant="h4" gutterBottom sx={{ m: 0 }}>
+            Your Listed Products
           </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            Start by adding your first product
-          </Typography>
-          <ProductAdd
-            modalOpen={modalOpen}
-            setModalOpen={setModalOpen}
-            fetchStore={fetchStore}
-          />
+          <Box display="flex" gap={2}>
+            <Button
+              variant="outlined"
+              onClick={() => navigate("/user/manage-store/inventory")}
+            >
+              Manage Inventory
+            </Button>
+            <ProductAdd
+              modalOpen={modalOpen}
+              setModalOpen={setModalOpen}
+              fetchStore={fetchStore}
+              editProduct={editProduct}
+              setEditProduct={setEditProduct}
+            />
+          </Box>
         </Box>
-      ) : (
-        <Grid container spacing={3}>
-          {products.map((product) => (
-            <Grid item size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={product?.id}>
-              <ProductCardComponent
-                product={product}
-                onEdit={handleEditProduct}
-                onDelete={handleDeleteProduct}
-                onView={handleViewProduct}
-              />
-            </Grid>
-          ))}
-        </Grid>
-      )}
+      </Paper>
+      <Container maxWidth={false}>
+        {loading ? (
+          <Grid container spacing={3}>
+            {[...Array(6)].map((_, index) => (
+              <Grid item size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={index}>
+                <Card>
+                  <Skeleton variant="rectangular" height={200} />
+                  <CardContent>
+                    <Skeleton variant="text" height={32} width="80%" />
+                    <Skeleton variant="text" height={24} width="60%" />
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        ) : products?.length === 0 ? (
+          <Box
+            sx={{
+              textAlign: "center",
+              border: "2px dashed #e0e0e0",
+              borderRadius: 2,
+              backgroundColor: "#fafafa",
+              p: 4,
+            }}
+          >
+            <Typography variant="h6" color="text.secondary" gutterBottom>
+              No products found
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+              Start by adding your first product
+            </Typography>
+            <ProductAdd
+              modalOpen={modalOpen}
+              setModalOpen={setModalOpen}
+              fetchStore={fetchStore}
+            />
+          </Box>
+        ) : (
+          <Grid container spacing={3}>
+            {products.map((product) => (
+              <Grid
+                item
+                size={{ xs: 12, sm: 6, md: 4, lg: 3 }}
+                key={product?.id}
+              >
+                <ProductCardComponent
+                  product={product}
+                  onEdit={handleEditProduct}
+                  onDelete={handleDeleteProduct}
+                  onView={handleViewProduct}
+                />
+              </Grid>
+            ))}
+          </Grid>
+        )}
 
-      {/* Load More Button (if needed) */}
-      {products.length > 0 && (
-        <Box sx={{ textAlign: "center", mt: 4 }}>
-          <Button variant="outlined" size="large">
-            Load More Products
-          </Button>
-        </Box>
-      )}
-    </Container>
+        {/* Load More Button (if needed) */}
+        {products.length > 0 && (
+          <Box sx={{ textAlign: "center", mt: 4 }}>
+            <Button variant="outlined" size="large">
+              Load More Products
+            </Button>
+          </Box>
+        )}
+      </Container>
+    </>
   );
 };
 
 export default Products;
 
 const ProductCardComponent = ({ product, onEdit, onDelete, onView }) => {
+  const variants = product?.variants[0] || [];
   const [imageLoading, setImageLoading] = useState(true);
   const [menuAnchor, setMenuAnchor] = useState(null);
 
@@ -212,15 +225,15 @@ const ProductCardComponent = ({ product, onEdit, onDelete, onView }) => {
   };
 
   const calculateDiscount = () => {
-    const price = Number(product?.basePrice);
+    const price = Number(variants?.price);
 
     if (!price || isNaN(price) || price <= 0) return 0;
 
     // Example logic — assuming discountAmount or comparePrice exists
-    const originalPrice = Number(product?.comparePrice || price);
+    const originalPrice = Number(product?.basePrice || price);
     const discount = ((originalPrice - price) / originalPrice) * 100;
 
-    return discount > 0 ? `-${Math.round(discount)}` : 0;
+    return `-${Math.round(discount)}`;
   };
 
   return (
@@ -265,8 +278,10 @@ const ProductCardComponent = ({ product, onEdit, onDelete, onView }) => {
             </Typography>
 
             <PriceContainer>
-              <OriginalPrice>${product.basePrice.toFixed(2)}</OriginalPrice>
-              <CurrentPrice>${product.basePrice.toFixed(2)}</CurrentPrice>
+              <OriginalPrice>
+                ${product.basePrice.toFixed(2) || 0}
+              </OriginalPrice>
+              <CurrentPrice>${variants.price || 0}</CurrentPrice>
             </PriceContainer>
           </Box>
 

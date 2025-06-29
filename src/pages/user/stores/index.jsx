@@ -3,15 +3,7 @@ import {
   Box,
   Typography,
   Chip,
-  CircularProgress,
-  TextField,
   Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  IconButton,
-  Grid,
   Card,
   CardHeader,
   CardActions,
@@ -23,14 +15,11 @@ import {
   Container,
   Tooltip,
   Skeleton,
+  Grid,
 } from "@mui/material";
-import { getMyStore } from "../../../services/storeService";
-import { Link } from "react-router-dom";
+import storeService from "../../../services/storeService";
 import {
-  Delete,
-  Edit,
   RadioButtonCheckedOutlined,
-  Visibility,
 } from "@mui/icons-material";
 import webPage from "../../../assets/storePage/image4.png";
 import { formatDate } from "../../../utils/helper";
@@ -61,7 +50,7 @@ const ManageStores = () => {
     const fetchStore = async () => {
       try {
         setLoading(true);
-        const response = await getMyStore();
+        const response = await storeService.getMyStore();
         setStore(response?.store || null);
       } catch (error) {
         console.error("Error fetching stores:", error);

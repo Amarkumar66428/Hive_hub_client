@@ -5,11 +5,10 @@ import {
   Grid,
   ButtonGroup,
   Button,
-  Container,
   CircularProgress,
 } from "@mui/material";
 import PlanCard from "../../components/plansCards";
-import { getPlans } from "../../services/storeService";
+import storeService from "../../services/storeService";
 import { ArrowForward } from "@mui/icons-material";
 import { Modal } from "antd";
 import StripePayments from "./payments";
@@ -25,7 +24,7 @@ const Plans = () => {
     const fetchPlans = async () => {
       try {
         setLoading(true);
-        const response = await getPlans();
+        const response = await storeService.getPlans();
         setPlans(response?.plans);
       } catch (error) {
         console.log(error);

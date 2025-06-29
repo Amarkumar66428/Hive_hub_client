@@ -43,7 +43,7 @@ import {
   DesktopWindowsOutlined,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import { createStore } from "../../../services/storeService";
+import storeService from "../../../services/storeService";
 import { useSnackbar } from "../../../features/snackBar";
 import Templates2 from "../../templates/templates2";
 import TabList from "@mui/lab/TabList";
@@ -101,7 +101,7 @@ const CreateStore = () => {
       const storeData = {
 
       };
-      const response = await createStore(storeData);
+      const response = await storeService.createStore(storeData);
       if (response) {
         showSnackbar("Store created successfully", "success");
         navigate("/user/home/create-store", { state: { screen: 2 } });

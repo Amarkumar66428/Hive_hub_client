@@ -9,9 +9,8 @@ import {
   TableContainer,
   Paper,
   Typography,
-  CircularProgress,
 } from "@mui/material";
-import { getStores } from "../../../services/storeService";
+import storeService from "../../../services/storeService";
 import { approveStore, blockStore } from "../../../services/adminService";
 import { Switch } from "antd";
 import TableSkeleton from "../../../components/tableSkeleton";
@@ -33,7 +32,7 @@ const ManageStores = () => {
   const fetchStores = async () => {
     try {
       setLoading(true);
-      const response = await getStores();
+      const response = await storeService.getStores();
       setStores(response?.stores || []);
     } catch (error) {
       console.error("Error fetching stores:", error);
