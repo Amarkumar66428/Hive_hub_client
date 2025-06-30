@@ -49,9 +49,15 @@ const PublicSites = () => {
     );
   }
 
-  const matchedRoute = templateRouters.find(
-    (route) => String(route.key) === String(template?.TemplateId)
-  );
+  console.log("templateRouters: ", templateRouters);
+
+  const matchedRoute = template?.TemplateId
+    ? templateRouters.find((route) =>
+        route?.key?.includes(String(template.TemplateId))
+      )
+    : null;
+
+  console.log("matchedRoute: ", matchedRoute);
 
   if (!matchedRoute) {
     return <NotFoundPage />;

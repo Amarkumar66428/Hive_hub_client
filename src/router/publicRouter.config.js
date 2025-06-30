@@ -8,7 +8,7 @@ export const publicRouters = [
 
 export const templateRouters = [
   {
-    key: "1",
+    key: ["eCommerce", "1"],
     component: asyncComponent(() =>
       import("../pages/templates/templates2/index.jsx")
     ),
