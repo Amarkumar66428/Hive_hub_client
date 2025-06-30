@@ -175,7 +175,7 @@ export const appRouters = [
     isLayout: true,
   },
   {
-    path: "/user/manage-store/:template/:type",
+    path: "/user/manage-store/:type/:template/:storeId",
     role: [STORE_OWNER],
     icon: React.createElement(DesignServicesRounded),
     component: asyncComponent(() =>

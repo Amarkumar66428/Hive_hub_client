@@ -118,7 +118,7 @@ const ManageStores = () => {
                         color="primary"
                         fullWidth
                         onClick={() =>
-                          navigate("/user/manage-store/1/edit")
+                          navigate(`/user/manage-store/edit/1/${store?._id}`)
                         }
                       >
                         Edit Store

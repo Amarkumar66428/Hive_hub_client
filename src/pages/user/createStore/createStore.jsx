@@ -25,8 +25,8 @@ import {
   Paper,
   List,
   ListItemButton,
-  ListItemIcon,
   ListItemText,
+  styled,
 } from "@mui/material";
 import {
   Edit,
@@ -45,9 +45,10 @@ import {
   PhoneAndroidOutlined,
   TabletMacOutlined,
   DesktopWindowsOutlined,
+  UploadFile,
+  ArrowForwardIosSharp,
 } from "@mui/icons-material";
-import { useNavigate } from "react-router-dom";
-import storeService from "../../../services/storeService";
+import { useNavigate, useParams } from "react-router-dom";
 import { useSnackbar } from "../../../features/snackBar";
 import Templates2 from "../../templates/templates2";
 import TabList from "@mui/lab/TabList";
@@ -55,23 +56,85 @@ import Tab from "@mui/material/Tab";
 import TabPanel from "@mui/lab/TabPanel";
 import TabContext from "@mui/lab/TabContext";
 import { ColorPicker } from "antd";
+import first_hero from "../../../assets/storePage/temp2/first_hero.webp";
+import MuiAccordionDetails from "@mui/material/AccordionDetails";
+import MuiAccordion from "@mui/material/Accordion";
+import MuiAccordionSummary, {
+  accordionSummaryClasses,
+} from "@mui/material/AccordionSummary";
+import SiteFormDialog from "./publishForm";
+
+const layoutSection = [
+  {
+    title: "Hero Section",
+    id: "heroSection",
+  },
+  {
+    title: "About Section",
+    id: "aboutSection",
+  },
+  {
+    title: "Services Section",
+    id: "servicesSection",
+  },
+  {
+    title: "Footer Section",
+    id: "footerSection",
+  },
+];
+
+const categories = ["shop", "services"];
+
+const Accordion = styled((props) => (
+  <MuiAccordion disableGutters elevation={0} square {...props} />
+))(({ theme }) => ({
+  border: `1px solid ${theme.palette.divider}`,
+  "&:not(:last-child)": {
+    borderBottom: 0,
+  },
+  "&::before": {
+    display: "none",
+  },
+}));
+
+const AccordionSummary = styled((props) => (
+  <MuiAccordionSummary
+    expandIcon={<ArrowForwardIosSharp sx={{ fontSize: "0.9rem" }} />}
+    {...props}
+  />
+))(({ theme }) => ({
+  flexDirection: "row-reverse",
+  [`& .${accordionSummaryClasses.expandIconWrapper}.${accordionSummaryClasses.expanded}`]:
+    {
+      transform: "rotate(90deg)",
+    },
+  [`& .${accordionSummaryClasses.content}`]: {
+    marginLeft: theme.spacing(1),
+  },
+}));
+
+const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
+  padding: theme.spacing(1),
+  borderTop: "1px solid rgba(0, 0, 0, .125)",
+}));
 
 const CreateStore = () => {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
+  const { storeId } = useParams();
   const { showSnackbar } = useSnackbar();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [itemListDrawerOpen, setItemListDrawerOpen] = useState(false);
-
+  const [openSection, setOpenSection] = useState(null);
+  const [expandedAccordion, setExpandedAccordion] = useState("panel1");
   const [itemsList, setItemsList] = useState([]);
   const [editIndex, setEditIndex] = useState(null);
   const [expanded, setExpanded] = useState(true);
   const [tabValue, setTabValue] = useState("1");
   const [siteWidth, setSiteWidth] = useState("1440px");
+  const [publishOpen, setPublishOpen] = useState(false);
   const [layout, setLayout] = useState({
     siteName: "Store Name",
     primaryColor: "#000",
-    heroImage: null,
     textColor: "#000",
   });
 
@@ -97,27 +160,6 @@ const CreateStore = () => {
 
   const toggleDrawer = () => {
     setExpanded(!expanded);
-  };
-
-  const categories = ["shop", "services"];
-
-  const handlePublish = async () => {
-    try {
-      setLoading(true);
-      const storeData = {};
-      const response = await storeService.createStore(storeData);
-      if (response) {
-        showSnackbar("Store created successfully", "success");
-        navigate("/user/home/create-store", { state: { screen: 2 } });
-      }
-    } catch (error) {
-      showSnackbar(
-        error?.response?.data?.message || "Something went wrong",
-        "error"
-      );
-    } finally {
-      setLoading(false);
-    }
   };
 
   const handleInputChange = (e) => {
@@ -186,6 +228,28 @@ const CreateStore = () => {
     showSnackbar("Item deleted", "info");
   };
 
+  const handleChange = (panel) => (event, newExpanded) => {
+    setExpandedAccordion(newExpanded ? panel : false);
+  };
+
+  const handleImageChangeHeader = (event, key) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) =>
+        setLayout((prev) => ({ ...prev, [key]: e.target.result }));
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveImage = (key) => {
+    setLayout((prev) => ({ ...prev, [key]: null }));
+  };
+
+  const handleSectionClick = (section) => {
+    setOpenSection(section);
+  };
+
   return (
     <Box className="store-editor">
       <Stack
@@ -208,9 +272,13 @@ const CreateStore = () => {
           <Tooltip title="Go Back">
             <IconButton
               variant="text"
-              onClick={() =>
-                navigate("/user/home/create-store", { state: { screen: 2 } })
-              }
+              onClick={() => {
+                storeId
+                  ? navigate("/user/manage-store/my-store")
+                  : navigate("/user/manage-store/create-store", {
+                      state: { screen: 2 },
+                    });
+              }}
               sx={{
                 color: "#fff",
                 borderRadius: 0,
@@ -263,8 +331,7 @@ const CreateStore = () => {
         </Box>
         <Button
           variant="text"
-          onClick={handlePublish}
-          disabled={loading}
+          onClick={() => setPublishOpen(true)}
           sx={{
             color: "#fff",
             textTransform: "capitalize",
@@ -272,13 +339,8 @@ const CreateStore = () => {
             backgroundColor: "success.main",
             "&:hover": { backgroundColor: "success.dark" },
           }}
-          startIcon={
-            loading ? (
-              <CircularProgress size={20} sx={{ color: "success.main" }} />
-            ) : null
-          }
         >
-          {loading ? "Publishing..." : "Publish"}
+          Publish
         </Button>
       </Stack>
       <Box
@@ -424,21 +486,25 @@ const CreateStore = () => {
                   <List
                     sx={{ display: "flex", flexDirection: "column", gap: 1 }}
                   >
-                    <ListItemButton
-                      sx={{ border: "1px solid", borderColor: "divider" }}
-                    >
-                      <ListItemText primary="Hero Section" />
-                    </ListItemButton>
-                    <ListItemButton
-                      sx={{ border: "1px solid", borderColor: "divider" }}
-                    >
-                      <ListItemText primary="Browse Section" />
-                    </ListItemButton>
-                    <ListItemButton
-                      sx={{ border: "1px solid", borderColor: "divider" }}
-                    >
-                      <ListItemText primary="Footer Section" />
-                    </ListItemButton>
+                    {layoutSection?.map((section, index) => (
+                      <ListItemButton
+                        key={index}
+                        onClick={() => handleSectionClick(section.id)}
+                        sx={(theme) => ({
+                          border: "1px solid",
+                          borderColor: "divider",
+                          backgroundColor:
+                            openSection === section.id
+                              ? theme.palette.grey[400]
+                              : "transparent",
+                          "&:hover": {
+                            backgroundColor: theme.palette.grey[400],
+                          },
+                        })}
+                      >
+                        <ListItemText primary={section.title} />
+                      </ListItemButton>
+                    ))}
                   </List>
                 </TabPanel>
                 <TabPanel value="2">Item Two</TabPanel>
@@ -532,12 +598,13 @@ const CreateStore = () => {
             overflow: "auto",
             width: !expanded ? "100%" : "76%",
             transition: "width 0.3s ease",
-            px: 2,
+            px: 0,
           }}
         >
           <Templates2
             siteWidth={siteWidth}
             layout={layout}
+            setLayout={setLayout}
             isStoreOwner={true}
           />
         </Box>
@@ -555,9 +622,145 @@ const CreateStore = () => {
             display: "flex",
             justifyContent: "space-between",
           }}
-        ></Paper>
+        >
+          {openSection === "heroSection" && (
+            <Accordion
+              expanded={expandedAccordion === "panel1"}
+              onChange={handleChange("panel1")}
+            >
+              <AccordionSummary
+                aria-controls="panel1d-content"
+                id="panel1d-header"
+              >
+                <Typography component="span">Hero Background</Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <Box
+                  display="flex"
+                  flexDirection="column"
+                  alignItems="center"
+                  justifyContent="center"
+                  borderRadius={2}
+                  width="100%"
+                  textAlign="center"
+                  gap={1}
+                >
+                  <Box
+                    sx={{
+                      width: "100%",
+                      height: 120,
+                      backgroundColor: "#f5f5f5",
+                      backgroundImage: layout.heroImage
+                        ? `url(${layout.heroImage})`
+                        : `url(${first_hero})`,
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
+                      borderRadius: 1,
+                    }}
+                  />
+                  <Box sx={{ display: "flex", gap: 1, width: "100%" }}>
+                    <Button
+                      variant="contained"
+                      size="small"
+                      component="label"
+                      startIcon={<UploadFile />}
+                      fullWidth
+                    >
+                      {layout.heroImage ? "Change Image" : "Upload Image"}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        hidden
+                        onChange={(e) =>
+                          handleImageChangeHeader(e, "heroImage")
+                        }
+                      />
+                    </Button>
+                    {layout.heroImage && (
+                      <IconButton
+                        color="error"
+                        size="small"
+                        onClick={() => handleRemoveImage("heroImage")}
+                        sx={{ alignSelf: "flex-end" }}
+                      >
+                        <Delete fontSize="small" />
+                      </IconButton>
+                    )}
+                  </Box>
+                </Box>
+              </AccordionDetails>
+            </Accordion>
+          )}
+          {openSection === "servicesSection" && (
+            <Accordion
+              expanded={expandedAccordion === "panel1"}
+              onChange={handleChange("panel1")}
+            >
+              <AccordionSummary
+                aria-controls="panel1d-content"
+                id="panel1d-header"
+              >
+                <Typography component="span">Services Cards</Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <Box
+                  display="flex"
+                  flexDirection="column"
+                  alignItems="center"
+                  justifyContent="center"
+                  borderRadius={2}
+                  width="100%"
+                  textAlign="center"
+                  gap={1}
+                >
+                  <Box
+                    sx={{
+                      width: "100%",
+                      height: 120,
+                      backgroundColor: "#f5f5f5",
+                      backgroundImage: layout.heroImage
+                        ? `url(${layout.heroImage})`
+                        : `url(${first_hero})`,
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
+                      borderRadius: 1,
+                    }}
+                  />
+                  <Box sx={{ display: "flex", gap: 1, width: "100%" }}>
+                    <Button
+                      variant="contained"
+                      size="small"
+                      component="label"
+                      startIcon={<UploadFile />}
+                      fullWidth
+                    >
+                      {layout.heroImage ? "Change Image" : "Upload Image"}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        hidden
+                        onChange={(e) =>
+                          handleImageChangeHeader(e, "heroImage")
+                        }
+                      />
+                    </Button>
+                    {layout.heroImage && (
+                      <IconButton
+                        color="error"
+                        size="small"
+                        onClick={() => handleRemoveImage("heroImage")}
+                        sx={{ alignSelf: "flex-end" }}
+                      >
+                        <Delete fontSize="small" />
+                      </IconButton>
+                    )}
+                  </Box>
+                </Box>
+              </AccordionDetails>
+            </Accordion>
+          )}
+        </Paper>
       </Box>
-
       <Modal
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
@@ -1053,6 +1256,11 @@ const CreateStore = () => {
           </Table>
         </Box>
       </Drawer>
+      <SiteFormDialog
+        open={publishOpen}
+        layout={layout}
+        onClose={() => setPublishOpen(false)}
+      />
     </Box>
   );
 };
