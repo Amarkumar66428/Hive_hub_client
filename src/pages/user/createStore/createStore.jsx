@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Box,
   Stack,
@@ -23,6 +23,10 @@ import {
   Modal,
   Tooltip,
   Paper,
+  List,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
 } from "@mui/material";
 import {
   Edit,
@@ -65,7 +69,10 @@ const CreateStore = () => {
   const [tabValue, setTabValue] = useState("1");
   const [siteWidth, setSiteWidth] = useState("1440px");
   const [layout, setLayout] = useState({
+    siteName: "Store Name",
     primaryColor: "#000",
+    heroImage: null,
+    textColor: "#000",
   });
 
   const [itemForm, setItemForm] = useState({
@@ -79,13 +86,12 @@ const CreateStore = () => {
     imagePreview: null,
   });
 
-  const handleColorChange = (color) => {
+  const handleColorChange = (key, color) => {
     const hex = color.toHexString();
-    setLayout({ ...layout, primaryColor: hex });
+    setLayout({ ...layout, [key]: hex });
   };
 
   const handleTabChange = (event, newValue) => {
-    console.log("newValue: ", newValue);
     setTabValue(newValue);
   };
 
@@ -98,9 +104,7 @@ const CreateStore = () => {
   const handlePublish = async () => {
     try {
       setLoading(true);
-      const storeData = {
-
-      };
+      const storeData = {};
       const response = await storeService.createStore(storeData);
       if (response) {
         showSnackbar("Store created successfully", "success");
@@ -181,10 +185,6 @@ const CreateStore = () => {
     setItemsList(updated);
     showSnackbar("Item deleted", "info");
   };
-
-  useEffect(() => {
-    localStorage.setItem("itemsList", JSON.stringify(itemsList));
-  }, [itemsList]);
 
   return (
     <Box className="store-editor">
@@ -289,11 +289,10 @@ const CreateStore = () => {
           justifyContent: "center",
         }}
       >
-        {/* Sidebar Panel */}
         <Paper
           elevation={2}
           sx={{
-            width: !expanded ? 0 : "20%",
+            width: !expanded ? 0 : "12%",
             transition: "width 0.3s ease",
             backgroundColor: "#fff",
             overflow: "hidden",
@@ -306,19 +305,20 @@ const CreateStore = () => {
           }}
         >
           <Box>
-            {/* Header */}
             <Box
               sx={{
                 display: "flex",
                 alignItems: "center",
                 px: 1,
-                minHeight: 64,
+                minHeight: 34,
                 borderBottom: "1px solid",
                 borderColor: "divider",
                 justifyContent: "space-between",
               }}
             >
-              <Typography variant="h6">Website Builder</Typography>
+              <Typography variant="h6" sx={{ fontSize: "1em" }}>
+                Website Builder
+              </Typography>
               <IconButton onClick={toggleDrawer}>
                 <ChevronLeft />
               </IconButton>
@@ -335,26 +335,35 @@ const CreateStore = () => {
               }}
             >
               <Box>
-                <IconButton>
-                  <Undo sx={{ fontSize: "1em" }} />
+                <IconButton size="small">
+                  <Undo sx={{ fontSize: "inherit" }} />
                 </IconButton>
-                <IconButton>
-                  <Redo sx={{ fontSize: "1em" }} />
+                <IconButton size="small">
+                  <Redo sx={{ fontSize: "inherit" }} />
                 </IconButton>
-                <IconButton>
-                  <Save sx={{ fontSize: "1em" }} />
+                <IconButton size="small">
+                  <Save sx={{ fontSize: "inherit" }} />
                 </IconButton>
               </Box>
               <Divider orientation="vertical" flexItem />
               <Box>
-                <IconButton onClick={() => checkSiteResponsive("1440px")}>
-                  <DesktopWindowsOutlined sx={{ fontSize: "1em" }} />
+                <IconButton
+                  size="small"
+                  onClick={() => checkSiteResponsive("1440px")}
+                >
+                  <DesktopWindowsOutlined sx={{ fontSize: "inherit" }} />
                 </IconButton>
-                <IconButton onClick={() => checkSiteResponsive("899px")}>
-                  <TabletMacOutlined sx={{ fontSize: "1em" }} />
+                <IconButton
+                  size="small"
+                  onClick={() => checkSiteResponsive("899px")}
+                >
+                  <TabletMacOutlined sx={{ fontSize: "inherit" }} />
                 </IconButton>
-                <IconButton onClick={() => checkSiteResponsive("599px")}>
-                  <PhoneAndroidOutlined sx={{ fontSize: "1em" }} />
+                <IconButton
+                  size="small"
+                  onClick={() => checkSiteResponsive("599px")}
+                >
+                  <PhoneAndroidOutlined sx={{ fontSize: "inherit" }} />
                 </IconButton>
               </Box>
             </Box>
@@ -373,27 +382,65 @@ const CreateStore = () => {
                   }}
                 >
                   <Tab
-                    icon={<ViewAgenda fontSize="medium" />}
+                    icon={<ViewAgenda fontSize="small" />}
                     iconPosition="top"
                     label="Section"
                     value="1"
+                    sx={{
+                      p: 0,
+                      fontSize: "0.8em",
+                      textTransform: "capitalize",
+                      minWidth: "unset",
+                    }}
                   />
                   <Tab
-                    icon={<Settings fontSize="medium" />}
+                    icon={<Settings fontSize="small" />}
                     iconPosition="top"
                     label="Settings"
                     value="2"
+                    sx={{
+                      p: 0,
+                      fontSize: "0.8em",
+                      textTransform: "capitalize",
+                      minWidth: "unset",
+                    }}
                   />
                   <Tab
-                    icon={<Add fontSize="medium" />}
+                    icon={<Add fontSize="small" />}
                     iconPosition="top"
                     label="Add"
                     value="3"
+                    sx={{
+                      p: 0,
+                      fontSize: "0.8em",
+                      textTransform: "capitalize",
+                      minWidth: "unset",
+                    }}
                   />
                 </TabList>
               </Box>
-              <Box sx={{ px: 2, py: 1, flexGrow: 1, overflowY: "auto" }}>
-                <TabPanel value="1">Item One</TabPanel>
+              <Box sx={{ px: 0, py: 1, flexGrow: 1, overflowY: "auto" }}>
+                <TabPanel value="1" sx={{ px: 1, py: 0 }}>
+                  <List
+                    sx={{ display: "flex", flexDirection: "column", gap: 1 }}
+                  >
+                    <ListItemButton
+                      sx={{ border: "1px solid", borderColor: "divider" }}
+                    >
+                      <ListItemText primary="Hero Section" />
+                    </ListItemButton>
+                    <ListItemButton
+                      sx={{ border: "1px solid", borderColor: "divider" }}
+                    >
+                      <ListItemText primary="Browse Section" />
+                    </ListItemButton>
+                    <ListItemButton
+                      sx={{ border: "1px solid", borderColor: "divider" }}
+                    >
+                      <ListItemText primary="Footer Section" />
+                    </ListItemButton>
+                  </List>
+                </TabPanel>
                 <TabPanel value="2">Item Two</TabPanel>
                 <TabPanel value="3">Item Three</TabPanel>
               </Box>
@@ -403,8 +450,8 @@ const CreateStore = () => {
           <Stack
             spacing={2}
             sx={{
-              px: 2,
-              py: 3,
+              px: 1,
+              py: 1,
               borderTop: "1px solid",
               borderColor: "divider",
               bgcolor: "background.paper",
@@ -412,30 +459,54 @@ const CreateStore = () => {
               boxShadow: 1,
             }}
           >
-            <Typography variant="h6" fontWeight={600}>
+            <Typography variant="h6" sx={{ fontSize: "1em" }}>
               Global Settings
             </Typography>
 
             <Stack spacing={1}>
-              <Typography variant="subtitle2" color="text.secondary">
-                Primary Color
-              </Typography>
               <Box
                 sx={{
-                  width: "100%",
-                  border: "1px solid",
-                  borderColor: "divider",
-                  borderRadius: 1,
-                  p: 1,
-                  bgcolor: "background.default",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
                 }}
               >
                 <ColorPicker
                   className="color-picker"
                   value={layout.primaryColor}
-                  onChangeComplete={handleColorChange}
-                  style={{ width: "100%" }}
+                  onChangeComplete={(color) =>
+                    handleColorChange("primaryColor", color)
+                  }
                 />
+                <Typography
+                  variant="subtitle2"
+                  color="text.secondary"
+                  sx={{ fontSize: "0.8em" }}
+                >
+                  Primary Color
+                </Typography>
+              </Box>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
+                }}
+              >
+                <ColorPicker
+                  className="color-picker"
+                  value={layout.textColor}
+                  onChangeComplete={(color) =>
+                    handleColorChange("textColor", color)
+                  }
+                />
+                <Typography
+                  variant="subtitle2"
+                  color="text.secondary"
+                  sx={{ fontSize: "0.8em" }}
+                >
+                  Text Color
+                </Typography>
               </Box>
             </Stack>
 
@@ -455,13 +526,11 @@ const CreateStore = () => {
             </Stack>
           </Stack>
         </Paper>
-
-        {/* Main Content */}
         <Box
           sx={{
             height: "calc(100vh - 40px)",
             overflow: "auto",
-            width: !expanded ? "100%" : "80%",
+            width: !expanded ? "100%" : "76%",
             transition: "width 0.3s ease",
             px: 2,
           }}
@@ -469,12 +538,26 @@ const CreateStore = () => {
           <Templates2
             siteWidth={siteWidth}
             layout={layout}
-            items={itemsList}
+            isStoreOwner={true}
           />
         </Box>
+        <Paper
+          elevation={2}
+          sx={{
+            width: !expanded ? 0 : "12%",
+            transition: "width 0.3s ease",
+            backgroundColor: "#fff",
+            overflow: "hidden",
+            flexDirection: "column",
+            borderRight: "1px solid",
+            borderColor: "divider",
+            borderRadius: 0,
+            display: "flex",
+            justifyContent: "space-between",
+          }}
+        ></Paper>
       </Box>
 
-      {/* Add Item Drawer */}
       <Modal
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
@@ -911,7 +994,6 @@ const CreateStore = () => {
           </Box>
         </Box>
       </Modal>
-      {/* View Items Drawer */}
       <Drawer
         anchor="left"
         open={itemListDrawerOpen}

@@ -18,11 +18,10 @@ import {
   Grid,
 } from "@mui/material";
 import storeService from "../../../services/storeService";
-import {
-  RadioButtonCheckedOutlined,
-} from "@mui/icons-material";
+import { RadioButtonCheckedOutlined } from "@mui/icons-material";
 import webPage from "../../../assets/storePage/image4.png";
 import { formatDate } from "../../../utils/helper";
+import { useNavigate } from "react-router-dom";
 
 const storeEditHistory = [
   {
@@ -43,6 +42,7 @@ const storeEditHistory = [
 ];
 
 const ManageStores = () => {
+  const navigate = useNavigate();
   const [store, setStore] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -51,6 +51,9 @@ const ManageStores = () => {
       try {
         setLoading(true);
         const response = await storeService.getMyStore();
+        if (!response?.store)
+          return navigate("/user/manage-store/create-store");
+
         setStore(response?.store || null);
       } catch (error) {
         console.error("Error fetching stores:", error);
@@ -84,21 +87,43 @@ const ManageStores = () => {
                 <CardContent sx={{ display: "flex", gap: 2 }}>
                   <Box
                     sx={{
-                      width: "30%",
-                      height: "16em",
-                      objectFit: "cover",
-                      borderRadius: 1,
-                      boxShadow: 1,
-                      cursor: "pointer",
-                    }}
-                    onClick={() => {
-                      window.open(
-                        `https://hive-world.netlify.app/hive/${store?.subdomain}`,
-                        "_blank"
-                      );
+                      flex: 1,
+                      display: "flex",
+                      gap: 2,
+                      flexDirection: "column",
+                      maxWidth: "30%",
                     }}
                   >
-                    <img src={webPage} alt="Store Preview" />
+                    <Box
+                      sx={{
+                        width: "100%",
+                        height: "16em",
+                        objectFit: "cover",
+                        borderRadius: 1,
+                        boxShadow: 1,
+                        cursor: "pointer",
+                      }}
+                      onClick={() => {
+                        window.open(
+                          `${window.location.origin}/hive/${store?.subdomain}`,
+                          "_blank"
+                        );
+                      }}
+                    >
+                      <img src={webPage} alt="Store Preview" />
+                    </Box>
+                    <Box sx={{ display: "flex", justifyContent: "center" }}>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        fullWidth
+                        onClick={() =>
+                          navigate("/user/manage-store/1/edit")
+                        }
+                      >
+                        Edit Store
+                      </Button>
+                    </Box>
                   </Box>
                   <Box
                     sx={{
@@ -120,7 +145,7 @@ const ManageStores = () => {
                     {/* Store URL with status icon */}
                     <Box
                       component="a"
-                      href={`https://hive-world.netlify.app/hive/${store?.subdomain}`}
+                      href={`${window.location.origin}/hive/${store?.subdomain}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       sx={{
@@ -144,7 +169,7 @@ const ManageStores = () => {
                       </Tooltip>
                       <Typography variant="body2" fontWeight={500} noWrap>
                         {store?.subdomain
-                          ? `https://hive-world.netlify.app/hive/${store.subdomain}`
+                          ? `${window.location.origin}/hive/${store.subdomain}`
                           : "Store URL not set"}
                       </Typography>
                     </Box>
@@ -292,22 +317,17 @@ export default ManageStores;
 const StorePageSkeleton = () => {
   return (
     <Box sx={{ p: 2 }}>
-      {/* Top Section: Store Info & Analytics */}
       <Grid container spacing={2}>
-        {/* Store Info */}
         <Grid item size={{ xs: 12, md: 6 }}>
           <Card>
             <CardContent>
               <Box sx={{ display: "flex", gap: 2 }}>
-                {/* Image Skeleton */}
                 <Skeleton
                   variant="rectangular"
                   width={120}
                   height={140}
                   sx={{ borderRadius: 1 }}
                 />
-
-                {/* Text Content Skeleton */}
                 <Box
                   sx={{
                     flex: 1,
@@ -327,8 +347,6 @@ const StorePageSkeleton = () => {
             </CardContent>
           </Card>
         </Grid>
-
-        {/* Analytics */}
         <Grid item size={{ xs: 12, md: 6 }}>
           <Card sx={{ height: "100%" }}>
             <CardContent>
@@ -342,8 +360,6 @@ const StorePageSkeleton = () => {
           </Card>
         </Grid>
       </Grid>
-
-      {/* Store Edit History */}
       <Box mt={3}>
         <Card>
           <CardContent>

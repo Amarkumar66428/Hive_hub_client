@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Container,
@@ -24,105 +24,20 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Divider,
   Stack,
   useTheme,
   useMediaQuery,
   Switch,
-  Input,
 } from "@mui/material";
 import {
   KeyboardArrowDown,
   KeyboardArrowUp,
   Edit,
-  Add,
   Close,
-  CloudUpload,
 } from "@mui/icons-material";
 import { Image } from "antd";
-
-const products = [
-  {
-    id: "BDRG405",
-    name: "American Sneakers Shoes Blue",
-    image: "https://via.placeholder.com/150/4A90E2/FFFFFF?text=Shoe",
-    size: "38-45",
-    price: 2088,
-    stock: 789,
-    brand: "Zermoten",
-    productLine: "AEXAE530",
-    amount: 2536.0,
-    stockInfo: "38-45 EUR",
-    description:
-      "Premium American-style sneakers in vibrant blue color with advanced cushioning technology.",
-    category: "Sneakers",
-    weight: "350g",
-    material: "Canvas & Rubber",
-    color: "Blue",
-    inStock: true,
-    featured: true,
-  },
-  {
-    id: "BDRG502",
-    name: "Blacker Sneakers Shoes Black",
-    image: "https://via.placeholder.com/150/2C3E50/FFFFFF?text=Shoe",
-    size: "39-45",
-    price: 2042,
-    stock: 706,
-    brand: "Zermoten",
-    productLine: "AEXAE530",
-    amount: 2442.0,
-    stockInfo: "39-45 EUR",
-    description:
-      "Sleek black sneakers with modern design and premium materials.",
-    category: "Sneakers",
-    weight: "340g",
-    material: "Leather & Rubber",
-    color: "Black",
-    inStock: true,
-    featured: false,
-  },
-  {
-    id: "CADC3208",
-    name: "Anyway Sneakers Shoes Orange",
-    image: "https://via.placeholder.com/150/E67E22/FFFFFF?text=Shoe",
-    size: "37-45",
-    price: 2028,
-    stock: 647,
-    brand: "Zermoten",
-    productLine: "AEXAE530",
-    amount: 2328.0,
-    stockInfo: "37-45 EUR",
-    description:
-      "Bold orange sneakers perfect for active lifestyle and sports.",
-    category: "Sneakers",
-    weight: "360g",
-    material: "Mesh & Rubber",
-    color: "Orange",
-    inStock: true,
-    featured: true,
-  },
-  {
-    id: "AEXAE530",
-    name: "Gunnerian Sneakers Yellow Blue",
-    image: "https://via.placeholder.com/150/F1C40F/FFFFFF?text=Shoe",
-    size: "38-45",
-    price: 2038,
-    stock: 532,
-    brand: "Zermoten",
-    productLine: "AEXAE530",
-    amount: 2138.0,
-    stockInfo: "38-45 EUR",
-    description:
-      "Dynamic yellow-blue combination sneakers with ergonomic design.",
-    category: "Sneakers",
-    weight: "345g",
-    material: "Synthetic & Rubber",
-    color: "Yellow/Blue",
-    inStock: true,
-    featured: false,
-  },
-];
+import storeService from "../../../services/storeService";
+import TableSkeleton from "../../../components/tableSkeleton";
 
 const categoryItems = [
   { key: "sneakers", label: "Sneakers" },
@@ -153,6 +68,8 @@ const InventoryManagement = () => {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [formValues, setFormValues] = useState({});
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [filters, setFilters] = useState({
     category: "Sneakers",
     brand: "Zermoten",
@@ -194,6 +111,23 @@ const InventoryManagement = () => {
       [name]: type === "checkbox" ? checked : value,
     });
   };
+
+  const fetchStore = async () => {
+    try {
+      setLoading(true);
+      const response = await storeService.getMyInventory();
+      console.log("response: ", response);
+      setProducts(response?.inventory || null);
+    } catch (error) {
+      console.error("Error fetching stores:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchStore();
+  }, []);
 
   return (
     <>
@@ -256,7 +190,6 @@ const InventoryManagement = () => {
       </Paper>
 
       <Container maxWidth={false}>
-        {/* Products Table */}
         <Paper>
           <TableContainer>
             <Table>
@@ -276,16 +209,33 @@ const InventoryManagement = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {products.map((product) => (
-                  <ProductRow
-                    key={product.id}
-                    theme={theme}
-                    expandedRows={expandedRows}
-                    product={product}
-                    handleRowToggle={handleRowToggle}
-                    handleEditProduct={handleEditProduct}
+                {loading ? (
+                  <TableSkeleton
+                    showActions={true}
+                    showProfile={true}
+                    rows={4}
+                    columns={isMobile ? 4 : 7}
                   />
-                ))}
+                ) : products.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={isMobile ? 5 : 8} align="center">
+                      <Typography variant="body1">
+                        No Inventory found.
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  products.map((product) => (
+                    <ProductRow
+                      key={product?._id}
+                      theme={theme}
+                      expandedRows={expandedRows}
+                      product={product}
+                      handleRowToggle={handleRowToggle}
+                      handleEditProduct={handleEditProduct}
+                    />
+                  ))
+                )}
               </TableBody>
             </Table>
           </TableContainer>
@@ -340,7 +290,7 @@ const InventoryManagement = () => {
                   label="SKU"
                   fullWidth
                   name="id"
-                  value={formValues.id || ""}
+                  value={formValues._id || ""}
                   onChange={handleFormChange}
                   required
                 />
@@ -505,7 +455,7 @@ const ProductRow = ({
   handleEditProduct,
   isMobile,
 }) => {
-  const isExpanded = expandedRows.has(product.id);
+  const isExpanded = expandedRows.has(product._id);
 
   return (
     <>
@@ -523,19 +473,19 @@ const ProductRow = ({
         <TableCell>
           <Stack direction="row" alignItems="center" spacing={2}>
             <Avatar
-              src={product.image}
+              src={product?.productId?.images[0]}
               variant="rounded"
               sx={{ width: 36, height: 36 }}
             >
-              {product.name.charAt(0)}
+              {product?.productId?.title.charAt(0)}
             </Avatar>
             {isMobile && (
               <Box>
                 <Typography variant="subtitle2" fontWeight="bold">
-                  {product.name}
+                  {product?.productId?.title}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
-                  {product.id}
+                  {product._id}
                 </Typography>
               </Box>
             )}
@@ -546,26 +496,30 @@ const ProductRow = ({
           <>
             <TableCell>
               <Typography variant="body2" fontWeight="medium">
-                {product.id}
+                {product._id}
               </Typography>
             </TableCell>
             <TableCell>
-              <Typography variant="body2">{product.name}</Typography>
+              <Typography variant="body2">
+                {product?.productId?.title}
+              </Typography>
             </TableCell>
             <TableCell>
               <Chip label={product.size} size="small" variant="outlined" />
             </TableCell>
             <TableCell>
               <Typography variant="body2" fontWeight="bold" color="primary">
-                ${product.price.toLocaleString()}
+                ${product?.productId?.basePrice?.toLocaleString()}
               </Typography>
             </TableCell>
             <TableCell>
               <Box display="flex" alignItems="center" gap={1}>
-                <Typography variant="body2">{product.stock} pairs</Typography>
+                <Typography variant="body2">{product.stock}</Typography>
                 <Chip
-                  label={product.inStock ? "In Stock" : "Out of Stock"}
-                  color={product.inStock ? "success" : "error"}
+                  label={
+                    product.status === "in-stock" ? "In Stock" : "Out of Stock"
+                  }
+                  color={product.status === "in-stock" ? "success" : "error"}
                   size="small"
                 />
               </Box>
@@ -574,7 +528,7 @@ const ProductRow = ({
         )}
 
         <TableCell>
-          <IconButton size="small" onClick={() => handleRowToggle(product.id)}>
+          <IconButton size="small" onClick={() => handleRowToggle(product._id)}>
             {isExpanded ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
           </IconButton>
         </TableCell>
@@ -595,19 +549,20 @@ const ProductRow = ({
                         <Image
                           width={200}
                           height={200}
-                          src={product.image}
+                          src={product?.productId?.images[0]}
                           alt={product.name}
                           style={{ borderRadius: 8 }}
                         />
                         <Typography variant="h6" sx={{ mt: 2, mb: 1 }}>
-                          {product.name}
+                          {product?.productId?.title || "Product Name"}
                         </Typography>
                         <Typography
                           variant="body2"
                           color="text.secondary"
                           paragraph
                         >
-                          {product.description}
+                          {product?.productId?.description ||
+                            "Product Description"}
                         </Typography>
                         <Button
                           variant="contained"
@@ -630,7 +585,7 @@ const ProductRow = ({
                             SKU:
                           </Typography>
                           <Typography variant="body2" fontWeight="medium">
-                            {product.id}
+                            {product._id}
                           </Typography>
                         </Box>
                         <Box display="flex" justifyContent="space-between">
@@ -638,7 +593,7 @@ const ProductRow = ({
                             Brand:
                           </Typography>
                           <Typography variant="body2" fontWeight="medium">
-                            {product.brand}
+                            {product?.productId?.brand || "--"}
                           </Typography>
                         </Box>
                         <Box display="flex" justifyContent="space-between">
@@ -646,7 +601,7 @@ const ProductRow = ({
                             Category:
                           </Typography>
                           <Typography variant="body2" fontWeight="medium">
-                            {product.category}
+                            {product?.productId?.category}
                           </Typography>
                         </Box>
                         <Box display="flex" justifyContent="space-between">
@@ -688,7 +643,7 @@ const ProductRow = ({
                             fontWeight="bold"
                             color="primary"
                           >
-                            ${product.price.toLocaleString()}
+                            ${product?.productId?.basePrice?.toLocaleString()}
                           </Typography>
                         </Box>
                         <Box display="flex" justifyContent="space-between">
@@ -716,7 +671,7 @@ const ProductRow = ({
                             fontWeight="bold"
                             color="success.main"
                           >
-                            ${product.amount.toLocaleString()}
+                            ${product?.productId?.basePrice?.toLocaleString()}
                           </Typography>
                         </Box>
                         <Box display="flex" justifyContent="space-between">
