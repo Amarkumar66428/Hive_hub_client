@@ -56,7 +56,9 @@ const Templates2 = ({
   };
 
   useEffect(() => {
-    setLayoutSection(layoutSection);
+    if (isStoreOwner) {
+      setLayoutSection(layoutSection);
+    }
   }, [isStoreOwner]);
 
   return (

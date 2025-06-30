@@ -14,10 +14,10 @@ import {
 import { useSnackbar } from "../../../features/snackBar";
 import { useParams } from "react-router-dom";
 import storeService from "../../../services/storeService";
-import { Typography } from "antd";
 import { Save } from "@mui/icons-material";
+import appServices from "../../../services/appServices";
 
-const SiteFormDialog = ({ open, layout, onClose }) => {
+const SiteFormDialog = ({ open, layout, sectionImages = {}, onClose }) => {
   const { template, type, storeId } = useParams();
   const { showSnackbar } = useSnackbar();
   const [loading, setLoading] = useState(false);
@@ -54,20 +54,42 @@ const SiteFormDialog = ({ open, layout, onClose }) => {
   };
 
   const handlePublish = async (formData) => {
+    setLoading(true);
+
     try {
-      setLoading(true);
       const storeData = {
         name: formData.name,
         description: formData.description || "Store Description",
         subdomain: formData.subdomain || "store-name",
         customDomain: formData.customDomain || "https://store-name.com",
-        layout: { ...layout },
-        TemplateId: "1",
+        TemplateId: "eCommerce",
       };
+
+      const updatedLayout = { ...layout };
+
+      const matchingKeys = Object.keys(updatedLayout).filter(
+        (key) => sectionImages[key] instanceof File
+      );
+
+      await Promise.all(
+        matchingKeys.map(async (key) => {
+          try {
+            const { files } = await appServices.uploadImage(sectionImages[key]);
+            updatedLayout[key] = files[0].url;
+          } catch (err) {
+            console.error(`Image upload failed for "${key}"`, err);
+          }
+        })
+      );
+
       const response =
         type === "edit" && template
-          ? await storeService.updateStore(storeId, { layout: { ...layout } })
-          : await storeService.createStore(storeData);
+          ? await storeService.updateStore(storeId, { layout: updatedLayout })
+          : await storeService.createStore({
+              ...storeData,
+              layout: updatedLayout,
+            });
+
       if (response) {
         setFormData({
           name: "",

@@ -47,6 +47,8 @@ import {
   DesktopWindowsOutlined,
   UploadFile,
   ArrowForwardIosSharp,
+  ChangeCircle,
+  ReplayOutlined,
 } from "@mui/icons-material";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useSnackbar } from "../../../features/snackBar";
@@ -104,8 +106,6 @@ const CreateStore = () => {
   const location = useLocation();
   const { storeData, products } = location.state;
 
-  console.log("products: ", products);
-  console.log("storeData: ", storeData);
   const { showSnackbar } = useSnackbar();
   const [layoutSection, setLayoutSection] = useState([]);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -117,6 +117,7 @@ const CreateStore = () => {
   const [tabValue, setTabValue] = useState("1");
   const [siteWidth, setSiteWidth] = useState("1440px");
   const [publishOpen, setPublishOpen] = useState(false);
+  const [sectionImages, setSectionImages] = useState({});
   const [layout, setLayout] = useState({
     siteName: "Shop.com",
     primaryColor: "#000",
@@ -165,6 +166,7 @@ const CreateStore = () => {
     const file = event.target.files[0];
     if (file) {
       const reader = new FileReader();
+      setSectionImages((prev) => ({ ...prev, [key]: file }));
       reader.onload = (e) =>
         setLayout((prev) => ({ ...prev, [key]: e.target.result }));
       reader.readAsDataURL(file);
@@ -307,8 +309,6 @@ const CreateStore = () => {
                 <ChevronLeft />
               </IconButton>
             </Box>
-
-            {/* Toolbar Buttons */}
             <Box
               sx={{
                 px: 1,
@@ -352,8 +352,6 @@ const CreateStore = () => {
               </Box>
             </Box>
             <Divider orientation="horizontal" flexItem />
-
-            {/* Tab Section */}
             <TabContext value={tabValue}>
               <Box>
                 <TabList
@@ -434,7 +432,6 @@ const CreateStore = () => {
               </Box>
             </TabContext>
           </Box>
-
           <Stack
             spacing={2}
             sx={{
@@ -581,15 +578,20 @@ const CreateStore = () => {
                       borderRadius: 1,
                     }}
                   />
-                  <Box sx={{ display: "flex", gap: 1, width: "100%" }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      gap: 1,
+                      width: "100%",
+                    }}
+                  >
                     <Button
                       variant="contained"
                       size="small"
                       component="label"
-                      startIcon={<UploadFile />}
                       fullWidth
                     >
-                      {layout.heroImage ? "Change Image" : "Upload Image"}
+                      {layout.heroImage ? <ReplayOutlined /> : "Upload"}
                       <input
                         type="file"
                         accept="image/*"
@@ -746,6 +748,7 @@ const CreateStore = () => {
       <SiteFormDialog
         open={publishOpen}
         layout={layout}
+        sectionImages={sectionImages}
         onClose={() => setPublishOpen(false)}
       />
     </Box>
