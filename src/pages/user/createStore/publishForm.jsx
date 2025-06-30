@@ -12,11 +12,12 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { useSnackbar } from "../../../features/snackBar";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import storeService from "../../../services/storeService";
+import { Typography } from "antd";
+import { Save } from "@mui/icons-material";
 
 const SiteFormDialog = ({ open, layout, onClose }) => {
-  const navigate = useNavigate();
   const { template, type, storeId } = useParams();
   const { showSnackbar } = useSnackbar();
   const [loading, setLoading] = useState(false);
@@ -65,7 +66,7 @@ const SiteFormDialog = ({ open, layout, onClose }) => {
       };
       const response =
         type === "edit" && template
-          ? await storeService.updateStore(storeId, storeData)
+          ? await storeService.updateStore(storeId, { layout: { ...layout } })
           : await storeService.createStore(storeData);
       if (response) {
         setFormData({
@@ -102,60 +103,64 @@ const SiteFormDialog = ({ open, layout, onClose }) => {
       maxWidth="sm"
       fullWidth
     >
-      <DialogTitle>Site Information</DialogTitle>
+      <DialogTitle>{storeId ? "Confirm" : "Site Information"}</DialogTitle>
       <DialogContent>
-        <Grid container spacing={2} mt={1}>
-          <Grid size={{ xs: 12 }}>
-            <TextField
-              fullWidth
-              required
-              label="Site Name"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              error={!!errors.name}
-              helperText={errors.name}
-            />
+        {storeId ? (
+          <span>Are you sure you want to Update Changes to store?</span>
+        ) : (
+          <Grid container spacing={2} mt={1}>
+            <Grid size={{ xs: 12 }}>
+              <TextField
+                fullWidth
+                required
+                label="Site Name"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                error={!!errors.name}
+                helperText={errors.name}
+              />
+            </Grid>
+            <Grid size={{ xs: 12 }}>
+              <TextField
+                fullWidth
+                required
+                label="Description"
+                name="description"
+                multiline
+                rows={3}
+                value={formData.description}
+                onChange={handleChange}
+                error={!!errors.description}
+                helperText={errors.description}
+              />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <TextField
+                fullWidth
+                required
+                label="Subdomain"
+                name="subdomain"
+                value={formData.subdomain}
+                onChange={handleChange}
+                error={!!errors.subdomain}
+                helperText={errors.subdomain}
+              />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <TextField
+                fullWidth
+                required
+                label="Custom Domain"
+                name="customDomain"
+                value={formData.customDomain}
+                onChange={handleChange}
+                error={!!errors.customDomain}
+                helperText={errors.customDomain}
+              />
+            </Grid>
           </Grid>
-          <Grid size={{ xs: 12 }}>
-            <TextField
-              fullWidth
-              required
-              label="Description"
-              name="description"
-              multiline
-              rows={3}
-              value={formData.description}
-              onChange={handleChange}
-              error={!!errors.description}
-              helperText={errors.description}
-            />
-          </Grid>
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <TextField
-              fullWidth
-              required
-              label="Subdomain"
-              name="subdomain"
-              value={formData.subdomain}
-              onChange={handleChange}
-              error={!!errors.subdomain}
-              helperText={errors.subdomain}
-            />
-          </Grid>
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <TextField
-              fullWidth
-              required
-              label="Custom Domain"
-              name="customDomain"
-              value={formData.customDomain}
-              onChange={handleChange}
-              error={!!errors.customDomain}
-              helperText={errors.customDomain}
-            />
-          </Grid>
-        </Grid>
+        )}
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} variant="outlined">
@@ -165,9 +170,15 @@ const SiteFormDialog = ({ open, layout, onClose }) => {
           onClick={handleSubmit}
           variant="contained"
           disabled={loading}
-          startIcon={loading && <CircularProgress size={20} />}
+          startIcon={loading ? <CircularProgress size={20} /> : <Save />}
         >
-          {loading ? "Submitting..." : "onSubmit"}
+          {loading
+            ? storeId
+              ? "Updating..."
+              : "Publishing..."
+            : storeId
+            ? "Update"
+            : "Publish"}
         </Button>
       </DialogActions>
     </Dialog>

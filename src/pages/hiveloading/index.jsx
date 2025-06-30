@@ -27,12 +27,16 @@ const AppLoading = () => {
   }, []);
 
   return (
-    <Box sx={{ position: "absolute", top: 0, left: 0, right: 0, width: "100%" }}>
-      <LinearProgress
-        variant="determinate"
-        value={progress}
-        color="primary"
-      />
+    <Box
+      sx={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        width: "100%",
+        zIndex: 1200, // above app bar
+      }}
+    >
+      <LinearProgress variant="determinate" value={progress} color="primary" />
     </Box>
   );
 };

@@ -3,8 +3,14 @@ import asyncComponent from "../utils/asyncComponent.jsx";
 export const publicRouters = [
   {
     path: "/hive/:subdomain",
-    component: asyncComponent(() => import("../pages/public/index.jsx")),
-    isLayout: false,
-    showInMenu: false,
+  },
+];
+
+export const templateRouters = [
+  {
+    key: "1",
+    component: asyncComponent(() =>
+      import("../pages/templates/templates2/index.jsx")
+    ),
   },
 ];

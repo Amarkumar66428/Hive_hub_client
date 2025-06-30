@@ -1,16 +1,17 @@
 import React, { memo } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
-import { authRouters, appRouters } from "./router.config";
+import { Box } from "@mui/material";
+import { useDispatch } from "react-redux";
+import Cookies from "js-cookie";
 import ProtectedRoute from "./ProtectedRoutes";
 import AppLayout from "../layout";
-import { Box } from "@mui/material";
 import NotFoundPage from "../components/pageNotFound";
-import Cookies from "js-cookie";
 import useAuth from "../hooks/useAuth";
+import { authRouters, appRouters } from "./router.config";
 import { SUPER_ADMIN } from "../constant/LookupConst";
 import { clearUserData } from "../reducer/authSlice";
-import { useDispatch } from "react-redux";
 import { publicRouters } from "./publicRouter.config";
+import PublicSites from "./publicRoutes";
 
 const Authorization = ({ children }) => {
   const location = useLocation();
@@ -46,12 +47,8 @@ const AppRouter = () => {
           }
         />
       ))}
-      {publicRouters.map(({ path, component }) => (
-        <Route
-          key={path}
-          path={path}
-          element={React.createElement(component)}
-        />
+      {publicRouters.map(({ path }) => (
+        <Route key={path} path={path} element={<PublicSites />} />
       ))}
 
       {/* Protected Routes with Optional Layout */}

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import "./global.css";
 import {
   AccountCircleOutlined,
@@ -25,15 +25,39 @@ import brs3 from "../../../assets/storePage/temp2/brs3.webp";
 import brs4 from "../../../assets/storePage/temp2/brs4.webp";
 import EditableText from "../../../components/editAbleText";
 
+const layoutSection = [
+  {
+    title: "Hero Section",
+    id: "heroSection",
+  },
+  {
+    title: "About Section",
+    id: "aboutSection",
+  },
+  {
+    title: "Services Section",
+    id: "servicesSection",
+  },
+  {
+    title: "Footer Section",
+    id: "footerSection",
+  },
+];
+
 const Templates2 = ({
   siteWidth = "1440px",
   layout,
   setLayout,
+  setLayoutSection,
   isStoreOwner = false,
 }) => {
   const handleTextChange = (key, newValue) => {
     setLayout((prev) => ({ ...prev, [key]: newValue }));
   };
+
+  useEffect(() => {
+    setLayoutSection(layoutSection);
+  }, [isStoreOwner]);
 
   return (
     <div className="temp2">
