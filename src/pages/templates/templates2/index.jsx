@@ -24,6 +24,7 @@ import brs2 from "../../../assets/storePage/temp2/brs2.webp";
 import brs3 from "../../../assets/storePage/temp2/brs3.webp";
 import brs4 from "../../../assets/storePage/temp2/brs4.webp";
 import EditableText from "../../../components/editAbleText";
+import ProductCard from "./productCard";
 
 const layoutSection = [
   {
@@ -41,6 +42,76 @@ const layoutSection = [
   {
     title: "Footer Section",
     id: "footerSection",
+  },
+];
+
+const newProducts = [
+  {
+    id: 1,
+    title: "T-SHIRT WITH TAPE DETAILS",
+    price: 120,
+    rating: 4.5,
+    image: new1,
+  },
+  {
+    id: 2,
+    title: "SKINNY FIT JEANS",
+    price: 240,
+    originalPrice: 260,
+    discount: 20,
+    rating: 4.5,
+    image: new2,
+  },
+  {
+    id: 3,
+    title: "CHECKERED SHIRT",
+    price: 120,
+    rating: 4.5,
+    image: new3,
+  },
+  {
+    id: 4,
+    title: "SLEEVE STRIPED T-SHIRT",
+    price: 240,
+    originalPrice: 260,
+    discount: 20,
+    rating: 4.5,
+    image: new4,
+  },
+];
+
+const topProducts = [
+  {
+    id: 1,
+    title: "T-SHIRT WITH TAPE DETAILS",
+    price: 120,
+    rating: 4.5,
+    image: topS1,
+  },
+  {
+    id: 2,
+    title: "SKINNY FIT JEANS",
+    price: 240,
+    originalPrice: 260,
+    discount: 20,
+    rating: 4.5,
+    image: topS2,
+  },
+  {
+    id: 3,
+    title: "CHECKERED SHIRT",
+    price: 120,
+    rating: 4.5,
+    image: topS3,
+  },
+  {
+    id: 4,
+    title: "SLEEVE STRIPED T-SHIRT",
+    price: 240,
+    originalPrice: 260,
+    discount: 20,
+    rating: 4.5,
+    image: topS4,
   },
 ];
 
@@ -328,106 +399,9 @@ const Templates2 = ({
               )}
             </div>
             <div className="new-arrivals">
-              <div className="image-wrapper">
-                <figure>
-                  <img className="image" src={new1} />
-                </figure>
-                <p className="title">T-SHIRT WITH TAPE DETAILS</p>
-                <div className="frame-13">
-                  <div className="frame-14">
-                    <Rating
-                      name="half-rating-read"
-                      defaultValue={2.5}
-                      precision={0.5}
-                      readOnly
-                    />
-                  </div>
-                  <p className="element">
-                    <span className="text-wrapper-12">4.5/</span>{" "}
-                    <span className="text-wrapper-13">5</span>
-                  </p>
-                </div>
-                <div className="div-wrapper">
-                  <div className="text-wrapper-15">$120</div>
-                </div>
-              </div>
-              <div className="image-wrapper">
-                <figure>
-                  <img className="image" src={new2} />
-                </figure>
-                <p className="title">SKINNY FIT JEANS</p>
-                <div className="frame-13">
-                  <div className="frame-14">
-                    <Rating
-                      name="half-rating-read"
-                      defaultValue={2.5}
-                      precision={0.5}
-                      readOnly
-                    />
-                  </div>
-                  <p className="element">
-                    <span className="text-wrapper-12">4.5/</span>{" "}
-                    <span className="text-wrapper-13">5</span>
-                  </p>
-                </div>
-                <div className="frame-22">
-                  <div className="text-wrapper-15">$240</div>
-                  <div className="text-wrapper-16">$260</div>
-                  <div className="frame-21">
-                    <div className="text-wrapper-18">-20%</div>
-                  </div>
-                </div>
-              </div>
-              <div className="image-wrapper">
-                <figure>
-                  <img className="image" src={new3} />
-                </figure>
-                <p className="title">CHECKERED SHIRT</p>
-                <div className="frame-13">
-                  <div className="frame-14">
-                    <Rating
-                      name="half-rating-read"
-                      defaultValue={2.5}
-                      precision={0.5}
-                      readOnly
-                    />
-                  </div>
-                  <p className="element">
-                    <span className="text-wrapper-12">4.5/</span>{" "}
-                    <span className="text-wrapper-13">5</span>
-                  </p>
-                </div>
-                <div className="div-wrapper">
-                  <div className="text-wrapper-15">$120</div>
-                </div>
-              </div>
-              <div className="image-wrapper">
-                <figure>
-                  <img className="image" src={new4} />
-                </figure>
-                <p className="title">SLEEVE STRIPED T-SHIRT</p>
-                <div className="frame-13">
-                  <div className="frame-14">
-                    <Rating
-                      name="half-rating-read"
-                      defaultValue={2.5}
-                      precision={0.5}
-                      readOnly
-                    />
-                  </div>
-                  <p className="element">
-                    <span className="text-wrapper-12">4.5/</span>{" "}
-                    <span className="text-wrapper-13">5</span>
-                  </p>
-                </div>
-                <div className="frame-22">
-                  <div className="text-wrapper-15">$240</div>
-                  <div className="text-wrapper-16">$260</div>
-                  <div className="frame-21">
-                    <div className="text-wrapper-18">-20%</div>
-                  </div>
-                </div>
-              </div>
+              {newProducts?.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
             </div>
             <div className="frame-32">
               <button className="frame-33">
@@ -451,106 +425,9 @@ const Templates2 = ({
               )}
             </div>
             <div className="new-arrivals">
-              <div className="image-wrapper">
-                <figure>
-                  <img className="image" src={topS1} />
-                </figure>
-                <p className="title">VERTICAL STRIPED SHIRT</p>
-                <div className="frame-13">
-                  <div className="frame-14">
-                    <Rating
-                      name="half-rating-read"
-                      defaultValue={2.5}
-                      precision={0.5}
-                      readOnly
-                    />
-                  </div>
-                  <p className="element">
-                    <span className="text-wrapper-12">4.5/</span>{" "}
-                    <span className="text-wrapper-13">5</span>
-                  </p>
-                </div>
-                <div className="div-wrapper">
-                  <div className="text-wrapper-15">$120</div>
-                </div>
-              </div>
-              <div className="image-wrapper">
-                <figure>
-                  <img className="image" src={topS2} />
-                </figure>
-                <p className="title">COURAGE GRAPHIC T-SHIRT</p>
-                <div className="frame-13">
-                  <div className="frame-14">
-                    <Rating
-                      name="half-rating-read"
-                      defaultValue={2.5}
-                      precision={0.5}
-                      readOnly
-                    />
-                  </div>
-                  <p className="element">
-                    <span className="text-wrapper-12">4.5/</span>{" "}
-                    <span className="text-wrapper-13">5</span>
-                  </p>
-                </div>
-                <div className="frame-22">
-                  <div className="text-wrapper-15">$240</div>
-                  <div className="text-wrapper-16">$260</div>
-                  <div className="frame-21">
-                    <div className="text-wrapper-18">-20%</div>
-                  </div>
-                </div>
-              </div>
-              <div className="image-wrapper">
-                <figure>
-                  <img className="image" src={topS3} />
-                </figure>
-                <p className="title">LOOSE FIT BERMUDA SHORTS</p>
-                <div className="frame-13">
-                  <div className="frame-14">
-                    <Rating
-                      name="half-rating-read"
-                      defaultValue={2.5}
-                      precision={0.5}
-                      readOnly
-                    />
-                  </div>
-                  <p className="element">
-                    <span className="text-wrapper-12">4.5/</span>{" "}
-                    <span className="text-wrapper-13">5</span>
-                  </p>
-                </div>
-                <div className="div-wrapper">
-                  <div className="text-wrapper-15">$120</div>
-                </div>
-              </div>
-              <div className="image-wrapper">
-                <figure>
-                  <img className="image" src={topS4} />
-                </figure>
-                <p className="title">FADED SKINNY JEANS</p>
-                <div className="frame-13">
-                  <div className="frame-14">
-                    <Rating
-                      name="half-rating-read"
-                      defaultValue={2.5}
-                      precision={0.5}
-                      readOnly
-                    />
-                  </div>
-                  <p className="element">
-                    <span className="text-wrapper-12">4.5/</span>{" "}
-                    <span className="text-wrapper-13">5</span>
-                  </p>
-                </div>
-                <div className="frame-22">
-                  <div className="text-wrapper-15">$240</div>
-                  <div className="text-wrapper-16">$260</div>
-                  <div className="frame-21">
-                    <div className="text-wrapper-18">-20%</div>
-                  </div>
-                </div>
-              </div>
+              {topProducts?.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
             </div>
             <div className="frame-32">
               <button className="frame-33">
