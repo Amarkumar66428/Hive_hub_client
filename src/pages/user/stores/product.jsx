@@ -15,7 +15,7 @@ import {
   MenuItem,
   Paper,
 } from "@mui/material";
-import { MoreVert, Edit, Delete, Visibility } from "@mui/icons-material";
+import { MoreVert, Edit, Delete, Visibility, Inventory2Outlined } from "@mui/icons-material";
 import { styled } from "@mui/material/styles";
 import storeService from "../../../services/storeService";
 import ProductAdd from "../../../components/addProductModal";
@@ -127,6 +127,7 @@ const Products = () => {
             <Button
               variant="outlined"
               onClick={() => navigate("/user/manage-store/inventory")}
+              startIcon={<Inventory2Outlined />}
             >
               Manage Inventory
             </Button>
@@ -183,7 +184,7 @@ const Products = () => {
               <Grid
                 item
                 size={{ xs: 12, sm: 6, md: 4, lg: 3 }}
-                key={product?.id}
+                key={product?._id}
               >
                 <ProductCardComponent
                   product={product}
