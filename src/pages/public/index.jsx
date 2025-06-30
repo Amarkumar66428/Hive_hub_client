@@ -1,22 +1,21 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Template from "../templates/templates1";
-import { getStoreBySubdomain } from "../../services/publicSerive";
-import { Box, CircularProgress, Typography } from "@mui/material";
+import { Box, CircularProgress } from "@mui/material";
 import Templates2 from "../templates/templates2";
+import shopersService from "../../services/shopersService";
 
 const PublicSite = () => {
   const { subdomain } = useParams();
   const [template, setTemplate] = useState(null);
   const [loading, setLoading] = useState(true);
   const [layout, setLayout] = useState({});
-  console.log("layout: ", layout);
 
   useEffect(() => {
     const fetchStore = async () => {
       try {
         setLoading(true);
-        const response = await getStoreBySubdomain(subdomain);
+        const response = await shopersService.getStore(subdomain);
         console.log("response: ", response);
         if (response?.store) {
           setLayout(JSON.parse(response.store.layout) || response.store.layout);

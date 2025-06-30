@@ -1,6 +1,6 @@
 import React, { memo } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
-import { authRouters, appRouters, publicRouters } from "./router.config";
+import { authRouters, appRouters } from "./router.config";
 import ProtectedRoute from "./ProtectedRoutes";
 import AppLayout from "../layout";
 import { Box } from "@mui/material";
@@ -10,6 +10,7 @@ import useAuth from "../hooks/useAuth";
 import { SUPER_ADMIN } from "../constant/LookupConst";
 import { clearUserData } from "../reducer/authSlice";
 import { useDispatch } from "react-redux";
+import { publicRouters } from "./publicRouter.config";
 
 const Authorization = ({ children }) => {
   const location = useLocation();

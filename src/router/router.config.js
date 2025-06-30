@@ -272,37 +272,4 @@ export const appRouters = [
   },
 ];
 
-export const publicRouters = [
-  {
-    path: "/templates/e-commerce",
-    component: asyncComponent(() =>
-      import("../pages/templates/templates1/index.jsx")
-    ),
-    isLayout: false,
-    showInMenu: false,
-  },
-  {
-    path: "/templates/shop",
-    component: asyncComponent(() =>
-      import("../pages/templates/templates2/index.jsx")
-    ),
-    isLayout: false,
-    showInMenu: false,
-  },
-  {
-    path: "/templates/education",
-    component: asyncComponent(() =>
-      import("../pages/templates/templates3/index.jsx")
-    ),
-    isLayout: false,
-    showInMenu: false,
-  },
-  {
-    path: "/hive/:subdomain",
-    component: asyncComponent(() => import("../pages/public/index.jsx")),
-    isLayout: false,
-    showInMenu: false,
-  },
-];
-
-export const routers = [...authRouters, ...appRouters, ...publicRouters];
+export const routers = [...authRouters, ...appRouters];
