@@ -100,6 +100,13 @@ const ColorlibStepIconRoot = styled("div")(({ theme }) => ({
   ],
 }));
 
+const addProductButtonStyle = {
+  color: "#fff",
+  textTransform: "capitalize",
+  borderRadius: 0,
+  "&:hover": { backgroundColor: "#928aa2" },
+};
+
 function ColorlibStepIcon(props) {
   const { active, completed, className } = props;
 
@@ -158,6 +165,7 @@ const categories = [
 
 // Example usage
 const ProductAdd = ({
+  editPage,
   modalOpen,
   setModalOpen,
   fetchStore,
@@ -167,10 +175,11 @@ const ProductAdd = ({
   return (
     <Box>
       <Button
-        variant="contained"
-        startIcon={<Add />}
+        variant={editPage ? "text" : "contained"}
+        startIcon={editPage ? null : <Add />}
         onClick={() => setModalOpen(true)}
         size="large"
+        sx={editPage ? addProductButtonStyle : {}}
       >
         Add Product
       </Button>

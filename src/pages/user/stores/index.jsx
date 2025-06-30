@@ -16,9 +16,14 @@ import {
   Tooltip,
   Skeleton,
   Grid,
+  IconButton,
 } from "@mui/material";
 import storeService from "../../../services/storeService";
-import { RadioButtonCheckedOutlined } from "@mui/icons-material";
+import {
+  CheckCircle,
+  ContentCopy,
+  RadioButtonCheckedOutlined,
+} from "@mui/icons-material";
 import webPage from "../../../assets/storePage/image4.png";
 import { formatDate } from "../../../utils/helper";
 import { useNavigate } from "react-router-dom";
@@ -44,7 +49,9 @@ const storeEditHistory = [
 const ManageStores = () => {
   const navigate = useNavigate();
   const [store, setStore] = useState(null);
+  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     const fetchStore = async () => {
@@ -55,6 +62,7 @@ const ManageStores = () => {
           return navigate("/user/manage-store/create-store");
 
         setStore(response?.store || null);
+        setProducts(response?.products || []);
       } catch (error) {
         console.error("Error fetching stores:", error);
       } finally {
@@ -63,6 +71,21 @@ const ManageStores = () => {
     };
     fetchStore();
   }, []);
+
+  const handleCopyUrl = () => {
+    navigator.clipboard.writeText(
+      `${window.location.origin}/hive/${store?.subdomain}`
+    );
+    setCopied(true);
+  };
+
+  useEffect(() => {
+    if (copied) {
+      setTimeout(() => {
+        setCopied(false);
+      }, 1500);
+    }
+  }, [copied]);
 
   return (
     <Box sx={{ height: "100vh" }}>
@@ -81,8 +104,7 @@ const ManageStores = () => {
           }}
         >
           <Grid container spacing={2}>
-            {/* Left Panel with Store Preview */}
-            <Grid item size={{ xs: 12, md: 6 }}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <Card>
                 <CardContent sx={{ display: "flex", gap: 2 }}>
                   <Box
@@ -118,7 +140,9 @@ const ManageStores = () => {
                         color="primary"
                         fullWidth
                         onClick={() =>
-                          navigate("/user/manage-store/1/edit")
+                          navigate(`/user/manage-store/edit/1/${store?._id}`, {
+                            state: { storeData: store, products: products },
+                          })
                         }
                       >
                         Edit Store
@@ -133,7 +157,6 @@ const ManageStores = () => {
                       gap: 1.5,
                     }}
                   >
-                    {/* Store Name */}
                     <Typography
                       variant="h5"
                       fontWeight={700}
@@ -141,18 +164,13 @@ const ManageStores = () => {
                     >
                       {store?.name || "Store Name"}
                     </Typography>
-
-                    {/* Store URL with status icon */}
                     <Box
-                      component="a"
-                      href={`${window.location.origin}/hive/${store?.subdomain}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
                       sx={{
                         display: "flex",
                         alignItems: "center",
                         color: "primary.main",
                         textDecoration: "none",
+                        gap: 2,
                         "&:hover": { textDecoration: "underline" },
                       }}
                     >
@@ -163,15 +181,31 @@ const ManageStores = () => {
                             color: store?.isApproved
                               ? "success.main"
                               : "warning.main",
-                            mr: 1,
                           }}
                         />
                       </Tooltip>
-                      <Typography variant="body2" fontWeight={500} noWrap>
+                      <Box
+                        component="a"
+                        href={`${window.location.origin}/hive/${store?.subdomain}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        sx={{
+                          color: "primary.main",
+                          textDecoration: "none",
+                          "&:hover": { textDecoration: "underline" },
+                        }}
+                      >
                         {store?.subdomain
                           ? `${window.location.origin}/hive/${store.subdomain}`
                           : "Store URL not set"}
-                      </Typography>
+                      </Box>
+                      <IconButton onClick={handleCopyUrl}>
+                        {copied ? (
+                          <CheckCircle fontSize="small" color="success" />
+                        ) : (
+                          <ContentCopy fontSize="small" />
+                        )}
+                      </IconButton>
                     </Box>
 
                     {/* Divider */}

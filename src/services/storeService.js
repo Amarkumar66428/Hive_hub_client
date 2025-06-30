@@ -33,8 +33,37 @@ const createStore = async (storeData) => {
     });
     return response.data;
   } catch (error) {
-    // Optional: centralized error logging
     console.error("Create Store API failed:", error);
+    throw error;
+  }
+};
+
+const updateStore = async (storeId, storeData) => {
+  const formData = new FormData();
+
+  Object.entries(storeData).forEach(([key, value]) => {
+    if (key === "logo") return;
+
+    if (typeof value === "object" && value !== null) {
+      formData.append(key, JSON.stringify(value));
+    } else {
+      formData.append(key, value);
+    }
+  });
+
+  if (storeData.logo instanceof File) {
+    formData.append("logo", storeData.logo);
+  }
+
+  try {
+    const response = await api.put(`/user/updateStore/${storeId}`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Update Store API failed:", error);
     throw error;
   }
 };
@@ -104,6 +133,7 @@ const storeService = {
   getStores,
   getPlans,
   createStore,
+  updateStore,
   getMyStore,
   addItem,
   updateItem,

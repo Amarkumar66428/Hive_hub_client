@@ -59,10 +59,12 @@ const ProtectedRoute = ({ children, role = [], subscriptionRequired = false }) =
 
   const isAuthenticated = !!token && role.includes(user?.role);
   const isSubscribed = plan?.isActive;
-
+  
   if (loading) return <AppLoading />;
-
+  
   if (!isAuthenticated) {
+    console.log('user?.role: ', user?.role);
+    console.log('token: ', token);
     console.log("protected routes");
     Cookies.remove("access_token");
     localStorage.clear();
