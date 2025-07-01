@@ -7,7 +7,7 @@ import useAuth from "../hooks/useAuth";
 import usePlan from "../hooks/useSubscription";
 import userService from "../services/userService";
 import adminService from "../services/adminService";
-import { setUserData, clearUserData } from "../reducer/authSlice";
+import { setUserData } from "../reducer/authSlice";
 import { decryptData } from "../utils/encryption";
 import AppLoading from "../pages/hiveloading";
 
@@ -63,12 +63,6 @@ const ProtectedRoute = ({ children, role = [], subscriptionRequired = false }) =
   if (loading) return <AppLoading />;
   
   if (!isAuthenticated) {
-    console.log('user?.role: ', user?.role);
-    console.log('token: ', token);
-    console.log("protected routes");
-    Cookies.remove("access_token");
-    localStorage.clear();
-    dispatch(clearUserData());
     return <Navigate to="/auth/signin" state={{ from: location }} replace />;
   }
 

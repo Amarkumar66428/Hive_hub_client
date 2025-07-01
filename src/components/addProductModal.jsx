@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -172,6 +172,7 @@ const ProductAdd = ({
   editProduct,
   setEditProduct,
 }) => {
+  console.log('editProduct: ', editProduct);
   return (
     <Box>
       <Button
@@ -226,6 +227,12 @@ const AddProductStepperModal = ({
 
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (editProduct) {
+      setFormData(editProduct);
+    }
+  }, [editProduct]);
 
   // Handle input changes
   const handleChange = (field) => (event) => {
