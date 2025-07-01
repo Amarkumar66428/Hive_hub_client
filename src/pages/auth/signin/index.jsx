@@ -80,9 +80,7 @@ const Signin = () => {
       } else {
         const response = await authService?.signIn(body);
         if (!response?.data?.token) return;
-
         Cookies.set("access_token", response?.data?.token, { expires: 1 });
-
         const userData = await userService.getUserdata();
         if (userData) {
           dispatch(

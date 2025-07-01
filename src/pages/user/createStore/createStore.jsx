@@ -526,6 +526,7 @@ const CreateStore = () => {
             setLayout={setLayout}
             setLayoutSection={setLayoutSection}
             isStoreOwner={true}
+            products={itemsList}
           />
         </Box>
         <Paper

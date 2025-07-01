@@ -129,6 +129,11 @@ const getAllOrders = async (params) => {
   return response.data;
 };
 
+const publishProduct = async (productId) => {
+  const response = await api.patch(`/user/publicProductById/${productId}`);
+  return response.data;
+};
+
 const storeService = {
   getStores,
   getPlans,
@@ -139,6 +144,7 @@ const storeService = {
   updateItem,
   getMyInventory,
   getAllOrders,
+  publishProduct,
 };
 
 export default storeService;

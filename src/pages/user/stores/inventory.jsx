@@ -356,7 +356,7 @@ const InventoryManagement = () => {
                   label="Size"
                   fullWidth
                   name="size"
-                  value={formValues.size || ""}
+                  value={formValues.size || "M"}
                   onChange={handleFormChange}
                 />
               </Grid>
@@ -505,7 +505,7 @@ const ProductRow = ({
               </Typography>
             </TableCell>
             <TableCell>
-              <Chip label={product.size} size="small" variant="outlined" />
+              <Chip label={product.size || "M"} size="small" variant="outlined" />
             </TableCell>
             <TableCell>
               <Typography variant="body2" fontWeight="bold" color="primary">
@@ -601,7 +601,7 @@ const ProductRow = ({
                             Category:
                           </Typography>
                           <Typography variant="body2" fontWeight="medium">
-                            {product?.productId?.category}
+                            {product?.productId?.category || "--"}
                           </Typography>
                         </Box>
                         <Box display="flex" justifyContent="space-between">
@@ -609,7 +609,7 @@ const ProductRow = ({
                             Material:
                           </Typography>
                           <Typography variant="body2" fontWeight="medium">
-                            {product.material}
+                            {product.material || "--"}
                           </Typography>
                         </Box>
                         <Box display="flex" justifyContent="space-between">
@@ -617,14 +617,14 @@ const ProductRow = ({
                             Weight:
                           </Typography>
                           <Typography variant="body2" fontWeight="medium">
-                            {product.weight}
+                            {product.weight || "--"}
                           </Typography>
                         </Box>
                         <Box display="flex" justifyContent="space-between">
                           <Typography variant="body2" color="text.secondary">
                             Color:
                           </Typography>
-                          <Chip label={product.color} size="small" />
+                          <Chip label={product.color || "--"} size="small" />
                         </Box>
                       </Stack>
                     </Grid>
@@ -651,7 +651,7 @@ const ProductRow = ({
                             Stock:
                           </Typography>
                           <Typography variant="body2" fontWeight="medium">
-                            {product.stock} pairs
+                            {product.stock || "--" } pairs
                           </Typography>
                         </Box>
                         <Box display="flex" justifyContent="space-between">
@@ -659,7 +659,7 @@ const ProductRow = ({
                             Size Range:
                           </Typography>
                           <Typography variant="body2" fontWeight="medium">
-                            {product.stockInfo}
+                            {product.stockInfo || "--"}
                           </Typography>
                         </Box>
                         <Box display="flex" justifyContent="space-between">
@@ -679,7 +679,7 @@ const ProductRow = ({
                             Product Line:
                           </Typography>
                           <Typography variant="body2" fontWeight="medium">
-                            {product.productLine}
+                            {product.productLine || "--"}
                           </Typography>
                         </Box>
                         <Box

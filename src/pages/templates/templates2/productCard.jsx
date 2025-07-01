@@ -6,17 +6,39 @@ import {
   Typography,
   Rating,
   Box,
-  Grid,
   Button,
   Fade,
   useTheme,
   useMediaQuery,
 } from "@mui/material";
+import { useDispatch, useSelector } from "react-redux";
+import shopersService from "../../../services/shopersService";
+import { setCart } from "../../../reducer/websiteSlice";
+import { useNavigate, useParams } from "react-router-dom";
 
 const ProductCard = ({ product }) => {
+  const { subdomain } = useParams();
+  const navigate = useNavigate();
   const [isHovered, setIsHovered] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const dispatch = useDispatch();
+  const cart = useSelector((state) => state.website.cart);
+
+  const handleAddToCart = async () => {
+    try {
+      dispatch(setCart([...cart, product]));
+      const response = await shopersService.addProductToCart({
+        productId: product._id,
+        quantity: 1,
+      });
+      if (response) {
+        console.log("response: ", response);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <Card
@@ -43,7 +65,7 @@ const ProductCard = ({ product }) => {
             backgroundColor: "#e8e8e8",
             borderRadius: "12px",
             margin: "16px 16px 0 16px",
-            backgroundImage: `url(${product.image})`,
+            backgroundImage: `url(${product?.images})`,
             backgroundSize: "cover",
             backgroundRepeat: "no-repeat",
             backgroundPosition: "center",
@@ -74,6 +96,7 @@ const ProductCard = ({ product }) => {
           >
             <Button
               variant="contained"
+              onClick={handleAddToCart}
               sx={{
                 backgroundColor: "#000",
                 color: "#fff",
@@ -92,6 +115,7 @@ const ProductCard = ({ product }) => {
             </Button>
             <Button
               variant="outlined"
+              onClick={() => navigate(`/hive/${subdomain}/checkout`)}
               sx={{
                 borderColor: "#000",
                 color: "#000",
@@ -127,7 +151,7 @@ const ProductCard = ({ product }) => {
             lineHeight: 1.3,
           }}
         >
-          {product.title}
+          {product.title || "Untitled"}
         </Typography>
 
         <Box
@@ -155,7 +179,7 @@ const ProductCard = ({ product }) => {
               fontSize: isMobile ? "12px" : "14px",
             }}
           >
-            {product.rating}/5
+            {product.rating || 0}/5
           </Typography>
         </Box>
 
@@ -169,7 +193,7 @@ const ProductCard = ({ product }) => {
               fontSize: isMobile ? "18px" : "20px",
             }}
           >
-            ${product.price}
+            ${product.basePrice}
           </Typography>
 
           {product.originalPrice && (

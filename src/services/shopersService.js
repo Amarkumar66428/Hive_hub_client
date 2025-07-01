@@ -5,8 +5,32 @@ const getStore = async (subdomain) => {
   return response.data;
 };
 
+const signUP = async (payload) => {
+  const response = await api.post("/shoper/shoperSignUp", payload);
+  return response.data;
+};
+
+const signIn = async (payload) => {
+  const response = await api.post("/shoper/shoperLogin", payload);
+  return response.data;
+};
+
+const getShoper = async () => {
+  const response = await api.get(`/shoper/getShoper`);
+  return response.data;
+};
+
+const addProductToCart = async (payload) => {
+  const response = await api.post("/shoper/addToCart", payload);
+  return response.data;
+};
+
 const shopersService = {
   getStore,
+  signUP,
+  signIn,
+  addProductToCart,
+  getShoper,
 };
 
 export default shopersService;

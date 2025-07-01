@@ -15,11 +15,19 @@ import {
   MenuItem,
   Paper,
 } from "@mui/material";
-import { MoreVert, Edit, Delete, Visibility, Inventory2Outlined } from "@mui/icons-material";
+import {
+  MoreVert,
+  Edit,
+  Delete,
+  Visibility,
+  Inventory2Outlined,
+} from "@mui/icons-material";
 import { styled } from "@mui/material/styles";
 import storeService from "../../../services/storeService";
 import ProductAdd from "../../../components/addProductModal";
 import { useNavigate } from "react-router-dom";
+import { Switch } from "antd";
+import { useSnackbar } from "../../../features/snackBar";
 
 // Styled Components
 const ProductCard = styled(Card)(({ theme }) => ({
@@ -216,6 +224,9 @@ const ProductCardComponent = ({ product, onEdit, onDelete, onView }) => {
   const variants = product?.variants[0] || [];
   const [imageLoading, setImageLoading] = useState(true);
   const [menuAnchor, setMenuAnchor] = useState(null);
+  const [isPublished, setIsPublished] = useState(product.isPublished);
+  const [publishLoading, setPublishLoading] = useState(false);
+  const { showSnackbar } = useSnackbar();
 
   const handleMenuClick = (event) => {
     setMenuAnchor(event.currentTarget);
@@ -234,7 +245,27 @@ const ProductCardComponent = ({ product, onEdit, onDelete, onView }) => {
     const originalPrice = Number(product?.basePrice || price);
     const discount = ((originalPrice - price) / originalPrice) * 100;
 
-    return `-${Math.round(discount)}`;
+    return `${Math.round(discount)}%`;
+  };
+
+  const handlePublishProduct = (productId) => {
+    setPublishLoading(true);
+    storeService
+      .publishProduct(productId)
+      .then((res) => {
+        if (res) {
+          setIsPublished(!isPublished);
+          showSnackbar(
+            !isPublished
+              ? "Product published successfully"
+              : "Product unpublished successfully",
+            "success"
+          );
+        }
+      })
+      .finally(() => {
+        setPublishLoading(false);
+      });
   };
 
   return (
@@ -247,7 +278,7 @@ const ProductCardComponent = ({ product, onEdit, onDelete, onView }) => {
             image={product?.images[0]}
             alt={product.basePrice}
             onLoad={() => setImageLoading(false)}
-            sx={{ display: imageLoading ? "none" : "block" }}
+            sx={{ display: imageLoading ? "none" : "block", objectFit: "contain", }}
           />
         ) : (
           <Typography variant="body2" color="text.secondary">
@@ -259,7 +290,7 @@ const ProductCardComponent = ({ product, onEdit, onDelete, onView }) => {
           <Skeleton variant="rectangular" width="100%" height={200} />
         )}
 
-        <DiscountBadge label={`${calculateDiscount()}%`} />
+        <DiscountBadge label={`${calculateDiscount()}`} />
       </ProductImage>
       <CardContent sx={{ flexGrow: 1, pb: 1 }}>
         <Box
@@ -285,14 +316,22 @@ const ProductCardComponent = ({ product, onEdit, onDelete, onView }) => {
               <CurrentPrice>${variants.price || 0}</CurrentPrice>
             </PriceContainer>
           </Box>
-
-          <IconButton
-            size="small"
-            onClick={handleMenuClick}
-            sx={{ mt: -1, mr: -1 }}
-          >
-            <MoreVert fontSize="small" />
-          </IconButton>
+          <Box>
+            <Box display="flex" alignItems="center" gap={1}>
+              <Typography variant="body2" color="text.secondary">
+                Publish
+              </Typography>
+              <Switch
+                checked={isPublished}
+                onChange={() => handlePublishProduct(product._id)}
+                size="small"
+                loading={publishLoading}
+              />
+              <IconButton size="small" onClick={handleMenuClick}>
+                <MoreVert fontSize="small" />
+              </IconButton>
+            </Box>
+          </Box>
         </Box>
       </CardContent>
       <Menu
