@@ -29,6 +29,8 @@ import AuthModals from "./authmodals";
 import templateTheme from "../templateTheme";
 import useAuth from "../../../hooks/useAuth";
 import Cookies from "js-cookie";
+import { UserMenu } from "./component";
+import { useNavigate } from "react-router-dom";
 
 const layoutSection = [
   {
@@ -53,34 +55,34 @@ const newProducts = [
   {
     id: 1,
     title: "T-SHIRT WITH TAPE DETAILS",
-    price: 120,
+    basePrice: 120,
     rating: 4.5,
-    image: new1,
+    images: new1,
   },
   {
     id: 2,
     title: "SKINNY FIT JEANS",
-    price: 240,
+    basePrice: 240,
     originalPrice: 260,
     discount: 20,
     rating: 4.5,
-    image: new2,
+    images: new2,
   },
   {
     id: 3,
     title: "CHECKERED SHIRT",
-    price: 120,
+    basePrice: 120,
     rating: 4.5,
-    image: new3,
+    images: new3,
   },
   {
     id: 4,
     title: "SLEEVE STRIPED T-SHIRT",
-    price: 240,
+    basePrice: 240,
     originalPrice: 260,
     discount: 20,
     rating: 4.5,
-    image: new4,
+    images: new4,
   },
 ];
 
@@ -88,34 +90,34 @@ const topProducts = [
   {
     id: 1,
     title: "T-SHIRT WITH TAPE DETAILS",
-    price: 120,
+    basePrice: 120,
     rating: 4.5,
-    image: topS1,
+    images: topS1,
   },
   {
     id: 2,
     title: "SKINNY FIT JEANS",
-    price: 240,
+    basePrice: 240,
     originalPrice: 260,
     discount: 20,
     rating: 4.5,
-    image: topS2,
+    images: topS2,
   },
   {
     id: 3,
     title: "CHECKERED SHIRT",
-    price: 120,
+    basePrice: 120,
     rating: 4.5,
-    image: topS3,
+    images: topS3,
   },
   {
     id: 4,
     title: "SLEEVE STRIPED T-SHIRT",
-    price: 240,
+    basePrice: 240,
     originalPrice: 260,
     discount: 20,
     rating: 4.5,
-    image: topS4,
+    images: topS4,
   },
 ];
 
@@ -127,11 +129,15 @@ const Templates2 = ({
   setLayout,
   setLayoutSection,
   isStoreOwner = false,
+  products,
+  subdomain,
 }) => {
+  const navigate = useNavigate();
   const token = Cookies.get("token");
   const user = useAuth();
   const [signInOpen, setSignInOpen] = useState(false);
   const [signUpOpen, setSignUpOpen] = useState(false);
+  const [anchorEl, setAnchorEl] = useState(null);
 
   const handleTextChange = (key, newValue) => {
     setLayout((prev) => ({ ...prev, [key]: newValue }));
@@ -162,7 +168,7 @@ const Templates2 = ({
           }}
         >
           <div className="div">
-            {token && (
+            {token ? null : (
               <Box className="frame-4" backgroundColor="primary.main">
                 <p className="sign-up-and-get">
                   <span className="span">
@@ -211,8 +217,25 @@ const Templates2 = ({
                 />
               </Box>
               <div className="frame-12" style={{ color: layout.primaryColor }}>
-                <ShoppingCartOutlined className="frame-11" />
-                <AccountCircleOutlined className="frame-11" />
+                <ShoppingCartOutlined
+                  className="frame-11"
+                  onClick={() => navigate(`/hive/${subdomain}/cart`)}
+                />
+                <AccountCircleOutlined
+                  className="frame-11"
+                  onClick={(e) => {
+                    if (token && user) {
+                      setAnchorEl(e.currentTarget);
+                    } else {
+                      setSignInOpen(true);
+                    }
+                  }}
+                />
+                <UserMenu
+                  user={user}
+                  anchorEl={anchorEl}
+                  onClose={() => setAnchorEl(null)}
+                />
               </div>
             </div>
             <div className="overlap">
@@ -426,9 +449,14 @@ const Templates2 = ({
                 )}
               </div>
               <div className="new-arrivals">
-                {newProducts?.map((product) => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
+                {(products?.length > 0 ? products : newProducts)
+                  ?.slice(0, 4)
+                  ?.map((product) => (
+                    <ProductCard
+                      key={product._id || product.id}
+                      product={product}
+                    />
+                  ))}
               </div>
               <div className="frame-32">
                 <button className="frame-33">
@@ -734,6 +762,7 @@ const Templates2 = ({
           </div>
         </div>
         <AuthModals
+          siteName={layout?.siteName}
           signInOpen={signInOpen}
           signUpOpen={signUpOpen}
           setSignInOpen={setSignInOpen}

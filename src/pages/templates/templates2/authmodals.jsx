@@ -33,13 +33,14 @@ import { setUserData } from "../../../reducer/authSlice";
 import Cookies from "js-cookie";
 
 const AuthModals = ({
+  siteName,
   signInOpen,
   setSignInOpen,
   signUpOpen,
   setSignUpOpen,
 }) => {
   const { showSnackbar } = useSnackbar();
-  const { dispatch } = useDispatch();
+  const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -94,11 +95,22 @@ const AuthModals = ({
         password: signInData.password,
       };
       const response = await shopersService.signIn(body);
-      Cookies.set("token", response?.token, { expires: 1 });
-      dispatch(setUserData({ user: response?.user }));
-      console.log("Sign In:", response);
+      if (response?.token) {
+        showSnackbar("Sign in successful", "success");
+        Cookies.set("token", response?.token, { expires: 1 });
+        dispatch(setUserData({ user: response?.user }));
+        setSignInOpen(false);
+        setSignUpOpen(false);
+      } else {
+        showSnackbar("Invalid email or password", "error");
+      }
     } catch (error) {
       console.log(error);
+      if (error?.status === 401) {
+        showSnackbar(error?.message, "error");
+      } else {
+        showSnackbar("Something went wrong", "error");
+      }
     } finally {
       setLoading(false);
     }
@@ -120,9 +132,18 @@ const AuthModals = ({
         phone: signUpData.phoneNumber,
       };
       const response = await shopersService.signUP(body);
-      console.log("Sign Up:", response);
+      if (response?.token) {
+        showSnackbar("Sign up successful", "success");
+        Cookies.set("token", response?.token, { expires: 1 });
+        dispatch(setUserData({ user: response?.user }));
+        setSignInOpen(false);
+        setSignUpOpen(false);
+      } else {
+        showSnackbar("Invalid email or password", "error");
+      }
     } catch (error) {
       console.log(error);
+      showSnackbar("Something went wrong", "error");
     } finally {
       setLoading(false);
     }
@@ -182,7 +203,7 @@ const AuthModals = ({
             variant="h6"
             sx={{ fontWeight: 900, letterSpacing: 3, mb: 1 }}
           >
-            AMK
+            {siteName}
           </Typography>
           <Typography variant="h4" sx={{ mb: 1 }}>
             Welcome Back
@@ -193,15 +214,19 @@ const AuthModals = ({
         </Box>
 
         <DialogContent sx={{ p: 4 }}>
-          <Box component="form" onSubmit={handleSignInSubmit}>
+          <Box
+            component="form"
+            onSubmit={handleSignInSubmit}
+            sx={{ display: "flex", flexDirection: "column", gap: 3 }}
+          >
             <TextField
               fullWidth
               label="Email Address"
               type="email"
               value={signInData.email}
               onChange={handleSignInChange("email")}
-              margin="normal"
               required
+              autoComplete="off"
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -209,7 +234,6 @@ const AuthModals = ({
                   </InputAdornment>
                 ),
               }}
-              sx={{ mb: 3 }}
             />
 
             <TextField
@@ -218,8 +242,8 @@ const AuthModals = ({
               type={showPassword ? "text" : "password"}
               value={signInData.password}
               onChange={handleSignInChange("password")}
-              margin="normal"
               required
+              autoComplete="off"
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -237,7 +261,6 @@ const AuthModals = ({
                   </InputAdornment>
                 ),
               }}
-              sx={{ mb: 2 }}
             />
 
             <Box
@@ -245,7 +268,6 @@ const AuthModals = ({
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
-                mb: 3,
               }}
             >
               <FormControlLabel
@@ -267,27 +289,29 @@ const AuthModals = ({
               type="submit"
               fullWidth
               variant="contained"
-              sx={{
+              disabled={loading || !signInData.email || !signInData.password}
+              sx={(theme) => ({
                 py: 2,
                 fontSize: "16px",
                 fontWeight: 600,
                 letterSpacing: 1,
-                background: "linear-gradient(135deg, #6d1c4a, #8b2f5c)",
+                background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
                 transition: "all 0.3s ease",
                 "&:hover": {
-                  background: "linear-gradient(135deg, #5d1640, #7a2850)",
                   transform: "translateY(-2px)",
-                  boxShadow: "0 8px 25px rgba(109, 28, 74, 0.3)",
                 },
-                mb: 3,
-              }}
+                "&:disabled": {
+                  background: "#ccc",
+                },
+              })}
+              startIcon={loading ? <CircularProgress size={16} /> : null}
             >
-              Sign In
+              {loading ? "Signing in..." : "Sign In"}
             </Button>
 
-            <Divider sx={{ my: 2 }}>or</Divider>
+            <Divider>or</Divider>
 
-            <Typography variant="body2" sx={{ textAlign: "center", mt: 2 }}>
+            <Typography variant="body2" sx={{ textAlign: "center" }}>
               Don't have an account?{" "}
               <Link
                 component="button"
@@ -344,10 +368,10 @@ const AuthModals = ({
             variant="h6"
             sx={{ fontWeight: 900, letterSpacing: 3, mb: 1 }}
           >
-            AMK
+            {siteName}
           </Typography>
           <Typography variant="h4" sx={{ mb: 1 }}>
-            Join AMK
+            Join {siteName}
           </Typography>
           <Typography variant="body2" sx={{ opacity: 0.9 }}>
             Create your account and discover premium fashion
@@ -355,25 +379,33 @@ const AuthModals = ({
         </Box>
 
         <DialogContent sx={{ p: 4 }}>
-          <Box component="form" onSubmit={handleSignUpSubmit}>
-            <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+          <Box
+            component="form"
+            onSubmit={handleSignUpSubmit}
+            sx={{ display: "flex", flexDirection: "column", gap: 3 }}
+          >
+            <Box sx={{ display: "flex", gap: 2 }}>
               <TextField
                 fullWidth
                 label="First Name"
                 value={signUpData.firstName}
                 onChange={handleSignUpChange("firstName")}
                 required
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Person color="primary" />
-                    </InputAdornment>
-                  ),
+                autoComplete="off"
+                slotProps={{
+                  input: {
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Person color="primary" />
+                      </InputAdornment>
+                    ),
+                  },
                 }}
               />
               <TextField
                 fullWidth
                 label="Last Name"
+                autoComplete="off"
                 value={signUpData.lastName}
                 onChange={handleSignUpChange("lastName")}
                 required
@@ -386,20 +418,21 @@ const AuthModals = ({
               type="email"
               value={signUpData.email}
               onChange={handleSignUpChange("email")}
-              margin="normal"
               required
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Email color="primary" />
-                  </InputAdornment>
-                ),
+              autoComplete="off"
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Email color="primary" />
+                    </InputAdornment>
+                  ),
+                },
               }}
-              sx={{ mb: 2 }}
             />
             <Box
               className="public-app-phone-input"
-              sx={{ display: "flex", gap: 1, mb: 2 }}
+              sx={{ display: "flex", gap: 1 }}
             >
               <FormControl sx={{ width: 50 }}>
                 <PhoneInput
@@ -419,12 +452,14 @@ const AuthModals = ({
                 onChange={handleSignUpChange("phoneNumber")}
                 required
                 placeholder="Enter your phone number"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Phone color="primary" />
-                    </InputAdornment>
-                  ),
+                slotProps={{
+                  input: {
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Phone color="primary" />
+                      </InputAdornment>
+                    ),
+                  },
                 }}
               />
             </Box>
@@ -435,14 +470,16 @@ const AuthModals = ({
               type={showPassword ? "text" : "password"}
               value={signUpData.password}
               onChange={handleSignUpChange("password")}
-              margin="normal"
               required
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Lock color="primary" />
-                  </InputAdornment>
-                ),
+              autoComplete="off"
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Lock color="primary" />
+                    </InputAdornment>
+                  ),
+                },
                 endAdornment: (
                   <InputAdornment position="end">
                     <IconButton
@@ -454,7 +491,6 @@ const AuthModals = ({
                   </InputAdornment>
                 ),
               }}
-              sx={{ mb: 2 }}
             />
 
             <TextField
@@ -463,8 +499,8 @@ const AuthModals = ({
               type={showConfirmPassword ? "text" : "password"}
               value={signUpData.confirmPassword}
               onChange={handleSignUpChange("confirmPassword")}
-              margin="normal"
               required
+              autoComplete="off"
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -484,7 +520,6 @@ const AuthModals = ({
                   </InputAdornment>
                 ),
               }}
-              sx={{ mb: 3 }}
             />
 
             <FormControlLabel
@@ -493,6 +528,7 @@ const AuthModals = ({
                   checked={signUpData.agreeToTerm}
                   onChange={handleSignUpChange("agreeToTerm")}
                   color="primary"
+                  sx={{ p: 0, pr: 2 }}
                 />
               }
               label={
@@ -515,7 +551,7 @@ const AuthModals = ({
                   </Link>
                 </Typography>
               }
-              sx={{ mb: 3 }}
+              sx={{ m: 0 }}
             />
 
             <Button
@@ -536,16 +572,15 @@ const AuthModals = ({
                 "&:disabled": {
                   background: "#ccc",
                 },
-                mb: 3,
               })}
               startIcon={loading ? <CircularProgress size={16} /> : null}
             >
               {loading ? "Creating..." : "Create Account"}
             </Button>
 
-            <Divider sx={{ my: 2 }}>or</Divider>
+            <Divider>or</Divider>
 
-            <Typography variant="body2" sx={{ textAlign: "center", mt: 2 }}>
+            <Typography variant="body2" sx={{ textAlign: "center" }}>
               Already have an account?{" "}
               <Link
                 component="button"

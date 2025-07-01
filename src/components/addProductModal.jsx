@@ -169,10 +169,9 @@ const ProductAdd = ({
   modalOpen,
   setModalOpen,
   fetchStore,
-  editProduct,
+  editProduct = {},
   setEditProduct,
 }) => {
-  console.log('editProduct: ', editProduct);
   return (
     <Box>
       <Button
@@ -210,17 +209,17 @@ const AddProductStepperModal = ({
   const [attributeValue, setAttributeValue] = useState("");
 
   const [formData, setFormData] = useState({
-    title: editProduct?.title || "",
-    description: editProduct?.description || "",
-    basePrice: editProduct?.basePrice || "",
-    attributes: editProduct?.attributes || {
+    title: "",
+    description: "",
+    basePrice: "",
+    attributes: {
       material: "Cotton",
       fit: "Regular",
     },
-    tags: editProduct?.tags || "",
-    category: editProduct?.category || "",
-    images: editProduct?.images || [],
-    variants: editProduct?.variants || [
+    tags: "",
+    category: "",
+    images: [],
+    variants: [
       { size: "M", color: "Red", stock: 10, price: 599, discount: 10 },
     ],
   });
@@ -229,7 +228,7 @@ const AddProductStepperModal = ({
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (editProduct) {
+    if (Object.keys(editProduct).length > 0) {
       setFormData(editProduct);
     }
   }, [editProduct]);
@@ -251,23 +250,23 @@ const AddProductStepperModal = ({
 
     switch (step) {
       case 0: // Product Information
-        if (!formData.title.trim())
+        if (!formData?.title?.trim())
           newErrors.title = "Product title is required";
-        if (!formData.description.trim())
+        if (!formData?.description?.trim())
           newErrors.description = "Description is required";
-        if (!formData.category) newErrors.category = "Category is required";
+        if (!formData?.category) newErrors.category = "Category is required";
         break;
       case 1: // Pricing & Inventory
-        if (!formData.basePrice || parseFloat(formData.basePrice) <= 0)
+        if (!formData?.basePrice || parseFloat(formData?.basePrice) <= 0)
           newErrors.basePrice = "Valid price is required";
         break;
       case 2: // Images
-        if (formData.images.length === 0)
+        if (formData?.images?.length === 0)
           newErrors.images = "At least one product image is required";
         break;
       case 3:
         // Attributes & Variants
-        if (Object.keys(formData.attributes).length === 0)
+        if (Object.keys(formData?.attributes).length === 0)
           newErrors.attributes = "Invalid JSON format";
         break;
     }
@@ -298,8 +297,7 @@ const AddProductStepperModal = ({
           setFormData((prev) => ({
             ...prev,
             images: [
-              ...prev.images,
-              {
+                {
                 file,
                 preview: e.target.result,
                 name: file.name,
@@ -315,7 +313,7 @@ const AddProductStepperModal = ({
   const removeImage = (index) => {
     setFormData((prev) => ({
       ...prev,
-      images: prev.images.filter((_, i) => i !== index),
+      images: prev?.images?.filter((_, i) => i !== index),
     }));
   };
 
@@ -331,10 +329,10 @@ const AddProductStepperModal = ({
   };
 
   const removeVariant = (index) => {
-    if (formData.variants.length > 1) {
+    if (formData?.variants?.length > 1) {
       setFormData((prev) => ({
         ...prev,
-        variants: prev.variants.filter((_, i) => i !== index),
+        variants: prev?.variants?.filter((_, i) => i !== index),
       }));
     }
   };
@@ -342,7 +340,7 @@ const AddProductStepperModal = ({
   const updateVariant = (index, field, value) => {
     setFormData((prev) => ({
       ...prev,
-      variants: prev.variants.map((variant, i) =>
+      variants: prev?.variants?.map((variant, i) =>
         i === index ? { ...variant, [field]: value } : variant
       ),
     }));
@@ -420,7 +418,7 @@ const AddProductStepperModal = ({
   const handleAddAttribute = () => {
     if (attributeKey.trim() && attributeValue.trim()) {
       try {
-        const current = formData.attributes || {};
+        const current = formData?.attributes || {};
         const updated = {
           ...current,
           [attributeKey.trim()]: attributeValue.trim(),
@@ -444,7 +442,7 @@ const AddProductStepperModal = ({
   // Handler to remove a key
   const removeAttribute = (key) => {
     try {
-      const current = formData.attributes || {};
+      const current = formData?.attributes || {};
       delete current[key];
       setFormData((prev) => ({
         ...prev,
@@ -465,7 +463,7 @@ const AddProductStepperModal = ({
               <TextField
                 fullWidth
                 label="Product Title"
-                value={formData.title}
+                value={formData?.title}
                 onChange={handleChange("title")}
                 error={!!errors.title}
                 helperText={errors.title}
@@ -477,7 +475,7 @@ const AddProductStepperModal = ({
                   <Autocomplete
                     freeSolo
                     options={categories}
-                    value={formData.category}
+                    value={formData?.category}
                     onChange={(event, newValue) => {
                       handleChange("category")({ target: { value: newValue } });
                     }}
@@ -507,7 +505,7 @@ const AddProductStepperModal = ({
                 multiline
                 rows={4}
                 label="Product Description"
-                value={formData.description}
+                value={formData?.description}
                 onChange={handleChange("description")}
                 error={!!errors.description}
                 helperText={errors.description}
@@ -527,7 +525,7 @@ const AddProductStepperModal = ({
                   fullWidth
                   label="Base Price"
                   type="number"
-                  value={formData.basePrice}
+                  value={formData?.basePrice}
                   onChange={handleChange("basePrice")}
                   error={!!errors.basePrice}
                   helperText={errors.basePrice}
@@ -545,7 +543,7 @@ const AddProductStepperModal = ({
               <TextField
                 fullWidth
                 label="Tags (Optional)"
-                value={formData.tags}
+                value={formData?.tags}
                 onChange={handleChange("tags")}
                 placeholder="shirt, summer, cotton"
                 helperText="Separate tags with commas"
@@ -566,7 +564,7 @@ const AddProductStepperModal = ({
               onChange={handleImageUpload}
             />
 
-            {formData.images.length === 0 ? (
+            {formData?.images?.length === 0 || !formData?.images ? (
               <label htmlFor="image-upload">
                 <Paper
                   sx={{
@@ -614,8 +612,8 @@ const AddProductStepperModal = ({
                 <CardMedia
                   component="img"
                   height="200"
-                  image={formData.images[0].preview}
-                  alt={formData.images[0].name}
+                  image={formData?.images?.[0]?.preview || ""}
+                  alt={formData?.images?.[0]?.name || ""}
                   sx={{ objectFit: "contain" }}
                 />
 
@@ -712,7 +710,7 @@ const AddProductStepperModal = ({
 
             {/* Display attributes as chips */}
             <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mb: 2 }}>
-              {Object.entries(formData.attributes || {}).map(([key, value]) => (
+              {Object.entries(formData?.attributes || {}).map(([key, value]) => (
                 <Chip
                   key={key}
                   label={`${key}: ${value}`}
@@ -749,7 +747,7 @@ const AddProductStepperModal = ({
             </Box>
 
             <Stack spacing={2}>
-              {formData.variants.map((variant, index) => (
+              {formData?.variants?.map((variant, index) => (
                 <Paper
                   key={index}
                   sx={{ p: 3, border: "1px solid", borderColor: "grey.300" }}
@@ -765,7 +763,7 @@ const AddProductStepperModal = ({
                     <Typography variant="subtitle1">
                       Variant {index + 1}
                     </Typography>
-                    {formData.variants.length > 1 && (
+                    {formData?.variants?.length > 1 && (
                       <Button
                         size="small"
                         onClick={() => removeVariant(index)}
@@ -861,13 +859,13 @@ const AddProductStepperModal = ({
                   Product Information
                 </Typography>
                 <Typography>
-                  <strong>Title:</strong> {formData.title}
+                  <strong>Title:</strong> {formData?.title}
                 </Typography>
                 <Typography>
-                  <strong>Category:</strong> {formData.category}
+                  <strong>Category:</strong> {formData?.category}
                 </Typography>
                 <Typography>
-                  <strong>Description:</strong> {formData.description}
+                  <strong>Description:</strong> {formData?.description}
                 </Typography>
               </Paper>
 
@@ -876,10 +874,10 @@ const AddProductStepperModal = ({
                   Pricing & Inventory
                 </Typography>
                 <Typography>
-                  <strong>Base Price:</strong> ${formData.basePrice}
+                  <strong>Base Price:</strong> ${formData?.basePrice}
                 </Typography>
                 <Typography>
-                  <strong>Tags:</strong> {formData.tags || "None"}
+                  <strong>Tags:</strong> {formData?.tags || "None"}
                 </Typography>
               </Paper>
 
@@ -888,12 +886,12 @@ const AddProductStepperModal = ({
                   Images & Variants
                 </Typography>
                 <Typography>
-                  <strong>Images:</strong> {formData.images.length} uploaded
+                  <strong>Images:</strong> {formData?.images?.length} uploaded
                 </Typography>
                 <Tooltip
                   title={
                     <Box sx={{ p: 1 }}>
-                      {formData.variants.map((v, i) => (
+                      {formData?.variants?.map((v, i) => (
                         <Typography
                           key={i}
                           variant="caption"
@@ -915,7 +913,7 @@ const AddProductStepperModal = ({
                     variant="body2"
                     sx={{ cursor: "pointer", display: "inline-block" }}
                   >
-                    <strong>Variants:</strong> {formData.variants.length}{" "}
+                    <strong>Variants:</strong> {formData?.variants?.length}{" "}
                     configured
                   </Typography>
                 </Tooltip>

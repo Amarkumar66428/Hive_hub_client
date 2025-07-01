@@ -15,6 +15,16 @@ const getMySubscription = async () => {
   return response.data;
 };
 
-const userService = { buySubscription, getUserdata, getMySubscription };
+const getUserDashboard = async () => {
+  const response = await api.get("/user/getDashboardStats");
+  return response.data;
+};
+
+const userService = {
+  buySubscription,
+  getUserdata,
+  getMySubscription,
+  getUserDashboard,
+};
 
 export default userService;

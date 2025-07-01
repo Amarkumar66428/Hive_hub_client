@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Card,
@@ -37,147 +37,102 @@ import {
   Pie,
   Cell,
 } from "recharts";
+import userService from "../../../services/userService";
+
+// Sample data for charts
+const lineChartData = [
+  { day: "Mo", value1: 15000, value2: 12000 },
+  { day: "Tu", value1: 18000, value2: 16000 },
+  { day: "We", value1: 12000, value2: 8000 },
+  { day: "Th", value1: 25000, value2: 22000 },
+  { day: "Fr", value1: 20000, value2: 18000 },
+  { day: "Sa", value1: 16000, value2: 14000 },
+  { day: "Su", value1: 22000, value2: 19000 },
+];
+
+const revenueData = [
+  { name: "Product Sales", value: 45, color: "#1976d2" },
+  { name: "Services", value: 25, color: "#9c27b0" },
+  { name: "Subscriptions", value: 20, color: "#4caf50" },
+  { name: "Others", value: 10, color: "#ff9800" },
+];
+
+const channelData = [
+  { name: "Online", value: 60, color: "#1976d2" },
+  { name: "Mobile App", value: 25, color: "#424242" },
+  { name: "Store", value: 15, color: "#4caf50" },
+];
+
+const metrics = [
+  {
+    key: "deliveredOrders",
+    title: "Orders Delivered",
+    icon: LocalShipping,
+    color: "#4caf50",
+  },
+  {
+    key: "failedOrders",
+    title: "Failed Orders",
+    icon: Refresh,
+    color: "#f44336",
+  },
+  {
+    key: "pendingOrders",
+    title: "Pending Orders",
+    icon: TrendingUp,
+    color: "#ff9800",
+  },
+  {
+    key: "totalOrders",
+    title: "Total Orders",
+    icon: ShoppingCart,
+    color: "#1976d2",
+  },
+  // {
+  //   title: "Orders Net Value",
+  //   icon: AccountBalance,
+  //   color: "#9c27b0",
+  //   highlight: true,
+  // },
+];
+
+const financialMetrics = [
+  {
+    key: "grossSales",
+    title: "Gross Sales",
+    color: "#4caf50",
+  },
+  {
+    key: "netSales",
+    title: "Net Sales",
+    color: "#ff9800",
+  },
+  {
+    key: "totalDiscount",
+    title: "Total Discount",
+    color: "#9c27b0",
+  },
+  // {
+  //   key: "ordersDiscount",
+  //   title: "Orders Discount",
+  //   value: "₹191.3K",
+  //   color: "#f44336",
+  // },
+];
 
 const UserHome = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [activeTab, setActiveTab] = useState(0);
+  const [dashboardData, setDashboardData] = useState(null);
 
-  // Sample data for charts
-  const lineChartData = [
-    { day: "Mo", value1: 15000, value2: 12000 },
-    { day: "Tu", value1: 18000, value2: 16000 },
-    { day: "We", value1: 12000, value2: 8000 },
-    { day: "Th", value1: 25000, value2: 22000 },
-    { day: "Fr", value1: 20000, value2: 18000 },
-    { day: "Sa", value1: 16000, value2: 14000 },
-    { day: "Su", value1: 22000, value2: 19000 },
-  ];
-
-  const revenueData = [
-    { name: "Product Sales", value: 45, color: "#1976d2" },
-    { name: "Services", value: 25, color: "#9c27b0" },
-    { name: "Subscriptions", value: 20, color: "#4caf50" },
-    { name: "Others", value: 10, color: "#ff9800" },
-  ];
-
-  const channelData = [
-    { name: "Online", value: 60, color: "#1976d2" },
-    { name: "Mobile App", value: 25, color: "#424242" },
-    { name: "Store", value: 15, color: "#4caf50" },
-  ];
-
-  const metrics = [
-    {
-      title: "Total Orders",
-      value: "506",
-      icon: ShoppingCart,
-      color: "#1976d2",
-    },
-    { title: "Refunded Orders", value: "19", icon: Refresh, color: "#f44336" },
-    {
-      title: "Orders Delivered",
-      value: "56",
-      icon: LocalShipping,
-      color: "#4caf50",
-    },
-    {
-      title: "Adjusted Orders",
-      value: "93",
-      icon: TrendingUp,
-      color: "#ff9800",
-    },
-    {
-      title: "Orders Net Value",
-      value: "₹251.3K",
-      icon: AccountBalance,
-      color: "#9c27b0",
-      highlight: true,
-    },
-  ];
-
-  const financialMetrics = [
-    { title: "Total Taxes", value: "₹651.3K", color: "#1976d2" },
-    { title: "Gross Sales", value: "₹871.3K", color: "#4caf50" },
-    { title: "Shipping Charges", value: "₹71.3K", color: "#ff9800" },
-    { title: "Total Shipping", value: "₹341.3K", color: "#9c27b0" },
-    { title: "Orders Discount", value: "₹191.3K", color: "#f44336" },
-  ];
-
-  const MetricCard = ({
-    title,
-    value,
-    icon: Icon,
-    color,
-    highlight = false,
-  }) => (
-    <Card
-      elevation={2}
-      sx={{
-        height: "100%",
-        transition: "transform 0.2s, box-shadow 0.2s",
-        "&:hover": {
-          transform: "translateY(-2px)",
-          boxShadow: theme.shadows[4],
-        },
-        background: highlight
-          ? `linear-gradient(135deg, ${color}15, ${color}05)`
-          : "white",
-        border: highlight ? `1px solid ${color}30` : "none",
-      }}
-    >
-      <CardContent sx={{ p: 3 }}>
-        <Box
-          display="flex"
-          alignItems="center"
-          justifyContent="space-between"
-          mb={2}
-        >
-          <Typography variant="body2" color="text.secondary" fontWeight={500}>
-            {title}
-          </Typography>
-          {Icon && <Icon sx={{ color, fontSize: 24, opacity: 0.8 }} />}
-        </Box>
-        <Typography
-          variant="h4"
-          fontWeight={700}
-          color={highlight ? color : "text.primary"}
-          sx={{ letterSpacing: "-0.5px" }}
-        >
-          {value}
-        </Typography>
-      </CardContent>
-    </Card>
-  );
-
-  const ChartCard = ({ title, children, height = 300 }) => (
-    <Card elevation={2} sx={{ height: "100%" }}>
-      <CardContent sx={{ p: 3 }}>
-        <Typography variant="h6" fontWeight={600} mb={3} color="white">
-          {title}
-        </Typography>
-        <Box height={height}>{children}</Box>
-      </CardContent>
-    </Card>
-  );
-
-  const CustomTooltip = ({ active, payload, label }) => {
-    if (active && payload && payload.length) {
-      return (
-        <Paper sx={{ p: 2, boxShadow: theme.shadows[8] }}>
-          <Typography variant="body2" fontWeight={600} mb={1}>
-            {label}
-          </Typography>
-          {payload.map((entry, index) => (
-            <Typography key={index} variant="body2" sx={{ color: entry.color }}>
-              {`${entry.dataKey}: ${entry.value.toLocaleString()}`}
-            </Typography>
-          ))}
-        </Paper>
-      );
-    }
-    return null;
-  };
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      const response = await userService.getUserDashboard();
+      setDashboardData(response);
+    };
+    fetchDashboardData();
+  }, []);
 
   return (
     <Box sx={{ backgroundColor: "#f8fafc", minHeight: "100vh", px: 2 }}>
@@ -359,13 +314,16 @@ const UserHome = () => {
         </Grid>
 
         {metrics.map((metric, index) => (
-          <Grid item size={{ xs: 12, sm: 6, md: 4, lg: 2.4 }} key={index}>
-            <MetricCard {...metric} />
+          <Grid item size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={index}>
+            <MetricCard
+              {...metric}
+              value={dashboardData?.summary[metric.key] || 0}
+            />
           </Grid>
         ))}
 
         {financialMetrics.map((metric, index) => (
-          <Grid item size={{ xs: 12, sm: 6, md: 4, lg: 2.4 }} key={index}>
+          <Grid item size={{ xs: 12, sm: 6, md: 4 }} key={index}>
             <Card elevation={2}>
               <CardContent sx={{ p: 2 }}>
                 <Typography
@@ -384,7 +342,7 @@ const UserHome = () => {
                     letterSpacing: "-0.5px",
                   }}
                 >
-                  {metric.value}
+                  {dashboardData?.summary[metric.key] || 0}
                 </Typography>
               </CardContent>
             </Card>
@@ -423,3 +381,78 @@ const UserHome = () => {
 };
 
 export default UserHome;
+
+const MetricCard = ({ title, value, icon: Icon, color, highlight = false }) => {
+  const theme = useTheme();
+  return (
+    <Card
+      elevation={2}
+      sx={{
+        height: "100%",
+        transition: "transform 0.2s, box-shadow 0.2s",
+        "&:hover": {
+          transform: "translateY(-2px)",
+          boxShadow: theme.shadows[4],
+        },
+        background: highlight
+          ? `linear-gradient(135deg, ${color}15, ${color}05)`
+          : "white",
+        border: highlight ? `1px solid ${color}30` : "none",
+      }}
+    >
+      <CardContent sx={{ p: 3 }}>
+        <Box
+          display="flex"
+          alignItems="center"
+          justifyContent="space-between"
+          mb={2}
+        >
+          <Typography variant="body2" color="text.secondary" fontWeight={500}>
+            {title}
+          </Typography>
+          {Icon && <Icon sx={{ color, fontSize: 24, opacity: 0.8 }} />}
+        </Box>
+        <Typography
+          variant="h4"
+          fontWeight={700}
+          color={highlight ? color : "text.primary"}
+          sx={{ letterSpacing: "-0.5px" }}
+        >
+          {value}
+        </Typography>
+      </CardContent>
+    </Card>
+  );
+};
+
+const ChartCard = ({ title, children, height = 300 }) => {
+  return (
+    <Card elevation={2} sx={{ height: "100%" }}>
+      <CardContent sx={{ p: 3 }}>
+        <Typography variant="h6" fontWeight={600} mb={3} color="white">
+          {title}
+        </Typography>
+        <Box height={height}>{children}</Box>
+      </CardContent>
+    </Card>
+  );
+};
+
+const CustomTooltip = ({ active, payload, label }) => {
+  const theme = useTheme();
+  if (active && payload && payload.length) {
+    return (
+      <Paper sx={{ p: 2, boxShadow: theme.shadows[8] }}>
+        <Typography variant="body2" fontWeight={600} mb={1}>
+          {label}
+        </Typography>
+        {payload.map((entry, index) => (
+          <Typography key={index} variant="body2" sx={{ color: entry.color }}>
+            {`${entry.dataKey}: ${entry.value.toLocaleString()}`}
+          </Typography>
+        ))}
+      </Paper>
+    );
+  }
+  return null;
+};

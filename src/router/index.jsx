@@ -47,8 +47,8 @@ const AppRouter = () => {
           }
         />
       ))}
-      {publicRouters.map(({ path }) => (
-        <Route key={path} path={path} element={<PublicSites />} />
+      {publicRouters.map(({ path, component }) => (
+        <Route key={path} path={path} element={<PublicSites component={component} />} />
       ))}
 
       {/* Protected Routes with Optional Layout */}
