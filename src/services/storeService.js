@@ -124,8 +124,13 @@ const getMyInventory = async () => {
   return response.data;
 };
 
+const updateInventory = async (id, data) => {
+  const response = await api.patch(`/user/updateInventory/${id}`, data);
+  return response.data;
+};
+
 const getAllOrders = async (params) => {
-  const response = await api.get(`/user/getAllOrdersForStoreOwner${params}`);
+  const response = await api.get(`/user/getAllOrdersForStoreOwner`, params);
   return response.data;
 };
 
@@ -143,6 +148,7 @@ const storeService = {
   addItem,
   updateItem,
   getMyInventory,
+  updateInventory,
   getAllOrders,
   publishProduct,
 };

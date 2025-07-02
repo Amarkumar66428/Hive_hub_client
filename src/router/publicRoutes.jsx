@@ -1,46 +1,86 @@
 import { useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import shopersService from "../services/shopersService";
 import { templateRouters } from "./publicRouter.config";
 import { Box } from "@mui/material";
 import NotFoundPage from "../components/pageNotFound";
 import PublicAppLoader from "../components/publicAppLoader";
 import WebsiteLayout from "../pages/templates/layout";
+import Cookies from "js-cookie";
+import { setUserData } from "../reducer/authSlice";
+import { useDispatch } from "react-redux";
+import { setCart } from "../reducer/websiteSlice";
 
 const PublicSites = ({ component }) => {
   const { subdomain } = useParams();
-  const [template, setTemplate] = useState(null);
-  const [layout, setLayout] = useState({});
-  const [products, setProducts] = useState([]);
+  const dispatch = useDispatch();
+
+  const [storeData, setStoreData] = useState({
+    template: null,
+    layout: {},
+    products: [],
+  });
+
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchStore = async () => {
+      setLoading(true);
       try {
-        setLoading(true);
-        const response = await shopersService.getStore(subdomain);
-        console.log("response: ", response);
-        if (response?.store) {
-          const store = response.store;
-          setLayout(JSON.parse(store.layout || "{}"));
-          setTemplate(store);
-          setProducts(response.products);
+        const token = Cookies.get("token");
+        let storeResponse;
+        let user;
+        if (token) {
+          [storeResponse, user] = await Promise.all([
+            shopersService.getStore(subdomain),
+            shopersService.getShoper(),
+          ]);
+          dispatch(setCart(user.data.cartItems));
+          dispatch(setUserData({ user: user.data.shoper }));
+        } else {
+          storeResponse = await shopersService.getStore(subdomain);
+        }
+
+        const store = storeResponse?.store;
+        if (store) {
+          setStoreData({
+            template: store,
+            layout: parseLayoutSafely(store.layout),
+            products: storeResponse.products || [],
+          });
         }
       } catch (error) {
-        console.log("Error fetching store:", error);
+        console.error("Error fetching store:", error);
       } finally {
         setLoading(false);
       }
     };
 
     fetchStore();
-  }, [subdomain]);
+  }, [subdomain, dispatch]);
+
+  // Avoid JSON.parse crashes
+  const parseLayoutSafely = (layoutString) => {
+    try {
+      return JSON.parse(layoutString || "{}");
+    } catch {
+      return {};
+    }
+  };
+
+  const matchedRoute = useMemo(() => {
+    if (!storeData.template) return null;
+    return (
+      templateRouters.find((route) =>
+        route?.key?.includes(String(storeData.template?.TemplateId))
+      ) || templateRouters.find((route) => route?.key?.includes("eCommerce"))
+    );
+  }, [storeData.template]);
 
   if (loading) {
     return (
       <Box
         sx={{
-          margin: 0,
           height: "100vh",
           display: "grid",
           placeContent: "center",
@@ -52,33 +92,23 @@ const PublicSites = ({ component }) => {
     );
   }
 
-  const matchedRoute = template?.TemplateId
-    ? templateRouters.find((route) =>
-        route?.key?.includes(String(template.TemplateId))
-      )
-    : templateRouters.find((route) => route?.key?.includes("eCommerce"));
+  if (!matchedRoute) return <NotFoundPage />;
 
-  if (!matchedRoute) {
-    return <NotFoundPage />;
-  }
+  const Component = component || matchedRoute.component;
 
-  const Component = component ? component : matchedRoute.component;
+  const componentProps = {
+    template: storeData.template,
+    layout: storeData.layout,
+    products: storeData.products,
+    subdomain,
+  };
+
   return component ? (
     <WebsiteLayout>
-      <Component
-        template={template}
-        layout={layout}
-        products={products}
-        subdomain={subdomain}
-      />
+      <Component {...componentProps} />
     </WebsiteLayout>
   ) : (
-    <Component
-      template={template}
-      layout={layout}
-      products={products}
-      subdomain={subdomain}
-    />
+    <Component {...componentProps} />
   );
 };
 

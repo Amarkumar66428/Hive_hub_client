@@ -9,7 +9,7 @@ import {
   SearchOutlined,
   ShoppingCartOutlined,
 } from "@mui/icons-material";
-import { Box, Button, InputBase, ThemeProvider } from "@mui/material";
+import { Badge, Box, Button, InputBase, ThemeProvider } from "@mui/material";
 import first_hero from "../../../assets/storePage/temp2/first_hero.webp";
 import new1 from "../../../assets/storePage/temp2/newA1.webp";
 import new2 from "../../../assets/storePage/temp2/newA2.webp";
@@ -31,6 +31,7 @@ import useAuth from "../../../hooks/useAuth";
 import Cookies from "js-cookie";
 import { UserMenu } from "./component";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 const layoutSection = [
   {
@@ -135,6 +136,7 @@ const Templates2 = ({
   const navigate = useNavigate();
   const token = Cookies.get("token");
   const user = useAuth();
+  const cart = useSelector((state) => state.website.cart);
   const [signInOpen, setSignInOpen] = useState(false);
   const [signUpOpen, setSignUpOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
@@ -217,10 +219,21 @@ const Templates2 = ({
                 />
               </Box>
               <div className="frame-12" style={{ color: layout.primaryColor }}>
-                <ShoppingCartOutlined
-                  className="frame-11"
-                  onClick={() => navigate(`/hive/${subdomain}/cart`)}
-                />
+                <Box sx={{ position: "relative" }}>
+                  <ShoppingCartOutlined
+                    className="frame-11"
+                    onClick={() => navigate(`/hive/${subdomain}/cart`)}
+                  />
+                  {Object.keys(cart).length > 0 && (
+                    <Badge
+                      badgeContent={Object.keys(cart).length}
+                      color="primary"
+                      sx={{
+                        position: "absolute",
+                      }}
+                    />
+                  )}
+                </Box>
                 <AccountCircleOutlined
                   className="frame-11"
                   onClick={(e) => {

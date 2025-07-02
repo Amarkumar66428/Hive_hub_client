@@ -253,7 +253,7 @@ const TemplateSelector = ({ setCurrentStep, setSelectedTemplate }) => {
                         variant="text"
                         color="error"
                         onClick={() => {
-                          navigate("/user/home/create-store/editor");
+                          navigate("/user/manage-store/create/eCommerce/new");
                         }}
                         sx={{
                           py: 0,

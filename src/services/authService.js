@@ -17,4 +17,5 @@ const signIn = async (payload) => {
 };
 
 const authService = { adminSignIn, signUp, signIn };
+
 export default authService;

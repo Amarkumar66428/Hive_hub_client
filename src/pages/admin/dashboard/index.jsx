@@ -350,7 +350,7 @@ const AdminDashboard = () => {
         component="main"
         sx={{ flexGrow: 1, display: "flex", flexDirection: "column" }}
       >
-        <Container maxWidth="xl" sx={{ mt: 3, mb: 3, flexGrow: 1 }}>
+        <Container maxWidth={false} sx={{ p: 2 }}>
           {renderContent()}
         </Container>
       </Box>

@@ -108,7 +108,11 @@ const ManageInvite = () => {
         >
           Invite New User
         </Button>
-        <InviteCodeModal open={openModal} onClose={() => setOpenModal(false)} />
+        <InviteCodeModal
+          open={openModal}
+          onClose={() => setOpenModal(false)}
+          fetchInvites={fetchInvites}
+        />
       </Box>
 
       <TableContainer component={Paper} sx={{ maxHeight: "80vh" }}>

@@ -58,13 +58,17 @@ const ManageStores = () => {
       try {
         setLoading(true);
         const response = await storeService.getMyStore();
-        if (!response?.store)
-          return navigate("/user/manage-store/create-store");
-
+        if (!response?.store) {
+          await navigate("/user/manage-store/create-store");
+          return;
+        }
         setStore(response?.store || null);
         setProducts(response?.products || []);
       } catch (error) {
-        console.error("Error fetching stores:", error);
+        if (error.status === 404) {
+          await navigate("/user/manage-store/create-store");
+        }
+        console.log("Error fetching stores:", error);
       } finally {
         setLoading(false);
       }

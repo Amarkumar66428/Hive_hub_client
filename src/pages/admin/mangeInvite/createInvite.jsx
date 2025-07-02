@@ -15,7 +15,7 @@ import { createInviteCode } from "../../../services/adminService";
 import { useSnackbar } from "../../../features/snackBar";
 import { useNavigate } from "react-router-dom";
 
-const InviteCodeModal = ({ open, onClose }) => {
+const InviteCodeModal = ({ open, onClose, fetchInvites }) => {
   const { showSnackbar } = useSnackbar();
   const navigate = useNavigate();
 
@@ -53,6 +53,7 @@ const InviteCodeModal = ({ open, onClose }) => {
       if (response) {
         showSnackbar("Invite code generated successfully", "success");
         onClose();
+        fetchInvites();
         navigate("/admin/manage-invite");
       } else {
         showSnackbar(response?.message || "Unknown error occurred", "error");
