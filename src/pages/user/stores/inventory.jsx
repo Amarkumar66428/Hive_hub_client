@@ -28,16 +28,22 @@ import {
   useTheme,
   useMediaQuery,
   Switch,
+  Menu,
+  Popover,
+  CircularProgress,
 } from "@mui/material";
 import {
   KeyboardArrowDown,
   KeyboardArrowUp,
   Edit,
   Close,
+  TextFields,
+  Save,
 } from "@mui/icons-material";
 import { Image } from "antd";
 import storeService from "../../../services/storeService";
 import TableSkeleton from "../../../components/tableSkeleton";
+import { useSnackbar } from "../../../features/snackBar";
 
 const categoryItems = [
   { key: "sneakers", label: "Sneakers" },
@@ -92,25 +98,25 @@ const InventoryManagement = () => {
     setEditModalOpen(true);
   };
 
-  const handleModalClose = () => {
-    setEditModalOpen(false);
-    setSelectedProduct(null);
-    setFormValues({});
-  };
+  // const handleModalClose = () => {
+  //   setEditModalOpen(false);
+  //   setSelectedProduct(null);
+  //   setFormValues({});
+  // };
 
-  const handleFormSubmit = (e) => {
-    e.preventDefault();
-    console.log("Updated Product:", formValues);
-    handleModalClose();
-  };
+  // const handleFormSubmit = (e) => {
+  //   e.preventDefault();
+  //   console.log("Updated Product:", formValues);
+  //   handleModalClose();
+  // };
 
-  const handleFormChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormValues({
-      ...formValues,
-      [name]: type === "checkbox" ? checked : value,
-    });
-  };
+  // const handleFormChange = (e) => {
+  //   const { name, value, type, checked } = e.target;
+  //   setFormValues({
+  //     ...formValues,
+  //     [name]: type === "checkbox" ? checked : value,
+  //   });
+  // };
 
   const fetchStore = async () => {
     try {
@@ -198,7 +204,7 @@ const InventoryManagement = () => {
                   <TableCell>Product</TableCell>
                   {!isMobile && (
                     <>
-                      <TableCell>SKU</TableCell>
+                      <TableCell>ID</TableCell>
                       <TableCell>Product Name</TableCell>
                       <TableCell>Size</TableCell>
                       <TableCell>Price</TableCell>
@@ -233,6 +239,7 @@ const InventoryManagement = () => {
                       product={product}
                       handleRowToggle={handleRowToggle}
                       handleEditProduct={handleEditProduct}
+                      fetchStore={fetchStore}
                     />
                   ))
                 )}
@@ -240,207 +247,17 @@ const InventoryManagement = () => {
             </Table>
           </TableContainer>
         </Paper>
-
-        {/* Edit Product Modal */}
-        <Modal open={editModalOpen} onClose={handleModalClose}>
-          <Box
-            component="form"
-            onSubmit={handleFormSubmit}
-            sx={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-              width: { xs: "95%", md: 800 },
-              bgcolor: "background.paper",
-              boxShadow: 24,
-              borderRadius: 2,
-              p: 4,
-              maxHeight: "90vh",
-              overflowY: "auto",
-            }}
-          >
-            <Box
-              display="flex"
-              justifyContent="space-between"
-              alignItems="center"
-              mb={2}
-            >
-              <Typography variant="h6" fontWeight="bold">
-                Edit Product - {selectedProduct?.name}
-              </Typography>
-              <IconButton onClick={handleModalClose}>
-                <Close />
-              </IconButton>
-            </Box>
-
-            <Grid container spacing={2}>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  label="Product Name"
-                  fullWidth
-                  name="name"
-                  value={formValues.name || ""}
-                  onChange={handleFormChange}
-                  required
-                />
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  label="SKU"
-                  fullWidth
-                  name="id"
-                  value={formValues._id || ""}
-                  onChange={handleFormChange}
-                  required
-                />
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <FormControl fullWidth>
-                  <InputLabel>Brand</InputLabel>
-                  <Select
-                    name="brand"
-                    value={formValues.brand || ""}
-                    onChange={handleFormChange}
-                    label="Brand"
-                  >
-                    {["Zermoten", "Nike", "Adidas", "Puma"].map((brand) => (
-                      <MenuItem key={brand} value={brand}>
-                        {brand}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <FormControl fullWidth>
-                  <InputLabel>Category</InputLabel>
-                  <Select
-                    name="category"
-                    value={formValues.category || ""}
-                    onChange={handleFormChange}
-                    label="Category"
-                  >
-                    {["Sneakers", "Boots", "Sandals", "Formal Shoes"].map(
-                      (cat) => (
-                        <MenuItem key={cat} value={cat}>
-                          {cat}
-                        </MenuItem>
-                      )
-                    )}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12} md={4}>
-                <TextField
-                  label="Price ($)"
-                  type="number"
-                  fullWidth
-                  name="price"
-                  value={formValues.price || ""}
-                  onChange={handleFormChange}
-                />
-              </Grid>
-              <Grid item xs={12} md={4}>
-                <TextField
-                  label="Stock"
-                  type="number"
-                  fullWidth
-                  name="stock"
-                  value={formValues.stock || ""}
-                  onChange={handleFormChange}
-                />
-              </Grid>
-              <Grid item xs={12} md={4}>
-                <TextField
-                  label="Size"
-                  fullWidth
-                  name="size"
-                  value={formValues.size || "M"}
-                  onChange={handleFormChange}
-                />
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  label="Material"
-                  fullWidth
-                  name="material"
-                  value={formValues.material || ""}
-                  onChange={handleFormChange}
-                />
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  label="Weight"
-                  fullWidth
-                  name="weight"
-                  value={formValues.weight || ""}
-                  onChange={handleFormChange}
-                />
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  label="Color"
-                  fullWidth
-                  name="color"
-                  value={formValues.color || ""}
-                  onChange={handleFormChange}
-                />
-              </Grid>
-              <Grid item xs={6} md={3}>
-                <FormControl>
-                  <Typography variant="body2">In Stock</Typography>
-                  <Switch
-                    name="inStock"
-                    checked={!!formValues.inStock}
-                    onChange={(e) =>
-                      setFormValues({
-                        ...formValues,
-                        inStock: e.target.checked,
-                      })
-                    }
-                  />
-                </FormControl>
-              </Grid>
-              <Grid item xs={6} md={3}>
-                <FormControl>
-                  <Typography variant="body2">Featured</Typography>
-                  <Switch
-                    name="featured"
-                    checked={!!formValues.featured}
-                    onChange={(e) =>
-                      setFormValues({
-                        ...formValues,
-                        featured: e.target.checked,
-                      })
-                    }
-                  />
-                </FormControl>
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  label="Description"
-                  fullWidth
-                  name="description"
-                  value={formValues.description || ""}
-                  onChange={handleFormChange}
-                  multiline
-                  rows={4}
-                />
-              </Grid>
-            </Grid>
-
-            <Box mt={3} display="flex" justifyContent="flex-end" gap={2}>
-              <Button variant="outlined" onClick={handleModalClose}>
-                Cancel
-              </Button>
-              <Button variant="contained" type="submit">
-                Save Changes
-              </Button>
-            </Box>
-          </Box>
-        </Modal>
       </Container>
+      {/* <ProductDetails
+        product={selectedProduct}
+        editModalOpen={editModalOpen}
+        handleModalClose={handleModalClose}
+        handleFormSubmit={handleFormSubmit}
+        handleFormChange={handleFormChange}
+        formValues={formValues}
+        selectedProduct={selectedProduct}
+        setFormValues={setFormValues}
+      /> */}
     </>
   );
 };
@@ -452,10 +269,44 @@ const ProductRow = ({
   theme,
   expandedRows,
   handleRowToggle,
-  handleEditProduct,
   isMobile,
+  fetchStore,
 }) => {
+  const { showSnackbar } = useSnackbar();
+  const [loading, setLoading] = useState(false);
+  const [formValues, setFormValues] = useState({
+    stock: product.stock,
+    lowStockThreshold: product.lowStockThreshold,
+  });
+  const [anchorEl, setAnchorEl] = useState(null);
+
   const isExpanded = expandedRows.has(product._id);
+
+  const updateInventory = async () => {
+    try {
+      setLoading(true);
+      if (formValues.stock < 0) {
+        showSnackbar("Stock cannot be less than 0", "error");
+        return;
+      }
+      if (formValues.lowStockThreshold < 0) {
+        showSnackbar("Low stock threshold cannot be less than 0", "error");
+        return;
+      }
+      const response = await storeService.updateInventory(product._id, {
+        stock: formValues.stock,
+        lowStockThreshold: formValues.lowStockThreshold,
+      });
+      console.log("response: ", response);
+      showSnackbar("Inventory updated successfully", "success");
+      setAnchorEl(null);
+      fetchStore();
+    } catch (error) {
+      console.error("Error updating inventory:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <>
@@ -505,7 +356,11 @@ const ProductRow = ({
               </Typography>
             </TableCell>
             <TableCell>
-              <Chip label={product.size || "M"} size="small" variant="outlined" />
+              <Chip
+                label={product.size || "M"}
+                size="small"
+                variant="outlined"
+              />
             </TableCell>
             <TableCell>
               <Typography variant="body2" fontWeight="bold" color="primary">
@@ -567,11 +422,75 @@ const ProductRow = ({
                         <Button
                           variant="contained"
                           startIcon={<Edit />}
-                          onClick={() => handleEditProduct(product)}
+                          onClick={(e) => setAnchorEl(e.currentTarget)}
                           fullWidth
                         >
-                          Edit Product
+                          Edit Inventory
                         </Button>
+                        <Popover
+                          open={!!anchorEl}
+                          anchorEl={anchorEl}
+                          onClose={() => setAnchorEl(null)}
+                          anchorOrigin={{
+                            vertical: "bottom",
+                            horizontal: "center",
+                          }}
+                          transformOrigin={{
+                            vertical: "top",
+                            horizontal: "center",
+                          }}
+                          PaperProps={{
+                            sx: { p: 2, width: 300, borderRadius: 2 },
+                          }}
+                        >
+                          <Typography variant="subtitle1" mb={1}>
+                            Update Inventory
+                          </Typography>
+                          <Box display="flex" flexDirection="column" gap={2}>
+                            <TextField
+                              name="stock"
+                              label="Stock"
+                              size="small"
+                              fullWidth
+                              value={formValues.stock}
+                              onChange={(e) =>
+                                setFormValues({
+                                  ...formValues,
+                                  stock: e.target.value,
+                                })
+                              }
+                            />
+                            <TextField
+                              name="lowStockThreshold"
+                              label="Low Stock Threshold"
+                              size="small"
+                              fullWidth
+                              value={formValues.lowStockThreshold}
+                              onChange={(e) =>
+                                setFormValues({
+                                  ...formValues,
+                                  lowStockThreshold: e.target.value,
+                                })
+                              }
+                            />
+                            <Button
+                              variant="contained"
+                              color="primary"
+                              fullWidth
+                              disabled={loading}
+                              onClick={updateInventory}
+                              startIcon={
+                                loading ? (
+                                  <CircularProgress size={16} />
+                                ) : (
+                                  <Save />
+                                )
+                              }
+                            >
+                              {loading ? "Updating..." : "Update Inventory"}
+                            </Button>
+                          </Box>
+                        </Popover>
                       </Box>
                     </Grid>
 
@@ -582,7 +501,7 @@ const ProductRow = ({
                       <Stack spacing={2}>
                         <Box display="flex" justifyContent="space-between">
                           <Typography variant="body2" color="text.secondary">
-                            SKU:
+                            ID:
                           </Typography>
                           <Typography variant="body2" fontWeight="medium">
                             {product._id}
@@ -651,7 +570,7 @@ const ProductRow = ({
                             Stock:
                           </Typography>
                           <Typography variant="body2" fontWeight="medium">
-                            {product.stock || "--" } pairs
+                            {product.stock || "--"} pairs
                           </Typography>
                         </Box>
                         <Box display="flex" justifyContent="space-between">
@@ -708,3 +627,212 @@ const ProductRow = ({
     </>
   );
 };
+
+// const ProductDetails = ({
+//   editModalOpen,
+//   handleModalClose,
+//   handleFormSubmit,
+//   handleFormChange,
+//   formValues,
+//   selectedProduct,
+//   setFormValues,
+// }) => {
+//   return (
+//     <Modal open={editModalOpen} onClose={handleModalClose}>
+//       <Box
+//         component="form"
+//         onSubmit={handleFormSubmit}
+//         sx={{
+//           position: "absolute",
+//           top: "50%",
+//           left: "50%",
+//           transform: "translate(-50%, -50%)",
+//           width: { xs: "95%", md: 800 },
+//           bgcolor: "background.paper",
+//           boxShadow: 24,
+//           borderRadius: 2,
+//           p: 4,
+//           maxHeight: "90vh",
+//           overflowY: "auto",
+//         }}
+//       >
+//         <Box
+//           display="flex"
+//           justifyContent="space-between"
+//           alignItems="center"
+//           mb={2}
+//         >
+//           <Typography variant="h6" fontWeight="bold">
+//             Edit Product - {selectedProduct?.name}
+//           </Typography>
+//           <IconButton onClick={handleModalClose}>
+//             <Close />
+//           </IconButton>
+//         </Box>
+
+//         <Grid container spacing={2}>
+//           <Grid size={{ xs: 12, md: 6 }}>
+//             <TextField
+//               label="Product Name"
+//               fullWidth
+//               name="name"
+//               value={formValues.name || ""}
+//               onChange={handleFormChange}
+//               required
+//             />
+//           </Grid>
+//           <Grid size={{ xs: 12, md: 6 }}>
+//             <TextField
+//               label="SKU"
+//               fullWidth
+//               name="id"
+//               value={formValues._id || ""}
+//               onChange={handleFormChange}
+//               required
+//             />
+//           </Grid>
+//           <Grid size={{ xs: 12, md: 6 }}>
+//             <FormControl fullWidth>
+//               <InputLabel>Brand</InputLabel>
+//               <Select
+//                 name="brand"
+//                 value={formValues.brand || ""}
+//                 onChange={handleFormChange}
+//                 label="Brand"
+//               >
+//                 {["Zermoten", "Nike", "Adidas", "Puma"].map((brand) => (
+//                   <MenuItem key={brand} value={brand}>
+//                     {brand}
+//                   </MenuItem>
+//                 ))}
+//               </Select>
+//             </FormControl>
+//           </Grid>
+//           <Grid size={{ xs: 12, md: 6 }}>
+//             <FormControl fullWidth>
+//               <InputLabel>Category</InputLabel>
+//               <Select
+//                 name="category"
+//                 value={formValues.category || ""}
+//                 onChange={handleFormChange}
+//                 label="Category"
+//               >
+//                 {["Sneakers", "Boots", "Sandals", "Formal Shoes"].map((cat) => (
+//                   <MenuItem key={cat} value={cat}>
+//                     {cat}
+//                   </MenuItem>
+//                 ))}
+//               </Select>
+//             </FormControl>
+//           </Grid>
+//           <Grid size={{ xs: 12, md: 4 }}>
+//             <TextField
+//               label="Price ($)"
+//               type="number"
+//               fullWidth
+//               name="price"
+//               value={formValues.price || ""}
+//               onChange={handleFormChange}
+//             />
+//           </Grid>
+//           <Grid size={{ xs: 12, md: 4 }}>
+//             <TextField
+//               label="Stock"
+//               type="number"
+//               fullWidth
+//               name="stock"
+//               value={formValues.stock || ""}
+//               onChange={handleFormChange}
+//             />
+//           </Grid>
+//           <Grid size={{ xs: 12, md: 4 }}>
+//             <TextField
+//               label="Size"
+//               fullWidth
+//               name="size"
+//               value={formValues.size || "M"}
+//               onChange={handleFormChange}
+//             />
+//           </Grid>
+//           <Grid size={{ xs: 12, md: 6 }}>
+//             <TextField
+//               label="Material"
+//               fullWidth
+//               name="material"
+//               value={formValues.material || ""}
+//               onChange={handleFormChange}
+//             />
+//           </Grid>
+//           <Grid size={{ xs: 12, md: 6 }}>
+//             <TextField
+//               label="Weight"
+//               fullWidth
+//               name="weight"
+//               value={formValues.weight || ""}
+//               onChange={handleFormChange}
+//             />
+//           </Grid>
+//           <Grid size={{ xs: 12, md: 6 }}>
+//             <TextField
+//               label="Color"
+//               fullWidth
+//               name="color"
+//               value={formValues.color || ""}
+//               onChange={handleFormChange}
+//             />
+//           </Grid>
+//           <Grid size={{ xs: 6, md: 3 }}>
+//             <FormControl>
+//               <Typography variant="body2">In Stock</Typography>
+//               <Switch
+//                 name="inStock"
+//                 checked={!!formValues.inStock}
+//                 onChange={(e) =>
+//                   setFormValues({
+//                     ...formValues,
+//                     inStock: e.target.checked,
+//                   })
+//                 }
+//               />
+//             </FormControl>
+//           </Grid>
+//           <Grid size={{ xs: 6, md: 3 }}>
+//             <FormControl>
+//               <Typography variant="body2">Featured</Typography>
+//               <Switch
+//                 name="featured"
+//                 checked={!!formValues.featured}
+//                 onChange={(e) =>
+//                   setFormValues({
+//                     ...formValues,
+//                     featured: e.target.checked,
+//                   })
+//                 }
+//               />
+//             </FormControl>
+//           </Grid>
+//           <Grid size={{ xs: 12 }}>
+//             <TextField
+//               label="Description"
+//               fullWidth
+//               name="description"
+//               value={formValues.description || ""}
+//               onChange={handleFormChange}
+//               multiline
+//               rows={4}
+//             />
+//           </Grid>
+//         </Grid>
+
+//         <Box mt={3} display="flex" justifyContent="flex-end" gap={2}>
+//           <Button variant="outlined" onClick={handleModalClose}>
+//             Cancel
+//           </Button>
+//           <Button variant="contained" type="submit">
+//             Save Changes
+//           </Button>
+//         </Box>
+//       </Box>
+//     </Modal>
+//   );
+// };

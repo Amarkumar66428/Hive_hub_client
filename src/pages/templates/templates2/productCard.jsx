@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -10,35 +10,77 @@ import {
   Fade,
   useTheme,
   useMediaQuery,
+  IconButton,
 } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import shopersService from "../../../services/shopersService";
 import { setCart } from "../../../reducer/websiteSlice";
 import { useNavigate, useParams } from "react-router-dom";
+import debounce from "lodash.debounce";
+import { Add, Remove } from "@mui/icons-material";
 
 const ProductCard = ({ product }) => {
-  const { subdomain } = useParams();
-  const navigate = useNavigate();
-  const [isHovered, setIsHovered] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const dispatch = useDispatch();
   const cart = useSelector((state) => state.website.cart);
+  const { subdomain } = useParams();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const [isHovered, setIsHovered] = useState(false);
+  const [isAddItem, setIsAddItem] = useState(false);
+  const [cartQuantity, setCartQuantity] = useState(0);
 
-  const handleAddToCart = async () => {
-    try {
-      dispatch(setCart([...cart, product]));
-      const response = await shopersService.addProductToCart({
+  const handleAddToCart = async (quantity) => {
+    await shopersService
+      .addProductToCart({
         productId: product._id,
-        quantity: 1,
+        quantity: quantity,
+      })
+      .then((res) => {
+        console.log(res);
+        dispatch(setCart({ ...cart, [product._id]: quantity }));
       });
-      if (response) {
-        console.log("response: ", response);
-      }
-    } catch (error) {
-      console.log(error);
-    }
   };
+
+  const handleUpdateCart = async (quantity) => {
+    await shopersService
+      .updateProductToCart({
+        productId: product._id,
+        quantity: quantity,
+      })
+      .then((res) => {
+        console.log(res);
+        dispatch(setCart({ ...cart, [product._id]: quantity }));
+      });
+  };
+
+  const addItemToCart = async () => {
+    setIsAddItem(true);
+    setCartQuantity(1);
+  };
+
+  const updateCart = async (quantity) => {
+    setIsAddItem(false);
+    setCartQuantity(quantity);
+  };
+
+  useEffect(() => {
+    if (cartQuantity > 0) {
+      const debouncedCartHandler = debounce(() => {
+        if (isAddItem) {
+          handleAddToCart(cartQuantity || cart[product._id] || 0);
+        } else {
+          handleUpdateCart(cartQuantity || cart[product._id] || 0);
+        }
+      }, 400);
+
+      debouncedCartHandler();
+
+      return () => {
+        debouncedCartHandler.cancel();
+      };
+    }
+  }, [cartQuantity, isAddItem]);
 
   return (
     <Card
@@ -54,10 +96,12 @@ const ProductCard = ({ product }) => {
           transform: "translateY(-2px)",
         },
       }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
     >
-      <Box sx={{ position: "relative" }}>
+      <Box
+        sx={{ position: "relative" }}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
         <CardMedia
           component="div"
           sx={{
@@ -72,7 +116,6 @@ const ProductCard = ({ product }) => {
           }}
         />
 
-        {/* Hover Overlay with Buttons */}
         <Fade in={isHovered}>
           <Box
             sx={{
@@ -81,9 +124,9 @@ const ProductCard = ({ product }) => {
               left: "0",
               width: "100%",
               height: "100%",
-              backgroundColor: "rgba(255, 255, 255, 0.1)", // subtle white transparency
-              backdropFilter: "blur(10px)", // glass blur
-              WebkitBackdropFilter: "blur(10px)", // Safari support
+              backgroundColor: "rgba(255, 255, 255, 0.1)",
+              backdropFilter: "blur(10px)",
+              WebkitBackdropFilter: "blur(10px)",
               borderRadius: "12px",
               border: "1px solid rgba(255, 255, 255, 0.2)",
               display: "flex",
@@ -94,25 +137,106 @@ const ProductCard = ({ product }) => {
               zIndex: 2,
             }}
           >
-            <Button
-              variant="contained"
-              onClick={handleAddToCart}
+            <Box
               sx={{
                 backgroundColor: "#000",
                 color: "#fff",
-                borderRadius: "8px",
-                padding: "12px 24px",
+                borderRadius: "12px",
+                p: isMobile ? "8px 16px" : "12px 24px",
                 fontSize: isMobile ? "12px" : "14px",
                 fontWeight: 600,
                 textTransform: "none",
-                width: "80%",
+                width: "100%",
+                maxWidth: 320,
+                transition: "background-color 0.3s",
                 "&:hover": {
-                  backgroundColor: "#333",
+                  backgroundColor: "#222",
                 },
               }}
             >
-              Add to Cart
-            </Button>
+              {cartQuantity > 0 || cart[product._id] > 0 ? (
+                <>
+                  <Typography
+                    sx={{
+                      fontSize: "12px",
+                      color: "#bbb",
+                      mb: 1,
+                      textAlign: "center",
+                    }}
+                  >
+                    In Cart
+                  </Typography>
+
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 2,
+                    }}
+                  >
+                    <IconButton
+                      onClick={() => updateCart(cartQuantity - 1)}
+                      sx={{
+                        color: "#fff",
+                        backgroundColor: "#444",
+                        "&:hover": {
+                          backgroundColor: "#666",
+                        },
+                        borderRadius: 1,
+                        p: "4px",
+                      }}
+                    >
+                      <Remove fontSize="small" />
+                    </IconButton>
+
+                    <Typography
+                      sx={{
+                        minWidth: 24,
+                        textAlign: "center",
+                        fontWeight: "bold",
+                        fontSize: isMobile ? "14px" : "16px",
+                      }}
+                    >
+                      {cartQuantity || cart[product._id] || 0}
+                    </Typography>
+
+                    <IconButton
+                      onClick={() => updateCart(cartQuantity + 1)}
+                      sx={{
+                        color: "#fff",
+                        backgroundColor: "#444",
+                        "&:hover": {
+                          backgroundColor: "#666",
+                        },
+                        borderRadius: 1,
+                        p: "4px",
+                      }}
+                    >
+                      <Add fontSize="small" />
+                    </IconButton>
+                  </Box>
+                </>
+              ) : (
+                <Button
+                  variant="contained"
+                  onClick={addItemToCart}
+                  sx={{
+                    width: "100%",
+                    backgroundColor: "#222",
+                    color: "#fff",
+                    fontWeight: 600,
+                    textTransform: "none",
+                    "&:hover": {
+                      backgroundColor: "#444",
+                    },
+                  }}
+                >
+                  Add to Cart
+                </Button>
+              )}
+            </Box>
+
             <Button
               variant="outlined"
               onClick={() => navigate(`/hive/${subdomain}/checkout`)}

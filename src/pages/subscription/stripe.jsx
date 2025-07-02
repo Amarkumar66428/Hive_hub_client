@@ -12,6 +12,9 @@ import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useSnackbar } from "../../features/snackBar";
 import userService from "../../services/userService";
+import { setUserData } from "../../reducer/authSlice";
+import { useDispatch } from "react-redux";
+import useAuth from "../../hooks/useAuth";
 
 const CARD_ELEMENT_OPTIONS = {
   style: {
@@ -42,8 +45,9 @@ const StripePaymentForm = ({
   const stripe = useStripe();
   const elements = useElements();
   const navigate = useNavigate();
+  const user = useAuth();
   const { showSnackbar } = useSnackbar();
-
+  const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
   const [paymentSucceeded, setPaymentSucceeded] = useState(false);
@@ -108,9 +112,14 @@ const StripePaymentForm = ({
     } else if (response) {
       setPaymentSucceeded(true);
       setLoading(false);
-      localStorage.setItem("isSubscribed", true);
       navigate("/user/dashboard");
       showSnackbar("Payment successful", "success");
+      dispatch(
+        setUserData({
+          user: user,
+          subscription: response.subscription,
+        })
+      );
       if (onPaymentSuccess) onPaymentSuccess(response);
     }
   };

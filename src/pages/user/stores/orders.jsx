@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Paper,
@@ -22,6 +22,7 @@ import {
   Avatar,
   Checkbox,
   Container,
+  Tooltip,
 } from "@mui/material";
 import {
   FileDownload as ExportIcon,
@@ -35,6 +36,9 @@ import {
   FilterList as FilterIcon,
   Sort as SortIcon,
 } from "@mui/icons-material";
+import storeService from "../../../services/storeService";
+import { formatDate } from "../../../utils/helper";
+import TableSkeleton from "../../../components/tableSkeleton";
 
 const metrics = [
   {
@@ -63,104 +67,17 @@ const metrics = [
   },
 ];
 
-const orders = [
-  {
-    id: "#1002",
-    date: "18 Feb, 2024",
-    customer: "Wade Warren",
-    payment: "Pending",
-    total: "$20.00",
-    delivery: "N/A",
-    items: "2 items",
-    fulfillment: "Unfulfilled",
-  },
-  {
-    id: "#1004",
-    date: "19 Feb, 2024",
-    customer: "Esther Howard",
-    payment: "Success",
-    total: "$22.00",
-    delivery: "N/A",
-    items: "3 items",
-    fulfillment: "Fulfilled",
-  },
-  {
-    id: "#1007",
-    date: "15 Feb, 2024",
-    customer: "Jenny Wilson",
-    payment: "Pending",
-    total: "$25.00",
-    delivery: "N/A",
-    items: "1 items",
-    fulfillment: "Unfulfilled",
-  },
-  {
-    id: "#1009",
-    date: "17 Feb, 2024",
-    customer: "Guy Hawkins",
-    payment: "Success",
-    total: "$27.00",
-    delivery: "N/A",
-    items: "5 items",
-    fulfillment: "Fulfilled",
-  },
-  {
-    id: "#1011",
-    date: "19 Feb, 2024",
-    customer: "Jacob Jones",
-    payment: "Pending",
-    total: "$32.00",
-    delivery: "N/A",
-    items: "4 items",
-    fulfillment: "Unfulfilled",
-  },
-  {
-    id: "#1013",
-    date: "21 Feb, 2024",
-    customer: "Kristin Watson",
-    payment: "Success",
-    total: "$25.00",
-    delivery: "N/A",
-    items: "3 items",
-    fulfillment: "Fulfilled",
-  },
-  {
-    id: "#1015",
-    date: "23 Feb, 2024",
-    customer: "Albert Flores",
-    payment: "Pending",
-    total: "$28.00",
-    delivery: "N/A",
-    items: "2 items",
-    fulfillment: "Unfulfilled",
-  },
-  {
-    id: "#1018",
-    date: "25 Feb, 2024",
-    customer: "Eleanor Pena",
-    payment: "Success",
-    total: "$35.00",
-    delivery: "N/A",
-    items: "1 items",
-    fulfillment: "Fulfilled",
-  },
-  {
-    id: "#1019",
-    date: "27 Feb, 2024",
-    customer: "Theresa Webb",
-    payment: "Pending",
-    total: "$20.00",
-    delivery: "N/A",
-    items: "2 items",
-    fulfillment: "Unfulfilled",
-  },
-];
-
 const tabs = ["All", "Unfulfilled", "Unpaid", "Open", "Closed"];
 
 const Orders = () => {
+  const [loading, setLoading] = useState(false);
+  const [orders, setOrders] = useState([]);
   const [moreActionsAnchor, setMoreActionsAnchor] = useState(null);
   const [selectedTab, setSelectedTab] = useState(0);
+  const [totalOrders, setTotalOrders] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [limit, setLimit] = useState(10);
 
   const getStatusColor = (status, type) => {
     if (type === "payment") {
@@ -178,6 +95,26 @@ const Orders = () => {
       .map((n) => n[0])
       .join("");
   };
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        setLoading(true);
+        const params = new URLSearchParams();
+        params.append("page", currentPage);
+        params.append("limit", limit);
+        const res = await storeService.getAllOrders(params);
+        setOrders(res.orders || []);
+        setTotalOrders(res.totalOrders);
+        setTotalPages(res.totalPages);
+      } catch (error) {
+        console.log("error: ", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchOrders();
+  }, [currentPage, limit]);
 
   return (
     <>
@@ -340,79 +277,88 @@ const Orders = () => {
                   <TableCell>Total</TableCell>
                   <TableCell>Delivery</TableCell>
                   <TableCell>Items</TableCell>
-                  <TableCell>Fulfillment</TableCell>
                   <TableCell>Action</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {orders.map((order, index) => (
-                  <TableRow key={index} hover>
-                    <TableCell padding="checkbox">
-                      <Checkbox size="small" />
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2" fontWeight="500">
-                        {order.id}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2">{order.date}</Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Box
-                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                      >
-                        <Avatar
-                          sx={{ width: 32, height: 32, fontSize: "0.875rem" }}
-                        >
-                          {getCustomerAvatar(order.customer)}
-                        </Avatar>
+                {loading ? (
+                  <TableSkeleton rows={4} columns={9} showActions={true} />
+                ) : (
+                  orders.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={9} align="center">
+                        <Typography variant="body2">No orders found</Typography>
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                  orders.map((order, index) => (
+                    <TableRow key={index} hover>
+                      <TableCell padding="checkbox">
+                        <Checkbox size="small" />
+                      </TableCell>
+                      <TableCell>
+                        <Tooltip title={order._id} placement="top">
+                          <Typography variant="body2" fontWeight="500">
+                            #{`${order._id.slice(-6)}...`}
+                          </Typography>
+                        </Tooltip>
+                      </TableCell>
+                      <TableCell>
                         <Typography variant="body2">
-                          {order.customer}
+                          {formatDate(order.createdAt)}
                         </Typography>
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      <Chip
-                        label={order.payment}
-                        color={getStatusColor(order.payment, "payment")}
-                        size="small"
-                        variant="outlined"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2" fontWeight="500">
-                        {order.total}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2" color="text.secondary">
-                        {order.delivery}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2">{order.items}</Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Chip
-                        label={order.fulfillment}
-                        color={getStatusColor(order.fulfillment, "fulfillment")}
-                        size="small"
-                        variant="outlined"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Box sx={{ display: "flex", gap: 1 }}>
-                        <IconButton size="small">
-                          <EmailIcon fontSize="small" />
-                        </IconButton>
-                        <IconButton size="small">
-                          <PrintIcon fontSize="small" />
-                        </IconButton>
-                      </Box>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                      </TableCell>
+                      <TableCell>
+                        <Box
+                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                        >
+                          <Avatar
+                            sx={{ width: 32, height: 32, fontSize: "0.875rem" }}
+                          >
+                            {getCustomerAvatar(order.userId.name)}
+                          </Avatar>
+                          <Typography variant="body2">
+                            {order.userId.name}
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          label={order.paymentStatus}
+                          color={getStatusColor(order.paymentStatus, "payment")}
+                          size="small"
+                          variant="outlined"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" fontWeight="500">
+                          {order.totalAmount}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" color="text.secondary">
+                          {order.deliveryStatus}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2">
+                          {order.items.length}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Box sx={{ display: "flex", gap: 1 }}>
+                          <IconButton size="small">
+                            <EmailIcon fontSize="small" />
+                          </IconButton>
+                          <IconButton size="small">
+                            <PrintIcon fontSize="small" />
+                          </IconButton>
+                        </Box>
+                      </TableCell>
+                        </TableRow>
+                      ))
+                    )
+                )}
               </TableBody>
             </Table>
           </TableContainer>

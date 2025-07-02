@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Box,
   Container,
@@ -25,8 +25,9 @@ import {
   Chip,
   Alert,
   Card,
-  CardContent
-} from '@mui/material';
+  CardContent,
+  CircularProgress,
+} from "@mui/material";
 import {
   ArrowBack,
   ShoppingCart,
@@ -35,169 +36,186 @@ import {
   CheckCircle,
   CreditCard,
   AccountBalanceWallet,
-  Security
-} from '@mui/icons-material';
+  Security,
+} from "@mui/icons-material";
+import shopersService from "../../services/shopersService";
+import { useParams, useNavigate } from "react-router-dom";
 
 const CheckoutPage = () => {
+  const { subdomain } = useParams();
+  const navigate = useNavigate();
+  const [isCheckout, setIsCheckout] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     // Shipping Information
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    address: '',
-    apartment: '',
-    city: '',
-    state: '',
-    zipCode: '',
-    country: 'United States',
-    
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    address: "",
+    apartment: "",
+    city: "",
+    state: "",
+    zipCode: "",
+    country: "United States",
+
     // Billing Information
-    billingFirstName: '',
-    billingLastName: '',
-    billingAddress: '',
-    billingApartment: '',
-    billingCity: '',
-    billingState: '',
-    billingZipCode: '',
-    billingCountry: 'United States',
+    billingFirstName: "",
+    billingLastName: "",
+    billingAddress: "",
+    billingApartment: "",
+    billingCity: "",
+    billingState: "",
+    billingZipCode: "",
+    billingCountry: "United States",
     sameAsShipping: true,
-    
+
     // Payment
-    paymentMethod: 'card',
-    cardNumber: '',
-    expiryDate: '',
-    cvv: '',
-    cardholderName: '',
-    
+    paymentMethod: "card",
+    cardNumber: "",
+    expiryDate: "",
+    cvv: "",
+    cardholderName: "",
+
     // Additional
     saveAddress: false,
-    newsletter: false
+    newsletter: false,
   });
 
   const [errors, setErrors] = useState({});
 
-  const steps = ['Shipping', 'Payment', 'Review'];
+  const steps = ["Shipping", "Payment", "Review"];
 
-  const orderItems = [
-    {
-      id: 1,
-      name: "T-SHIRT WITH TAPE DETAILS",
-      brand: "AMK COLLECTION",
-      size: "M",
-      color: "Black",
-      quantity: 2,
-      price: 120,
-      image: "https://via.placeholder.com/64x64/333333/ffffff?text=T"
-    },
-    {
-      id: 2,
-      name: "SKINNY FIT JEANS",
-      brand: "AMK DENIM",
-      size: "32",
-      color: "Blue",
-      quantity: 1,
-      price: 240,
-      image: "https://via.placeholder.com/64x64/4a6fa5/ffffff?text=J"
-    },
-    {
-      id: 3,
-      name: "CHECKERED SHIRT",
-      brand: "AMK CASUAL",
-      size: "L",
-      color: "Red/Blue",
-      quantity: 1,
-      price: 120,
-      image: "https://via.placeholder.com/64x64/c0392b/ffffff?text=S"
-    }
-  ];
+  // const orderItems = [];
 
-  const subtotal = orderItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const shipping = 0; // Free shipping
-  const tax = subtotal * 0.08; // 8% tax
-  const total = subtotal + shipping + tax;
+  // const subtotal = orderItems.reduce(
+  //   (sum, item) => sum + item.price * item.quantity,
+  //   0
+  // );
+  // const shipping = 0; // Free shipping
+  // const tax = subtotal * 0.08; // 8% tax
+  // const total = subtotal + shipping + tax;
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
-    
+
     // Clear error when user starts typing
     if (errors[field]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [field]: ''
+        [field]: "",
       }));
     }
   };
 
   const validateStep = (step) => {
     const newErrors = {};
-    
-    if (step === 0) { // Shipping
-      if (!formData.firstName) newErrors.firstName = 'First name is required';
-      if (!formData.lastName) newErrors.lastName = 'Last name is required';
-      if (!formData.email) newErrors.email = 'Email is required';
-      if (!formData.phone) newErrors.phone = 'Phone number is required';
-      if (!formData.address) newErrors.address = 'Address is required';
-      if (!formData.city) newErrors.city = 'City is required';
-      if (!formData.state) newErrors.state = 'State is required';
-      if (!formData.zipCode) newErrors.zipCode = 'ZIP code is required';
+
+    if (step === 0) {
+      // Shipping
+      if (!formData.firstName) newErrors.firstName = "First name is required";
+      if (!formData.lastName) newErrors.lastName = "Last name is required";
+      if (!formData.email) newErrors.email = "Email is required";
+      if (!formData.phone) newErrors.phone = "Phone number is required";
+      if (!formData.address) newErrors.address = "Address is required";
+      if (!formData.city) newErrors.city = "City is required";
+      if (!formData.state) newErrors.state = "State is required";
+      if (!formData.zipCode) newErrors.zipCode = "ZIP code is required";
     }
-    
-    if (step === 1) { // Payment
-      if (formData.paymentMethod === 'card') {
-        if (!formData.cardNumber) newErrors.cardNumber = 'Card number is required';
-        if (!formData.expiryDate) newErrors.expiryDate = 'Expiry date is required';
-        if (!formData.cvv) newErrors.cvv = 'CVV is required';
-        if (!formData.cardholderName) newErrors.cardholderName = 'Cardholder name is required';
+
+    if (step === 1) {
+      // Payment
+      if (formData.paymentMethod === "card") {
+        if (!formData.cardNumber)
+          newErrors.cardNumber = "Card number is required";
+        if (!formData.expiryDate)
+          newErrors.expiryDate = "Expiry date is required";
+        if (!formData.cvv) newErrors.cvv = "CVV is required";
+        if (!formData.cardholderName)
+          newErrors.cardholderName = "Cardholder name is required";
       }
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleNext = () => {
     if (validateStep(activeStep)) {
-      setActiveStep(prev => prev + 1);
+      setActiveStep((prev) => prev + 1);
     }
   };
 
   const handleBack = () => {
-    setActiveStep(prev => prev - 1);
+    setActiveStep((prev) => prev - 1);
   };
 
-  const handlePlaceOrder = () => {
-    alert('Order placed successfully!');
+  const handlePlaceOrder = async () => {
+    setLoading(true);
+    const payload = {
+      shippingAddress: formData.address,
+    };
+    await shopersService
+      .checkout(payload)
+      .then((res) => {
+        console.log(res);
+        setIsCheckout(true);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
+
+  if (isCheckout) {
+    return (
+      <Box sx={{ backgroundColor: "#f5f5f5", minHeight: "100vh", py: 3 }}>
+        <Container maxWidth="lg">
+          <Typography variant="h4" gutterBottom>
+            Order Placed Successfully
+          </Typography>
+          <Alert severity="success">
+            Your order has been placed successfully!
+          </Alert>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => navigate(`/hive/${subdomain}`)}
+          >
+            Continue Shopping
+          </Button>
+        </Container>
+      </Box>
+    );
+  }
 
   const renderShippingForm = () => (
     <Paper sx={{ p: 3, mb: 3 }}>
       <Typography variant="h6" gutterBottom>
         Shipping Information
       </Typography>
-      
+
       <Grid container spacing={2}>
-        <Grid item xs={12} sm={6}>
+        <Grid size={{ xs: 12, sm: 6 }}>
           <TextField
             fullWidth
             label="First Name"
             value={formData.firstName}
-            onChange={(e) => handleInputChange('firstName', e.target.value)}
+            onChange={(e) => handleInputChange("firstName", e.target.value)}
             error={!!errors.firstName}
             helperText={errors.firstName}
             required
           />
         </Grid>
-        <Grid item xs={12} sm={6}>
+        <Grid size={{ xs: 12, sm: 6 }}>
           <TextField
             fullWidth
             label="Last Name"
             value={formData.lastName}
-            onChange={(e) => handleInputChange('lastName', e.target.value)}
+            onChange={(e) => handleInputChange("lastName", e.target.value)}
             error={!!errors.lastName}
             helperText={errors.lastName}
             required
@@ -209,81 +227,81 @@ const CheckoutPage = () => {
             label="Email"
             type="email"
             value={formData.email}
-            onChange={(e) => handleInputChange('email', e.target.value)}
+            onChange={(e) => handleInputChange("email", e.target.value)}
             error={!!errors.email}
             helperText={errors.email}
             required
           />
         </Grid>
-        <Grid item xs={12} sm={6}>
+        <Grid size={{ xs: 12, sm: 6 }}>
           <TextField
             fullWidth
             label="Phone Number"
             value={formData.phone}
-            onChange={(e) => handleInputChange('phone', e.target.value)}
+            onChange={(e) => handleInputChange("phone", e.target.value)}
             error={!!errors.phone}
             helperText={errors.phone}
             required
           />
         </Grid>
-        <Grid item xs={12}>
+        <Grid size={{ xs: 12 }}>
           <TextField
             fullWidth
             label="Address"
             value={formData.address}
-            onChange={(e) => handleInputChange('address', e.target.value)}
+            onChange={(e) => handleInputChange("address", e.target.value)}
             error={!!errors.address}
             helperText={errors.address}
             required
           />
         </Grid>
-        <Grid item xs={12} sm={6}>
+        <Grid size={{ xs: 12, sm: 6 }}>
           <TextField
             fullWidth
             label="Apartment, suite, etc. (optional)"
             value={formData.apartment}
-            onChange={(e) => handleInputChange('apartment', e.target.value)}
+            onChange={(e) => handleInputChange("apartment", e.target.value)}
           />
         </Grid>
-        <Grid item xs={12} sm={6}>
+        <Grid size={{ xs: 12, sm: 6 }}>
           <TextField
             fullWidth
             label="City"
             value={formData.city}
-            onChange={(e) => handleInputChange('city', e.target.value)}
+            onChange={(e) => handleInputChange("city", e.target.value)}
             error={!!errors.city}
             helperText={errors.city}
             required
           />
         </Grid>
-        <Grid item xs={12} sm={4}>
+        <Grid size={{ xs: 12, sm: 4 }}>
           <TextField
             fullWidth
             label="State"
             value={formData.state}
-            onChange={(e) => handleInputChange('state', e.target.value)}
+            onChange={(e) => handleInputChange("state", e.target.value)}
             error={!!errors.state}
             helperText={errors.state}
             required
           />
         </Grid>
-        <Grid item xs={12} sm={4}>
+        <Grid size={{ xs: 12, sm: 4 }}>
           <TextField
             fullWidth
             label="ZIP Code"
             value={formData.zipCode}
-            onChange={(e) => handleInputChange('zipCode', e.target.value)}
+            onChange={(e) => handleInputChange("zipCode", e.target.value)}
             error={!!errors.zipCode}
             helperText={errors.zipCode}
             required
           />
         </Grid>
-        <Grid item xs={12} sm={4}>
+        <Grid size={{ xs: 12, sm: 4 }}>
           <TextField
             fullWidth
             label="Country"
             value={formData.country}
-            onChange={(e) => handleInputChange('country', e.target.value)}
+            onChange={(e) => handleInputChange("country", e.target.value)}
             required
           />
         </Grid>
@@ -294,7 +312,9 @@ const CheckoutPage = () => {
           control={
             <Checkbox
               checked={formData.saveAddress}
-              onChange={(e) => handleInputChange('saveAddress', e.target.checked)}
+              onChange={(e) =>
+                handleInputChange("saveAddress", e.target.checked)
+              }
             />
           }
           label="Save this address for future orders"
@@ -308,17 +328,17 @@ const CheckoutPage = () => {
       <Typography variant="h6" gutterBottom>
         Payment Method
       </Typography>
-      
+
       <FormControl component="fieldset" sx={{ mb: 3 }}>
         <RadioGroup
           value={formData.paymentMethod}
-          onChange={(e) => handleInputChange('paymentMethod', e.target.value)}
+          onChange={(e) => handleInputChange("paymentMethod", e.target.value)}
         >
           <FormControlLabel
             value="card"
             control={<Radio />}
             label={
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                 <CreditCard />
                 Credit/Debit Card
               </Box>
@@ -328,7 +348,7 @@ const CheckoutPage = () => {
             value="paypal"
             control={<Radio />}
             label={
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                 <AccountBalanceWallet />
                 PayPal
               </Box>
@@ -337,50 +357,52 @@ const CheckoutPage = () => {
         </RadioGroup>
       </FormControl>
 
-      {formData.paymentMethod === 'card' && (
+      {formData.paymentMethod === "card" && (
         <Grid container spacing={2}>
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <TextField
               fullWidth
               label="Card Number"
               placeholder="1234 5678 9012 3456"
               value={formData.cardNumber}
-              onChange={(e) => handleInputChange('cardNumber', e.target.value)}
+              onChange={(e) => handleInputChange("cardNumber", e.target.value)}
               error={!!errors.cardNumber}
               helperText={errors.cardNumber}
               required
             />
           </Grid>
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField
               fullWidth
               label="Expiry Date"
               placeholder="MM/YY"
               value={formData.expiryDate}
-              onChange={(e) => handleInputChange('expiryDate', e.target.value)}
+              onChange={(e) => handleInputChange("expiryDate", e.target.value)}
               error={!!errors.expiryDate}
               helperText={errors.expiryDate}
               required
             />
           </Grid>
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField
               fullWidth
               label="CVV"
               placeholder="123"
               value={formData.cvv}
-              onChange={(e) => handleInputChange('cvv', e.target.value)}
+              onChange={(e) => handleInputChange("cvv", e.target.value)}
               error={!!errors.cvv}
               helperText={errors.cvv}
               required
             />
           </Grid>
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <TextField
               fullWidth
               label="Cardholder Name"
               value={formData.cardholderName}
-              onChange={(e) => handleInputChange('cardholderName', e.target.value)}
+              onChange={(e) =>
+                handleInputChange("cardholderName", e.target.value)
+              }
               error={!!errors.cardholderName}
               helperText={errors.cardholderName}
               required
@@ -389,7 +411,7 @@ const CheckoutPage = () => {
         </Grid>
       )}
 
-      {formData.paymentMethod === 'paypal' && (
+      {formData.paymentMethod === "paypal" && (
         <Alert severity="info" sx={{ mt: 2 }}>
           You will be redirected to PayPal to complete your payment.
         </Alert>
@@ -400,7 +422,9 @@ const CheckoutPage = () => {
           control={
             <Checkbox
               checked={!formData.sameAsShipping}
-              onChange={(e) => handleInputChange('sameAsShipping', !e.target.checked)}
+              onChange={(e) =>
+                handleInputChange("sameAsShipping", !e.target.checked)
+              }
             />
           }
           label="Use different billing address"
@@ -414,16 +438,19 @@ const CheckoutPage = () => {
       <Typography variant="h6" gutterBottom>
         Review Your Order
       </Typography>
-      
+
       <Box sx={{ mb: 3 }}>
         <Typography variant="subtitle1" gutterBottom>
           Shipping Address
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          {formData.firstName} {formData.lastName}<br />
-          {formData.address}<br />
+          {formData.firstName} {formData.lastName}
+          <br />
+          {formData.address}
+          <br />
           {formData.apartment && `${formData.apartment}, `}
-          {formData.city}, {formData.state} {formData.zipCode}<br />
+          {formData.city}, {formData.state} {formData.zipCode}
+          <br />
           {formData.country}
         </Typography>
       </Box>
@@ -433,8 +460,8 @@ const CheckoutPage = () => {
           Payment Method
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          {formData.paymentMethod === 'card' ? 'Credit/Debit Card' : 'PayPal'}
-          {formData.paymentMethod === 'card' && formData.cardNumber && (
+          {formData.paymentMethod === "card" ? "Credit/Debit Card" : "PayPal"}
+          {formData.paymentMethod === "card" && formData.cardNumber && (
             <span> ending in {formData.cardNumber.slice(-4)}</span>
           )}
         </Typography>
@@ -447,25 +474,8 @@ const CheckoutPage = () => {
   );
 
   return (
-    <Box sx={{ backgroundColor: '#f5f5f5', minHeight: '100vh', py: 3 }}>
+    <Box sx={{ backgroundColor: "#f5f5f5", minHeight: "100vh", py: 3 }}>
       <Container maxWidth="lg">
-        {/* Header */}
-        <Box sx={{ mb: 4 }}>
-          <Button
-            startIcon={<ArrowBack />}
-            sx={{ mb: 2, color: '#6b1b78' }}
-          >
-            Back to Cart
-          </Button>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-            <ShoppingCart sx={{ color: '#6b1b78', fontSize: 32 }} />
-            <Typography variant="h4" fontWeight={700} color="#6b1b78">
-              Checkout
-            </Typography>
-          </Box>
-        </Box>
-
-        {/* Stepper */}
         <Paper sx={{ p: 3, mb: 3 }}>
           <Stepper activeStep={activeStep}>
             {steps.map((label) => (
@@ -478,35 +488,37 @@ const CheckoutPage = () => {
 
         <Grid container spacing={3}>
           {/* Main Content */}
-          <Grid item xs={12} md={8}>
+          <Grid size={{ xs: 12 }}>
             {activeStep === 0 && renderShippingForm()}
             {activeStep === 1 && renderPaymentForm()}
             {activeStep === 2 && renderReviewOrder()}
 
             {/* Navigation Buttons */}
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
+            <Box
+              sx={{ display: "flex", justifyContent: "space-between", mt: 3 }}
+            >
               <Button
                 onClick={handleBack}
                 disabled={activeStep === 0}
                 variant="outlined"
-                sx={{ borderColor: '#6b1b78', color: '#6b1b78' }}
+                sx={{ borderColor: "#6b1b78", color: "#6b1b78" }}
               >
                 Back
               </Button>
-              
+
               {activeStep === steps.length - 1 ? (
                 <Button
                   onClick={handlePlaceOrder}
                   variant="contained"
                   size="large"
                   sx={{
-                    backgroundColor: '#6b1b78',
+                    backgroundColor: "#6b1b78",
                     px: 4,
                     py: 1.5,
-                    '&:hover': { backgroundColor: '#5a1666' }
+                    "&:hover": { backgroundColor: "#5a1666" },
                   }}
                 >
-                  Place Order
+                  {loading ? <CircularProgress size={20} /> : "Place Order"}
                 </Button>
               ) : (
                 <Button
@@ -514,10 +526,10 @@ const CheckoutPage = () => {
                   variant="contained"
                   size="large"
                   sx={{
-                    backgroundColor: '#6b1b78',
+                    backgroundColor: "#6b1b78",
                     px: 4,
                     py: 1.5,
-                    '&:hover': { backgroundColor: '#5a1666' }
+                    "&:hover": { backgroundColor: "#5a1666" },
                   }}
                 >
                   Next
@@ -527,12 +539,12 @@ const CheckoutPage = () => {
           </Grid>
 
           {/* Order Summary */}
-          <Grid item xs={12} md={4}>
-            <Paper sx={{ p: 3, position: 'sticky', top: 24 }}>
+          {/* <Grid size={{ xs: 12, md: 4 }}>
+            <Paper sx={{ p: 3, position: "sticky", top: 24 }}>
               <Typography variant="h6" gutterBottom>
                 Order Summary
               </Typography>
-              
+
               <List>
                 {orderItems.map((item) => (
                   <ListItem key={item.id} sx={{ px: 0, py: 1 }}>
@@ -550,7 +562,7 @@ const CheckoutPage = () => {
                           <Typography variant="body2" color="text.secondary">
                             {item.brand}
                           </Typography>
-                          <Box sx={{ display: 'flex', gap: 1, mt: 0.5 }}>
+                          <Box sx={{ display: "flex", gap: 1, mt: 0.5 }}>
                             <Chip label={`Size: ${item.size}`} size="small" />
                             <Chip label={`Color: ${item.color}`} size="small" />
                           </Box>
@@ -570,20 +582,38 @@ const CheckoutPage = () => {
               <Divider sx={{ my: 2 }} />
 
               <Box sx={{ space: 1 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    mb: 1,
+                  }}
+                >
                   <Typography>Subtotal:</Typography>
                   <Typography>${subtotal}</Typography>
                 </Box>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    mb: 1,
+                  }}
+                >
                   <Typography>Shipping:</Typography>
                   <Typography color="success.main">FREE</Typography>
                 </Box>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    mb: 1,
+                  }}
+                >
                   <Typography>Tax:</Typography>
                   <Typography>${tax.toFixed(2)}</Typography>
                 </Box>
                 <Divider sx={{ my: 1 }} />
-                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                   <Typography variant="h6" fontWeight={700}>
                     Total:
                   </Typography>
@@ -599,7 +629,7 @@ const CheckoutPage = () => {
                 </Alert>
               </Box>
             </Paper>
-          </Grid>
+          </Grid> */}
         </Grid>
       </Container>
     </Box>

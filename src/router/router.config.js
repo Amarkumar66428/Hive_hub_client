@@ -1,5 +1,6 @@
 import {
   AccountBoxOutlined,
+  CampaignOutlined,
   Dashboard,
   DataObject,
   DesignServicesRounded,
@@ -128,6 +129,15 @@ export const appRouters = [
     showInMenu: true,
   },
   {
+    path: "/user/campaigns",
+    role: [STORE_OWNER],
+    title: "Campaigns",
+    icon: React.createElement(CampaignOutlined),
+    component: asyncComponent(() => import("../pages/user/campaigns/index.jsx")),
+    isLayout: true,
+    showInMenu: true,
+  },
+  {
     role: [STORE_OWNER],
     title: "Manage Store",
     icon: React.createElement(Storefront),
@@ -171,6 +181,7 @@ export const appRouters = [
     component: asyncComponent(() => import("../pages/user/stores/index.jsx")),
     isLayout: true,
     showInSubMenu: true,
+    subscriptionRequired: true,
   },
   {
     path: "/user/manage-store/products",
