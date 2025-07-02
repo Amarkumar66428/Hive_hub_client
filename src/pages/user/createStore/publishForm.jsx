@@ -17,8 +17,14 @@ import storeService from "../../../services/storeService";
 import { Save } from "@mui/icons-material";
 import appServices from "../../../services/appServices";
 
-const SiteFormDialog = ({ open, layout, sectionImages = {}, onClose }) => {
-  const { template, type, storeId } = useParams();
+const SiteFormDialog = ({
+  open,
+  layout,
+  sectionImages = {},
+  onClose,
+  template,
+}) => {
+  const { type, storeId } = useParams();
   const { showSnackbar } = useSnackbar();
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
@@ -34,7 +40,7 @@ const SiteFormDialog = ({ open, layout, sectionImages = {}, onClose }) => {
 
   useEffect(() => {
     setFormData({
-      name: layout.siteName,
+      name: layout?.siteName,
     });
   }, [layout?.siteName]);
 
@@ -62,7 +68,7 @@ const SiteFormDialog = ({ open, layout, sectionImages = {}, onClose }) => {
         description: formData.description || "Store Description",
         subdomain: formData.subdomain || "store-name",
         customDomain: formData.customDomain || "https://store-name.com",
-        TemplateId: "eCommerce",
+        TemplateId: 1,
       };
 
       const updatedLayout = { ...layout };
@@ -81,6 +87,7 @@ const SiteFormDialog = ({ open, layout, sectionImages = {}, onClose }) => {
           }
         })
       );
+      console.log('updatedLayout: ', updatedLayout);
 
       const response =
         type === "edit" && template
@@ -125,9 +132,9 @@ const SiteFormDialog = ({ open, layout, sectionImages = {}, onClose }) => {
       maxWidth="sm"
       fullWidth
     >
-      <DialogTitle>{storeId ? "Confirm" : "Site Information"}</DialogTitle>
+      <DialogTitle>{storeId !== "new" ? "Confirm" : "Site Information"}</DialogTitle>
       <DialogContent>
-        {storeId ? (
+        {storeId !== "new" ? (
           <span>Are you sure you want to Update Changes to store?</span>
         ) : (
           <Grid container spacing={2} mt={1}>
@@ -195,10 +202,10 @@ const SiteFormDialog = ({ open, layout, sectionImages = {}, onClose }) => {
           startIcon={loading ? <CircularProgress size={20} /> : <Save />}
         >
           {loading
-            ? storeId
+            ? storeId !== "new"
               ? "Updating..."
               : "Publishing..."
-            : storeId
+            : storeId !== "new"
             ? "Update"
             : "Publish"}
         </Button>

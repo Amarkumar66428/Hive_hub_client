@@ -3,7 +3,7 @@ import { Box, Button, Container, Typography } from "@mui/material";
 import React from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
-const WebsiteHeader = () => {
+const WebsiteHeader = ({ layout }) => {
   const { subdomain } = useParams();
   const navigate = useNavigate();
   return (
@@ -24,8 +24,10 @@ const WebsiteHeader = () => {
           >
             <Typography variant="h6">Continue Shopping</Typography>
           </Button>
-          <Typography variant="h6">
-            <Link to={`/hive/${subdomain}`}>Website Header</Link>
+          <Typography variant="h6" color="primary">
+            <Link sx={{ color: "inherit" }} to={`/hive/${subdomain}`}>
+              {layout.siteName}
+            </Link>
           </Typography>
         </Box>
       </Container>

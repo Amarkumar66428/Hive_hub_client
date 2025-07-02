@@ -27,6 +27,7 @@ import {
   Card,
   CardContent,
   CircularProgress,
+  Stack,
 } from "@mui/material";
 import {
   ArrowBack,
@@ -172,21 +173,24 @@ const CheckoutPage = () => {
 
   if (isCheckout) {
     return (
-      <Box sx={{ backgroundColor: "#f5f5f5", minHeight: "100vh", py: 3 }}>
-        <Container maxWidth="lg">
-          <Typography variant="h4" gutterBottom>
-            Order Placed Successfully
-          </Typography>
-          <Alert severity="success">
-            Your order has been placed successfully!
-          </Alert>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => navigate(`/hive/${subdomain}`)}
-          >
-            Continue Shopping
-          </Button>
+      <Box sx={{ backgroundColor: "#f5f5f5", minHeight: "100vh", py: 6 }}>
+        <Container maxWidth="sm">
+          <Stack spacing={4}>
+            <Typography variant="h4" fontWeight={600}>
+              Order Placed Successfully
+            </Typography>
+            <Alert severity="success" sx={{ width: "100%" }}>
+              Your order has been placed successfully!
+            </Alert>
+            <Button
+              variant="contained"
+              color="primary"
+              size="large"
+              onClick={() => navigate(`/hive/${subdomain}`)}
+            >
+              Continue Shopping
+            </Button>
+          </Stack>
         </Container>
       </Box>
     );
@@ -501,7 +505,10 @@ const CheckoutPage = () => {
                 onClick={handleBack}
                 disabled={activeStep === 0}
                 variant="outlined"
-                sx={{ borderColor: "#6b1b78", color: "#6b1b78" }}
+                sx={(theme) => ({
+                  borderColor: theme.palette.primary.main,
+                  color: theme.palette.primary.main,
+                })}
               >
                 Back
               </Button>
@@ -511,26 +518,33 @@ const CheckoutPage = () => {
                   onClick={handlePlaceOrder}
                   variant="contained"
                   size="large"
-                  sx={{
-                    backgroundColor: "#6b1b78",
+                  sx={(theme) => ({
+                    backgroundColor: theme.palette.primary.main,
                     px: 4,
                     py: 1.5,
-                    "&:hover": { backgroundColor: "#5a1666" },
-                  }}
+                    "&:hover": { backgroundColor: theme.palette.primary.dark },
+                    "&:disabled": {
+                      backgroundColor: theme.palette.primary.light,
+                    },
+                  })}
                 >
-                  {loading ? <CircularProgress size={20} /> : "Place Order"}
+                  {loading ? (
+                    <CircularProgress size={20} color="#ccc" />
+                  ) : (
+                    "Place Order"
+                  )}
                 </Button>
               ) : (
                 <Button
                   onClick={handleNext}
                   variant="contained"
                   size="large"
-                  sx={{
-                    backgroundColor: "#6b1b78",
+                  sx={(theme) => ({
+                    backgroundColor: theme.palette.primary.main,
                     px: 4,
                     py: 1.5,
-                    "&:hover": { backgroundColor: "#5a1666" },
-                  }}
+                    "&:hover": { backgroundColor: theme.palette.primary.dark },
+                  })}
                 >
                   Next
                 </Button>

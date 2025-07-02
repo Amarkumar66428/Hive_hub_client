@@ -4,36 +4,27 @@ import {
   Stack,
   Button,
   Typography,
-  CircularProgress,
   Drawer,
   TextField,
-  MenuItem,
   IconButton,
   Table,
-  TableBody,
   TableCell,
   TableHead,
   TableRow,
   Divider,
-  Grid,
-  InputAdornment,
-  FormControl,
-  InputLabel,
-  Select,
-  Modal,
   Tooltip,
   Paper,
   List,
   ListItemButton,
   ListItemText,
   styled,
+  TableBody,
+  CircularProgress,
+  ThemeProvider,
 } from "@mui/material";
 import {
-  Edit,
   Delete,
   Logout,
-  Close,
-  CloudUpload,
   Save,
   Add,
   Settings,
@@ -47,11 +38,9 @@ import {
   DesktopWindowsOutlined,
   UploadFile,
   ArrowForwardIosSharp,
-  ChangeCircle,
   ReplayOutlined,
 } from "@mui/icons-material";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { useSnackbar } from "../../../features/snackBar";
+import { useNavigate, useParams } from "react-router-dom";
 import Templates2 from "../../templates/templates2";
 import TabList from "@mui/lab/TabList";
 import Tab from "@mui/material/Tab";
@@ -65,7 +54,8 @@ import MuiAccordionSummary, {
   accordionSummaryClasses,
 } from "@mui/material/AccordionSummary";
 import SiteFormDialog from "./publishForm";
-import ProductAdd from "../../../components/addProductModal";
+import storeService from "../../../services/storeService";
+import templateTheme from "../../templates/templateTheme";
 
 const Accordion = styled((props) => (
   <MuiAccordion disableGutters elevation={0} square {...props} />
@@ -102,22 +92,19 @@ const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
 
 const CreateStore = () => {
   const navigate = useNavigate();
-  const { storeId } = useParams();
-  const location = useLocation();
-  const { storeData, products } = location.state;
+  const { storeId, type, template } = useParams();
 
-  const { showSnackbar } = useSnackbar();
   const [layoutSection, setLayoutSection] = useState([]);
-  const [drawerOpen, setDrawerOpen] = useState(false);
   const [itemListDrawerOpen, setItemListDrawerOpen] = useState(false);
   const [openSection, setOpenSection] = useState(null);
   const [expandedAccordion, setExpandedAccordion] = useState("panel1");
-  const [itemsList, setItemsList] = useState(products || []);
+  const [itemsList, setItemsList] = useState([]);
   const [expanded, setExpanded] = useState(true);
   const [tabValue, setTabValue] = useState("1");
   const [siteWidth, setSiteWidth] = useState("1440px");
   const [publishOpen, setPublishOpen] = useState(false);
   const [sectionImages, setSectionImages] = useState({});
+  const [loading, setLoading] = useState(true);
   const [layout, setLayout] = useState({
     siteName: "Shop.com",
     primaryColor: "#000",
@@ -125,10 +112,44 @@ const CreateStore = () => {
   });
 
   useEffect(() => {
-    if (storeData) {
-      setLayout(JSON.parse(storeData.layout));
+    const fetchStore = async () => {
+      try {
+        setLoading(true);
+        const response = await storeService.getMyStore();
+        setLayout(JSON.parse(response?.store?.layout) || {});
+        setItemsList(
+          response?.products?.filter((item) => item.isPublished) || []
+        );
+      } catch (error) {
+        console.log("Error fetching stores:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (type === "edit") {
+      fetchStore();
+    } else {
+      setLayout(null);
+      setItemsList([]);
+      setLoading(false);
     }
-  }, [storeData]);
+  }, [type]);
+
+  if (loading) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          bgcolor: "background.paper",
+        }}
+      >
+        <CircularProgress color="primary" />
+      </Box>
+    );
+  }
 
   const handleColorChange = (key, color) => {
     const hex = color.toHexString();
@@ -145,17 +166,6 @@ const CreateStore = () => {
 
   const checkSiteResponsive = (size) => {
     setSiteWidth(size);
-  };
-
-  const handleEditItem = () => {
-    setDrawerOpen(true);
-  };
-
-  const handleDeleteItem = (index) => {
-    const updated = [...itemsList];
-    updated.splice(index, 1);
-    setItemsList(updated);
-    showSnackbar("Item deleted", "info");
   };
 
   const handleChange = (panel) => (event, newExpanded) => {
@@ -233,11 +243,6 @@ const CreateStore = () => {
               <Construction />
             </IconButton>
           </Tooltip>
-          <ProductAdd
-            editPage={true}
-            modalOpen={drawerOpen}
-            setModalOpen={setDrawerOpen}
-          />
           <Button
             variant="text"
             color="info"
@@ -458,7 +463,7 @@ const CreateStore = () => {
               >
                 <ColorPicker
                   className="color-picker"
-                  value={layout.primaryColor}
+                  value={layout?.primaryColor || "#000"}
                   onChangeComplete={(color) =>
                     handleColorChange("primaryColor", color)
                   }
@@ -480,7 +485,7 @@ const CreateStore = () => {
               >
                 <ColorPicker
                   className="color-picker"
-                  value={layout.textColor}
+                  value={layout?.textColor || "#000"}
                   onChangeComplete={(color) =>
                     handleColorChange("textColor", color)
                   }
@@ -503,7 +508,7 @@ const CreateStore = () => {
                 variant="outlined"
                 size="small"
                 fullWidth
-                value={layout.siteName}
+                value={layout?.siteName}
                 onChange={(e) =>
                   setLayout((prev) => ({ ...prev, siteName: e.target.value }))
                 }
@@ -520,14 +525,23 @@ const CreateStore = () => {
             px: 0,
           }}
         >
-          <Templates2
-            siteWidth={siteWidth}
-            layout={layout}
-            setLayout={setLayout}
-            setLayoutSection={setLayoutSection}
-            isStoreOwner={true}
-            products={itemsList}
-          />
+          <ThemeProvider
+            theme={templateTheme({
+              primaryColor: layout?.primaryColor || "#000",
+              secondaryColor: layout?.primaryColor || "#000",
+              textColor: layout?.textColor || "#000",
+            })}
+          >
+            <Templates2
+              isEdit={true}
+              siteWidth={siteWidth}
+              layout={layout}
+              setLayout={setLayout}
+              setLayoutSection={setLayoutSection}
+              isStoreOwner={true}
+              products={itemsList}
+            />
+          </ThemeProvider>
         </Box>
         <Paper
           elevation={2}
@@ -709,44 +723,44 @@ const CreateStore = () => {
                 <TableCell>Price</TableCell>
                 <TableCell>Category</TableCell>
                 <TableCell>SKU</TableCell>
-                <TableCell>Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {itemsList.map((item, idx) => (
-                <TableRow key={idx}>
-                  <TableCell>
-                    {item.imagePreview ? (
-                      <figure style={{ width: 80, height: 50 }}>
-                        <img
-                          src={item.imagePreview}
-                          alt={item.title}
-                          style={{ objectFit: "contain", borderRadius: 4 }}
-                        />
-                      </figure>
-                    ) : (
-                      "No Image"
-                    )}
-                  </TableCell>
-                  <TableCell>{item.title}</TableCell>
-                  <TableCell>{item.price}</TableCell>
-                  <TableCell>{item.category}</TableCell>
-                  <TableCell>{item.sku}</TableCell>
-                  <TableCell>
-                    <IconButton onClick={() => handleEditItem(idx)}>
-                      <Edit fontSize="small" />
-                    </IconButton>
-                    <IconButton onClick={() => handleDeleteItem(idx)}>
-                      <Delete fontSize="small" />
-                    </IconButton>
+              {itemsList?.length ===  0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} sx={{ textAlign: "center" }}>
+                    No products found
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                itemsList.map((item, idx) => (
+                  <TableRow key={idx}>
+                    <TableCell>
+                      {item.images[0] ? (
+                        <figure style={{ width: 80, height: 50 }}>
+                          <img
+                            src={item.images[0]}
+                            alt={item.title}
+                            style={{ objectFit: "contain", borderRadius: 4 }}
+                          />
+                        </figure>
+                      ) : (
+                        "No Image"
+                      )}
+                    </TableCell>
+                    <TableCell>{item.title || "Untitled"}</TableCell>
+                    <TableCell>{item.basePrice || "0.00"}</TableCell>
+                    <TableCell>{item.category || "Uncategorized"}</TableCell>
+                    <TableCell>{item.sku || "SKU"}</TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </Box>
       </Drawer>
       <SiteFormDialog
+        template={template}
         open={publishOpen}
         layout={layout}
         sectionImages={sectionImages}

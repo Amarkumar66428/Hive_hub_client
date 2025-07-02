@@ -18,9 +18,16 @@ import { setCart } from "../../../reducer/websiteSlice";
 import { useNavigate, useParams } from "react-router-dom";
 import debounce from "lodash.debounce";
 import { Add, Remove } from "@mui/icons-material";
+import Cookies from "js-cookie";
 
-const ProductCard = ({ product }) => {
+const ProductCard = ({
+  product,
+  isEdit = false,
+  setSignInOpen,
+  dummy = false,
+}) => {
   const theme = useTheme();
+  const token = Cookies.get("token");
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const cart = useSelector((state) => state.website.cart);
   const { subdomain } = useParams();
@@ -60,17 +67,21 @@ const ProductCard = ({ product }) => {
   };
 
   const updateCart = async (quantity) => {
-    setIsAddItem(false);
-    setCartQuantity(quantity);
+    const parsedQuantity = Number(quantity);
+
+    if (!isNaN(parsedQuantity) && parsedQuantity >= 0) {
+      setIsAddItem(false);
+      setCartQuantity(parsedQuantity);
+    }
   };
 
   useEffect(() => {
     if (cartQuantity > 0) {
       const debouncedCartHandler = debounce(() => {
         if (isAddItem) {
-          handleAddToCart(cartQuantity || cart[product._id] || 0);
+          handleAddToCart(cartQuantity || 0);
         } else {
-          handleUpdateCart(cartQuantity || cart[product._id] || 0);
+          handleUpdateCart(cartQuantity || 0);
         }
       }, 400);
 
@@ -176,7 +187,9 @@ const ProductCard = ({ product }) => {
                     }}
                   >
                     <IconButton
-                      onClick={() => updateCart(cartQuantity - 1)}
+                      onClick={() =>
+                        updateCart((cartQuantity || cart[product._id] || 0) - 1)
+                      }
                       sx={{
                         color: "#fff",
                         backgroundColor: "#444",
@@ -202,7 +215,9 @@ const ProductCard = ({ product }) => {
                     </Typography>
 
                     <IconButton
-                      onClick={() => updateCart(cartQuantity + 1)}
+                      onClick={() =>
+                        updateCart((cartQuantity || cart[product._id] || 0) + 1)
+                      }
                       sx={{
                         color: "#fff",
                         backgroundColor: "#444",
@@ -220,7 +235,13 @@ const ProductCard = ({ product }) => {
               ) : (
                 <Button
                   variant="contained"
-                  onClick={addItemToCart}
+                  onClick={() =>
+                    isEdit || dummy
+                      ? null
+                      : token
+                      ? addItemToCart()
+                      : setSignInOpen(true)
+                  }
                   sx={{
                     width: "100%",
                     backgroundColor: "#222",
@@ -239,7 +260,13 @@ const ProductCard = ({ product }) => {
 
             <Button
               variant="outlined"
-              onClick={() => navigate(`/hive/${subdomain}/checkout`)}
+              onClick={() =>
+                isEdit || dummy
+                  ? null
+                  : token
+                  ? navigate(`/hive/${subdomain}/checkout`)
+                  : setSignInOpen(true)
+              }
               sx={{
                 borderColor: "#000",
                 color: "#000",

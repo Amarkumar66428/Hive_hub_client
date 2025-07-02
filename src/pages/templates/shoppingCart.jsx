@@ -231,7 +231,7 @@ const CartItem = ({ item, removeItem, setCartItems, setTotal }) => {
                   gap: 2,
                 }}
               >
-                <Typography variant="h6" fontWeight={700} color="#6b1b78">
+                <Typography variant="h6" fontWeight={700} color="primary">
                   ${selectedVariant?.price || item?.productId?.price || 0}
                 </Typography>
                 {item?.productId?.basePrice && (
@@ -371,14 +371,14 @@ const Checkout = ({ promoCode, setPromoCode, subtotal }) => {
             <Button
               variant="outlined"
               onClick={applyPromoCode}
-              sx={{
-                borderColor: "#6b1b78",
-                color: "#6b1b78",
+              sx={(theme) => ({
+                borderColor: theme.palette.primary.main,
+                color: theme.palette.primary.main,
                 "&:hover": {
-                  borderColor: "#6b1b78",
+                  borderColor: theme.palette.primary.main,
                   backgroundColor: "rgba(107, 27, 120, 0.1)",
                 },
-              }}
+              })}
             >
               Apply
             </Button>
@@ -438,7 +438,7 @@ const Checkout = ({ promoCode, setPromoCode, subtotal }) => {
             <Typography variant="h6" fontWeight={700}>
               Total:
             </Typography>
-            <Typography variant="h6" fontWeight={700} color="#6b1b78">
+            <Typography variant="h6" fontWeight={700} color="primary">
               ${total.toFixed(2)}
             </Typography>
           </Box>
@@ -449,14 +449,14 @@ const Checkout = ({ promoCode, setPromoCode, subtotal }) => {
           fullWidth
           variant="contained"
           size="large"
-          sx={{
-            backgroundColor: "#6b1b78",
+          sx={(theme) => ({
+            backgroundColor: theme.palette.primary.main,
             py: 1.5,
             mb: 2,
             "&:hover": {
-              backgroundColor: "#5a1666",
+              backgroundColor: theme.palette.primary.dark,
             },
-          }}
+          })}
           onClick={() => {
             navigate(`/hive/${subdomain}/checkout`, {
               state: {
