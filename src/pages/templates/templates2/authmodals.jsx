@@ -139,11 +139,9 @@ const AuthModals = ({
         phone: signUpData.phoneNumber,
       };
       const response = await shopersService.signUP(body);
-      if (response?.token) {
+      if (response) {
         showSnackbar("Sign up successful", "success");
-        Cookies.set("token", response?.token, { expires: 1 });
-        dispatch(setUserData({ user: response?.user }));
-        setSignInOpen(false);
+        setSignInOpen(true);
         setSignUpOpen(false);
       } else {
         showSnackbar("Invalid email or password", "error");

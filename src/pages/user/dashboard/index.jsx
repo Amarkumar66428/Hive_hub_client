@@ -38,10 +38,9 @@ import {
   Cell,
 } from "recharts";
 import userService from "../../../services/userService";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
-import { format } from "date-fns";
+import { DatePicker } from "antd";
+import dayjs from "dayjs";
+const { RangePicker } = DatePicker;
 
 const lineChartColors = [
   { day: "Mo", value1: 15000, value2: 12000 },
@@ -128,14 +127,26 @@ const UserHome = () => {
   const [channelData, setChannelData] = useState([]);
   const [activeTab, setActiveTab] = useState(0);
   const [dashboardData, setDashboardData] = useState(null);
-  const [startDate, setStartDate] = useState(new Date());
-  const [endDate, setEndDate] = useState(new Date());
+  const [dates, setDates] = useState([]);
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+
+  const handleChange = (values) => {
+    setDates(values);
+    if (values && values.length === 2) {
+      setStartDate(values[0]);
+      setEndDate(values[1]);
+    } else {
+      setStartDate(null);
+      setEndDate(null);
+    }
+  };
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       const params = new URLSearchParams();
-      params.append("startDate", format(startDate, "yyyy-MM-dd"));
-      params.append("endDate", format(endDate, "yyyy-MM-dd"));
+      params.append("startDate", startDate);
+      params.append("endDate", endDate);
       const response = await userService.getUserDashboard(params);
       setDashboardData(response);
       setRevenueData(() => {
@@ -194,33 +205,26 @@ const UserHome = () => {
             <Tab label="Products" />
             <Tab label="Cart" />
           </Tabs>
-          <LocalizationProvider dateAdapter={AdapterDateFns}>
-            <Box display="flex" alignItems="center" gap={2}>
-              <DatePicker
-                label="Start Date"
-                value={startDate}
-                onChange={(newValue) => setStartDate(newValue)}
-                slotProps={{
-                  textField: { size: "small", variant: "outlined" },
-                }}
-              />
-              <DatePicker
-                label="End Date"
-                value={endDate}
-                onChange={(newValue) => setEndDate(newValue)}
-                slotProps={{
-                  textField: { size: "small", variant: "outlined" },
-                }}
-              />
-            </Box>
-          </LocalizationProvider>
+          <RangePicker
+            value={dates}
+            onChange={handleChange}
+            format="YYYY-MM-DD"
+            size="large"
+            allowClear
+            style={{
+              border: "1px solid #e0e0e0",
+              borderRadius: "8px",
+              padding: "8px",
+            }}
+            disabledDate={(current) =>
+              current && (current > dayjs().endOf("day") || current < dayjs())
+            }
+            placeholder={["Start Date", "End Date"]}
+          />
         </Box>
-
-        {/* Date Range Selector */}
       </Box>
 
-      <Grid container spacing={3}>
-        {/* Line Chart */}
+      <Grid container spacing={3} sx={{ mb: 1 }}>
         <Grid item size={{ xs: 12, md: 6 }}>
           <Card elevation={2} sx={{ background: "white" }}>
             <CardContent

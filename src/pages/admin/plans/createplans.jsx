@@ -12,7 +12,7 @@ import {
 import { useTheme } from "@mui/material/styles";
 import PlanCard from "../../../components/plansCards";
 import { useSnackbar } from "../../../features/snackBar";
-import { createPlan, updatePlan } from "../../../services/adminPlansServices";
+import adminPlansServices from "../../../services/adminPlansServices";
 import { ArrowBack } from "@mui/icons-material";
 
 const featuresList = [
@@ -72,9 +72,9 @@ const CreateTier = ({ setOpen, selectPlan, setSelectPlan }) => {
       setLoading(true);
       let response;
       if (selectPlan?._id) {
-        response = await updatePlan(selectPlan._id, plan);
+        response = await adminPlansServices.updatePlan(selectPlan._id, plan);
       } else {
-        response = await createPlan(plan);
+        response = await adminPlansServices.createPlan(plan);
       }
       if (response) {
         showSnackbar(

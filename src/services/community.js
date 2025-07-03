@@ -36,6 +36,28 @@ const getMyPosts = async (userId) => {
   return response.data;
 };
 
+//////ADMIN
+
+const getAdminPosts = async () => {
+  const response = await api.get(`/community/getAllAdminPosts`);
+  return response.data;
+};
+
+const getAllAdminPosts = async (params) => {
+  const response = await api.get(`/community/getAllCommunityPosts${params}`);
+  return response.data;
+};
+
+const createAdminPost = async (payload) => {
+  const response = await api.post("/community/createAdminPost", payload);
+  return response.data;
+};
+
+const flagPost = async (postId) => {
+  const response = await api.put(`/community/togglePostFlag/${postId}`);
+  return response.data;
+};
+
 const communityService = {
   getAllCommunities,
   createPost,
@@ -43,6 +65,10 @@ const communityService = {
   commentOnPost,
   likeOnPostComment,
   getMyPosts,
+  getAllAdminPosts,
+  createAdminPost,
+  flagPost,
+  getAdminPosts,
 };
 
 export default communityService;

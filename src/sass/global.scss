@@ -387,3 +387,7 @@ figure {
   top: 0;
   z-index: 9999;
 }
+
+.ant-picker-dropdown {
+  z-index: 1500 !important;
+}

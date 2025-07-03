@@ -16,11 +16,7 @@ import {
   DeleteOutlined,
   SettingsOutlined,
 } from "@mui/icons-material";
-import {
-  activateORDeactivatePlan,
-  deletePlan,
-  getAdminPlans,
-} from "../../../services/adminPlansServices";
+import adminPlansServices from "../../../services/adminPlansServices";
 import DeleteConfirm from "../../../components/deleteConfirm";
 import { useSnackbar } from "../../../features/snackBar";
 
@@ -40,7 +36,7 @@ const ManagePlans = ({ setOpen, selectPlan, setSelectPlan }) => {
     const fetchPlans = async () => {
       try {
         setLoading({ type: "get", planId: null });
-        const response = await getAdminPlans();
+        const response = await adminPlansServices.getAdminPlans();
         setPlans(response?.plans);
       } catch (error) {
         console.log(error);
@@ -54,7 +50,7 @@ const ManagePlans = ({ setOpen, selectPlan, setSelectPlan }) => {
   const handleDelete = async () => {
     try {
       setLoading({ type: "delete", planId: confirmDelete?.id });
-      const response = await deletePlan(confirmDelete?.id);
+      const response = await adminPlansServices.deletePlan(confirmDelete?.id);
       if (response) {
         showSnackbar(
           response?.message || "Plan deleted successfully",
@@ -87,7 +83,9 @@ const ManagePlans = ({ setOpen, selectPlan, setSelectPlan }) => {
   const handleToggleActive = async (planId) => {
     try {
       setLoading({ type: "activateORDeactivate", planId });
-      const response = await activateORDeactivatePlan(planId);
+      const response = await adminPlansServices.activateORDeactivatePlan(
+        planId
+      );
       if (response) {
         showSnackbar(
           response?.message || "Plan updated successfully",

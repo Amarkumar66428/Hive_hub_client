@@ -98,6 +98,17 @@ export const appRouters = [
     showInMenu: true,
   },
   {
+    path: "/admin/community",
+    role: [SUPER_ADMIN],
+    title: "Community",
+    icon: React.createElement(Explore),
+    component: asyncComponent(() =>
+      import("../pages/admin/community/index.jsx")
+    ),
+    isLayout: true,
+    showInMenu: true,
+  },
+  {
     path: "/user/dashboard",
     role: [STORE_OWNER],
     title: "Dashboard",
@@ -133,7 +144,9 @@ export const appRouters = [
     role: [STORE_OWNER],
     title: "Campaigns",
     icon: React.createElement(CampaignOutlined),
-    component: asyncComponent(() => import("../pages/user/campaigns/index.jsx")),
+    component: asyncComponent(() =>
+      import("../pages/user/campaigns/index.jsx")
+    ),
     isLayout: true,
     showInMenu: true,
   },
