@@ -128,17 +128,20 @@ const UserHome = () => {
   const [activeTab, setActiveTab] = useState(0);
   const [dashboardData, setDashboardData] = useState(null);
   const [dates, setDates] = useState([]);
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  console.log('startDate: ', startDate);
+  console.log('endDate: ', endDate);
 
   const handleChange = (values) => {
+    console.log('values: ', values);
     setDates(values);
     if (values && values.length === 2) {
-      setStartDate(values[0]);
-      setEndDate(values[1]);
+      setStartDate(values[0].format("YYYY-MM-DD"));
+      setEndDate(values[1].format("YYYY-MM-DD"));
     } else {
-      setStartDate(null);
-      setEndDate(null);
+      setStartDate("");
+      setEndDate("");
     }
   };
 
@@ -216,9 +219,6 @@ const UserHome = () => {
               borderRadius: "8px",
               padding: "8px",
             }}
-            disabledDate={(current) =>
-              current && (current > dayjs().endOf("day") || current < dayjs())
-            }
             placeholder={["Start Date", "End Date"]}
           />
         </Box>

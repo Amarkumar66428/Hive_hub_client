@@ -133,7 +133,7 @@ const updateInventory = async (id, data) => {
 };
 
 const getAllOrders = async (params) => {
-  const response = await api.get(`/user/getAllOrdersForStoreOwner`, params);
+  const response = await api.get(`/user/getAllOrdersForStoreOwner?${params}`);
   return response.data;
 };
 
