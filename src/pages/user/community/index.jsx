@@ -314,7 +314,7 @@ const CommentItem = memo(({ comment, currentUser, onLike }) => {
             <Typography variant="body2" fontWeight={600}>
               {comment.userId === currentUser._id
                 ? "You"
-                : comment.author || "Unknown"}
+                : comment.userName || "Unknown"}
             </Typography>
             <Typography variant="caption" color="text.secondary">
               {formatDate(comment.createdAt)}

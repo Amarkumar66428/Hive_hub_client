@@ -342,7 +342,7 @@ const CommentItem = memo(({ comment, currentUser, onLike }) => {
             <Typography variant="body2" fontWeight={600}>
               {comment.userId === currentUser._id
                 ? "You"
-                : comment.author || "Unknown"}
+                : comment.userName || "Unknown"}
             </Typography>
             <Typography variant="caption" color="text.secondary">
               {formatDate(comment.createdAt)}
@@ -485,9 +485,8 @@ const Community = () => {
         }
 
         let newPosts;
-        console.log('filter: ', filter);
         if (filter !== "admin") {
-          const params = `?page=${pageNum}&limit=${POSTS_PER_PAGE}&isAdmin=${false}&status=${
+          const params = `?page=${pageNum}&limit=${POSTS_PER_PAGE}&isAdmin=false&status=${
             filter === "hidden" ? "hidden" : "visible"
           }`;
           const response = await communityService.getAllAdminPosts(params);
@@ -514,7 +513,7 @@ const Community = () => {
         setLoadingMore(false);
       }
     },
-    [showSnackbar]
+    [filter, showSnackbar]
   );
 
   // Intersection Observer callback
@@ -558,10 +557,11 @@ const Community = () => {
     };
   }, [posts]);
 
-  // Initial fetch
   useEffect(() => {
+    setPosts([]); // clear old posts
+    setPage(1); // reset page
     fetchPosts(1, false);
-  }, [fetchPosts, filter]);
+  }, [filter, fetchPosts]);
 
   // Optimized handlers
   const handleLike = useCallback(
@@ -775,16 +775,14 @@ const Community = () => {
           </Box>
 
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <FormControl>
+            <FormControl size="small" sx={{ minWidth: 120 }}>
               <InputLabel id="select-filter-label">Filter</InputLabel>
               <Select
-                defaultOpen="admin"
                 labelId="select-filter-label"
                 id="select-filter"
                 value={filter}
                 onChange={(e) => setFilter(e.target.value)}
                 label="Filter"
-                variant="outlined"
               >
                 <MenuItem value={"admin"}>Admin Posts</MenuItem>
                 <MenuItem value={"community"}>Community Posts</MenuItem>
