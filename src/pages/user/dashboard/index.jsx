@@ -38,8 +38,11 @@ import {
   Cell,
 } from "recharts";
 import userService from "../../../services/userService";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { format } from "date-fns";
 
-// Sample data for charts
 const lineChartColors = [
   { day: "Mo", value1: 15000, value2: 12000 },
   { day: "Tu", value1: 18000, value2: 16000 },
@@ -52,8 +55,7 @@ const lineChartColors = [
 
 const revenueDataPie = ["#1976d2", "#9c27b0", "#4caf50", "#ff9800"];
 
-const channelDataPie = ["#1976d2", "#424242", "#4caf50"]
-
+const channelDataPie = ["#1976d2", "#424242", "#4caf50"];
 
 // [
 //   { name: "Online", value: 60, color: "#1976d2" },
@@ -126,10 +128,15 @@ const UserHome = () => {
   const [channelData, setChannelData] = useState([]);
   const [activeTab, setActiveTab] = useState(0);
   const [dashboardData, setDashboardData] = useState(null);
+  const [startDate, setStartDate] = useState(new Date());
+  const [endDate, setEndDate] = useState(new Date());
 
   useEffect(() => {
     const fetchDashboardData = async () => {
-      const response = await userService.getUserDashboard();
+      const params = new URLSearchParams();
+      params.append("startDate", format(startDate, "yyyy-MM-dd"));
+      params.append("endDate", format(endDate, "yyyy-MM-dd"));
+      const response = await userService.getUserDashboard(params);
       setDashboardData(response);
       setRevenueData(() => {
         return response?.revenueByCategory?.map((item, index) => ({
@@ -155,17 +162,23 @@ const UserHome = () => {
       });
     };
     fetchDashboardData();
-  }, []);
+  }, [startDate, endDate]);
 
   return (
     <Box sx={{ backgroundColor: "#f8fafc", minHeight: "100vh", px: 2 }}>
       <Box mb={2}>
-        <Box>
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          borderBottom={1}
+          borderColor="#e0e0e0"
+          py={1}
+        >
           <Tabs
             value={activeTab}
             onChange={(e, newValue) => setActiveTab(newValue)}
             sx={{
-              borderBottom: "1px solid #e0e0e0",
               "& .MuiTab-root": {
                 textTransform: "none",
                 fontWeight: 600,
@@ -181,6 +194,26 @@ const UserHome = () => {
             <Tab label="Products" />
             <Tab label="Cart" />
           </Tabs>
+          <LocalizationProvider dateAdapter={AdapterDateFns}>
+            <Box display="flex" alignItems="center" gap={2}>
+              <DatePicker
+                label="Start Date"
+                value={startDate}
+                onChange={(newValue) => setStartDate(newValue)}
+                slotProps={{
+                  textField: { size: "small", variant: "outlined" },
+                }}
+              />
+              <DatePicker
+                label="End Date"
+                value={endDate}
+                onChange={(newValue) => setEndDate(newValue)}
+                slotProps={{
+                  textField: { size: "small", variant: "outlined" },
+                }}
+              />
+            </Box>
+          </LocalizationProvider>
         </Box>
 
         {/* Date Range Selector */}
@@ -197,18 +230,6 @@ const UserHome = () => {
                 <Typography variant="h6" fontWeight={600}>
                   Weekly Performance
                 </Typography>
-                <Button
-                  variant="outlined"
-                  startIcon={<CalendarToday />}
-                  sx={{
-                    textTransform: "none",
-                    fontWeight: 500,
-                    borderRadius: 2,
-                    px: 3,
-                  }}
-                >
-                  23 Sept - 23 Oct 2024
-                </Button>
               </Box>
               <Box height={300}>
                 <ResponsiveContainer width="100%" height="100%">
@@ -329,8 +350,8 @@ const UserHome = () => {
                       <PieChart>
                         <Pie
                           data={channelData}
-                          cx="50%"
-                          cy="50%"
+                          cx="60%"
+                          cy="60%"
                           innerRadius={40}
                           outerRadius={80}
                           dataKey="value"
