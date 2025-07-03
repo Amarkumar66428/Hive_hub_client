@@ -24,3 +24,13 @@ export const activateORDeactivatePlan = async (planId) => {
   const response = await api.patch(`/admin/activateORDeactivatePlan/${planId}`);
   return response.data;
 };
+
+const adminPlansServices = {
+  createPlan,
+  updatePlan,
+  deletePlan,
+  getAdminPlans,
+  activateORDeactivatePlan,
+};
+
+export default adminPlansServices;  

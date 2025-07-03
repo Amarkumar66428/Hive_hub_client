@@ -27,6 +27,15 @@ const theme = createTheme({
       800: "#424242",
       900: "#212121",
     },
+    error: {
+      main: "#d32f2f",
+      50: "#ffebee",
+      100: "#ffcdd2",
+      200: "#ef9a9a",
+      300: "#e57373",
+      400: "#ef5350",
+      500: "#f44336",
+    },
   },
   typography: {
     fontFamily: "'Inter', sans-serif",

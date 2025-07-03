@@ -9,7 +9,6 @@ import React, {
 import {
   Box,
   Button,
-  Grid,
   Typography,
   Avatar,
   CardMedia,
@@ -33,7 +32,9 @@ import {
   Paper,
   Stack,
   styled,
-  Checkbox,
+  Select,
+  FormControl,
+  InputLabel,
 } from "@mui/material";
 import {
   Add,
@@ -46,6 +47,7 @@ import {
   Refresh,
   FavoriteBorder,
   Favorite,
+  TurnedIn,
 } from "@mui/icons-material";
 
 import CreatePostModal from "./createPost";
@@ -82,6 +84,7 @@ const PostCard = memo(
   }) => {
     const [commentInput, setCommentInput] = useState("");
     const [savingComment, setSavingComment] = useState(false);
+    const [isFlagged, setIsFlagged] = useState(post?.status);
 
     const handleCommentSubmit = useCallback(async () => {
       if (!commentInput.trim()) return;
@@ -101,6 +104,15 @@ const PostCard = memo(
     );
 
     const isCommentBoxOpen = openCommentBox === post._id;
+
+    const handleFlagPost = useCallback(async () => {
+      try {
+        setIsFlagged(!isFlagged);
+        await communityService.flagPost(post._id);
+      } catch (err) {
+        console.error("Error flagging post:", err);
+      }
+    }, [post._id, isFlagged]);
 
     return (
       <Fade in timeout={300}>
@@ -204,11 +216,27 @@ const PostCard = memo(
               </Stack>
 
               {/* Share Button */}
-              <Tooltip title="Share">
-                <IconButton size="small" sx={{ color: "text.secondary" }}>
-                  <Share />
-                </IconButton>
-              </Tooltip>
+              <Stack direction="row" alignItems="center" spacing={0.5}>
+                <Tooltip title="Flag">
+                  <IconButton
+                    size="small"
+                    sx={{
+                      color: isFlagged ? "error.main" : "text.secondary",
+                      "&:hover": {
+                        bgcolor: isFlagged ? "error.50" : "grey.100",
+                      },
+                    }}
+                    onClick={handleFlagPost}
+                  >
+                    <TurnedIn />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title="Share">
+                  <IconButton size="small" sx={{ color: "text.secondary" }}>
+                    <Share />
+                  </IconButton>
+                </Tooltip>
+              </Stack>
             </Stack>
           </CardActions>
 
@@ -437,8 +465,7 @@ const Community = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [createPostModal, setCreatePostModal] = useState(false);
   const [openCommentBox, setOpenCommentBox] = useState(null);
-  const [showAdminPosts, setShowAdminPosts] = useState(false);
-
+  const [filter, setFilter] = useState("admin");
   // Refs
   const observerRef = useRef();
   const lastPostElementRef = useRef();
@@ -457,10 +484,18 @@ const Community = () => {
           setError(null);
         }
 
-        const params = `?page=${pageNum}&limit=${POSTS_PER_PAGE}&isAdminPost=${showAdminPosts}`;
-        const response = await communityService.getAllCommunities(params);
-
-        const newPosts = response?.posts || [];
+        let newPosts;
+        console.log('filter: ', filter);
+        if (filter !== "admin") {
+          const params = `?page=${pageNum}&limit=${POSTS_PER_PAGE}&isAdmin=${false}&status=${
+            filter === "hidden" ? "hidden" : "visible"
+          }`;
+          const response = await communityService.getAllAdminPosts(params);
+          newPosts = response?.posts || [];
+        } else {
+          const response = await communityService.getAdminPosts();
+          newPosts = response?.posts || [];
+        }
 
         if (isLoadMore) {
           setPosts((prev) => [...prev, ...newPosts]);
@@ -479,7 +514,7 @@ const Community = () => {
         setLoadingMore(false);
       }
     },
-    [showSnackbar, showAdminPosts]
+    [showSnackbar]
   );
 
   // Intersection Observer callback
@@ -526,7 +561,7 @@ const Community = () => {
   // Initial fetch
   useEffect(() => {
     fetchPosts(1, false);
-  }, [fetchPosts]);
+  }, [fetchPosts, filter]);
 
   // Optimized handlers
   const handleLike = useCallback(
@@ -546,7 +581,7 @@ const Community = () => {
           )
         );
 
-        await communityService.likeOnPost(postId);
+        // await communityService.likeOnPost(postId);
       } catch (err) {
         console.error("Error liking post:", err);
         // Revert optimistic update on error
@@ -562,6 +597,7 @@ const Community = () => {
               : post
           )
         );
+
         showSnackbar("Failed to like post", "error");
       }
     },
@@ -570,6 +606,8 @@ const Community = () => {
 
   const handleComment = useCallback(
     async (postId, commentText) => {
+      return;
+
       try {
         const comment = { content: commentText };
         const response = await communityService.commentOnPost(postId, comment);
@@ -631,7 +669,7 @@ const Community = () => {
           )
         );
 
-        await communityService.likeOnPostComment(postId, commentId);
+        // await communityService.likeOnPostComment(postId, commentId);
       } catch (err) {
         console.error("Error liking comment:", err);
         showSnackbar("Failed to like comment", "error");
@@ -737,13 +775,22 @@ const Community = () => {
           </Box>
 
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <Checkbox
-              checked={showAdminPosts}
-              onChange={() => setShowAdminPosts(!showAdminPosts)}
-            />
-            <Typography variant="body2" color="text.secondary">
-              Premium Posts
-            </Typography>
+            <FormControl>
+              <InputLabel id="select-filter-label">Filter</InputLabel>
+              <Select
+                defaultOpen="admin"
+                labelId="select-filter-label"
+                id="select-filter"
+                value={filter}
+                onChange={(e) => setFilter(e.target.value)}
+                label="Filter"
+                variant="outlined"
+              >
+                <MenuItem value={"admin"}>Admin Posts</MenuItem>
+                <MenuItem value={"community"}>Community Posts</MenuItem>
+                <MenuItem value={"hidden"}>Hidden Posts</MenuItem>
+              </Select>
+            </FormControl>
             <Button
               onClick={(e) => setAnchorEl(e.currentTarget)}
               sx={{
@@ -881,7 +928,7 @@ const Community = () => {
       <CreatePostModal
         createPostModal={createPostModal}
         setCreatePostModal={setCreatePostModal}
-        fetchPlans={() => fetchPosts(1, false)}
+        fetchPosts={fetchPosts}
       />
     </>
   );

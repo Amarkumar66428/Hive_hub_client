@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Container,
@@ -41,6 +41,7 @@ import {
   Badge,
   Avatar,
   InputAdornment,
+  CircularProgress,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -63,6 +64,7 @@ import {
   DateRange as DateRangeIcon,
   BarChart as BarChartIcon,
   PieChart as PieChartIcon,
+  Campaign as CampaignIcon,
 } from "@mui/icons-material";
 import {
   BarChart,
@@ -76,8 +78,83 @@ import {
   LineChart,
   Line,
 } from "recharts";
+import campaignsService from "../../../services/campaigns";
+import { DatePicker } from "antd";
+import { useSnackbar } from "../../../features/snackBar";
+
+const campaigns = [
+  {
+    id: 1,
+    name: "Summer Fashion Sale 2024",
+    platform: "google",
+    status: "active",
+    budget: 5000,
+    spent: 3250,
+    impressions: 125000,
+    clicks: 3420,
+    conversions: 156,
+    cpc: 0.95,
+    ctr: 2.74,
+    conversionRate: 4.56,
+    roas: 4.2,
+    startDate: "2024-06-01",
+    endDate: "2024-07-31",
+  },
+  {
+    id: 2,
+    name: "Brand Awareness Q3",
+    platform: "facebook",
+    status: "active",
+    budget: 3000,
+    spent: 1850,
+    impressions: 89000,
+    clicks: 2150,
+    conversions: 95,
+    cpc: 0.86,
+    ctr: 2.42,
+    conversionRate: 4.42,
+    roas: 3.8,
+    startDate: "2024-07-01",
+    endDate: "2024-09-30",
+  },
+  {
+    id: 3,
+    name: "Holiday Collection Pre-Launch",
+    platform: "google",
+    status: "paused",
+    budget: 8000,
+    spent: 4200,
+    impressions: 156000,
+    clicks: 4680,
+    conversions: 234,
+    cpc: 0.9,
+    ctr: 3.0,
+    conversionRate: 5.0,
+    roas: 5.2,
+    startDate: "2024-05-15",
+    endDate: "2024-08-15",
+  },
+  {
+    id: 4,
+    name: "Retargeting Campaign - Cart Abandoners",
+    platform: "facebook",
+    status: "active",
+    budget: 2000,
+    spent: 1200,
+    impressions: 45000,
+    clicks: 1800,
+    conversions: 128,
+    cpc: 0.67,
+    ctr: 4.0,
+    conversionRate: 7.11,
+    roas: 6.5,
+    startDate: "2024-06-15",
+    endDate: "2024-08-15",
+  },
+];
 
 const Campaigns = () => {
+  const { showSnackbar } = useSnackbar();
   const [selectedTab, setSelectedTab] = useState(0);
   const [selectedCampaigns, setSelectedCampaigns] = useState([]);
   const [filterPlatform, setFilterPlatform] = useState("all");
@@ -86,77 +163,43 @@ const Campaigns = () => {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedCampaignForMenu, setSelectedCampaignForMenu] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [loadingCreateCampaign, setLoadingCreateCampaign] = useState(false);
+  const [error, setError] = useState(null);
+  const [campaignsData, setCampaignsData] = useState([]);
+  const [createCampaignData, setCreateCampaignData] = useState({
+    type: "",
+    platformCampaignId: "",
+    startDate: "",
+    endDate: "",
+  });
 
-  const campaigns = [
-    {
-      id: 1,
-      name: "Summer Fashion Sale 2024",
-      platform: "google",
-      status: "active",
-      budget: 5000,
-      spent: 3250,
-      impressions: 125000,
-      clicks: 3420,
-      conversions: 156,
-      cpc: 0.95,
-      ctr: 2.74,
-      conversionRate: 4.56,
-      roas: 4.2,
-      startDate: "2024-06-01",
-      endDate: "2024-07-31",
-    },
-    {
-      id: 2,
-      name: "Brand Awareness Q3",
-      platform: "facebook",
-      status: "active",
-      budget: 3000,
-      spent: 1850,
-      impressions: 89000,
-      clicks: 2150,
-      conversions: 95,
-      cpc: 0.86,
-      ctr: 2.42,
-      conversionRate: 4.42,
-      roas: 3.8,
-      startDate: "2024-07-01",
-      endDate: "2024-09-30",
-    },
-    {
-      id: 3,
-      name: "Holiday Collection Pre-Launch",
-      platform: "google",
-      status: "paused",
-      budget: 8000,
-      spent: 4200,
-      impressions: 156000,
-      clicks: 4680,
-      conversions: 234,
-      cpc: 0.9,
-      ctr: 3.0,
-      conversionRate: 5.0,
-      roas: 5.2,
-      startDate: "2024-05-15",
-      endDate: "2024-08-15",
-    },
-    {
-      id: 4,
-      name: "Retargeting Campaign - Cart Abandoners",
-      platform: "facebook",
-      status: "active",
-      budget: 2000,
-      spent: 1200,
-      impressions: 45000,
-      clicks: 1800,
-      conversions: 128,
-      cpc: 0.67,
-      ctr: 4.0,
-      conversionRate: 7.11,
-      roas: 6.5,
-      startDate: "2024-06-15",
-      endDate: "2024-08-15",
-    },
-  ];
+  useEffect(() => {
+    const fetchCampaigns = async () => {
+      try {
+        setLoading(true);
+        const response = await campaignsService.getCampaigns();
+        console.log("response: ", response);
+        setCampaignsData(response?.campaigns);
+      } catch (error) {
+        setError(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCampaigns();
+  }, []);
+
+  const filteredCampaigns = campaigns.filter((campaign) => {
+    const matchesPlatform =
+      filterPlatform === "all" || campaign.platform === filterPlatform;
+    const matchesStatus =
+      filterStatus === "all" || campaign.status === filterStatus;
+    const matchesSearch = campaign.name
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
+    return matchesPlatform && matchesStatus && matchesSearch;
+  });
 
   const overviewStats = {
     totalSpent: campaigns.reduce((sum, c) => sum + c.spent, 0),
@@ -183,16 +226,30 @@ const Campaigns = () => {
     platform: campaign.platform,
   }));
 
-  const filteredCampaigns = campaigns.filter((campaign) => {
-    const matchesPlatform =
-      filterPlatform === "all" || campaign.platform === filterPlatform;
-    const matchesStatus =
-      filterStatus === "all" || campaign.status === filterStatus;
-    const matchesSearch = campaign.name
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
-    return matchesPlatform && matchesStatus && matchesSearch;
-  });
+  const createCampaign = async () => {
+    try {
+      setLoadingCreateCampaign(true);
+      const response = await campaignsService.createCampaign(
+        createCampaignData
+      );
+      if (response) {
+        showSnackbar("Campaign created successfully", "success");
+      } else {
+        showSnackbar("Failed to create campaign", "error");
+      }
+      setShowCreateDialog(false);
+      setCreateCampaignData({
+        type: "",
+        platformCampaignId: "",
+        startDate: "",
+        endDate: "",
+      });
+    } catch (error) {
+      setError(error);
+    } finally {
+      setLoadingCreateCampaign(false);
+    }
+  };
 
   const handleTabChange = (event, newValue) => {
     setSelectedTab(newValue);
@@ -261,7 +318,7 @@ const Campaigns = () => {
   const renderDashboard = () => (
     <Box>
       {/* Overview Cards */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
+      <Grid container spacing={3} sx={{ mb: 1 }}>
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card>
             <CardContent>
@@ -408,13 +465,13 @@ const Campaigns = () => {
       </Grid>
 
       {/* Performance Chart */}
-      <Paper sx={{ p: 3, mb: 4 }}>
+      <Paper sx={{ p: 3, mb: 1 }}>
         <Box
           sx={{
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            mb: 3,
+            mb: 2,
           }}
         >
           <Typography variant="h6">Performance Overview</Typography>
@@ -581,8 +638,7 @@ const Campaigns = () => {
 
   const renderCampaigns = () => (
     <Box>
-      {/* Campaign Controls */}
-      <Paper sx={{ p: 3, mb: 3 }}>
+      <Paper sx={{ p: 3, mb: 1 }}>
         <Box
           sx={{
             display: "flex",
@@ -899,7 +955,7 @@ const Campaigns = () => {
             </Typography>
             <Box sx={{ space: 2 }}>
               <Box
-                sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}
+                sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}
               >
                 <Typography color="textSecondary">Avg. CTR</Typography>
                 <Typography fontWeight="medium">
@@ -907,7 +963,7 @@ const Campaigns = () => {
                 </Typography>
               </Box>
               <Box
-                sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}
+                sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}
               >
                 <Typography color="textSecondary">Avg. CPC</Typography>
                 <Typography fontWeight="medium">
@@ -929,8 +985,7 @@ const Campaigns = () => {
 
   return (
     <Container maxWidth={false} sx={{ py: 2 }}>
-      {/* Header */}
-      <Box sx={{ mb: 4 }}>
+      <Box sx={{ mb: 1 }}>
         <Typography variant="h4" component="h1" gutterBottom>
           Campaign Management
         </Typography>
@@ -940,7 +995,7 @@ const Campaigns = () => {
       </Box>
 
       {/* Tabs */}
-      <Paper sx={{ mb: 3 }}>
+      <Paper sx={{ mb: 1 }}>
         <Tabs value={selectedTab} onChange={handleTabChange}>
           <Tab label="Dashboard" />
           <Tab label="Campaigns" />
@@ -1000,28 +1055,57 @@ const Campaigns = () => {
         <DialogContent>
           <Grid container spacing={2} sx={{ mt: 1 }}>
             <Grid size={{ xs: 12 }}>
-              <TextField fullWidth label="Campaign Name" variant="outlined" />
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <FormControl fullWidth>
-                <InputLabel>Platform</InputLabel>
-                <Select label="Platform">
-                  <MenuItem value="google">Google Ads</MenuItem>
-                  <MenuItem value="facebook">Facebook Ads</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 fullWidth
-                label="Budget"
-                type="number"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">$</InputAdornment>
-                  ),
-                }}
+                label="Campaign Type"
+                variant="outlined"
+                value={createCampaignData.type}
+                onChange={(e) =>
+                  setCreateCampaignData({
+                    ...createCampaignData,
+                    type: e.target.value,
+                  })
+                }
               />
+            </Grid>
+            <Grid size={{ xs: 12 }}>
+              <TextField
+                fullWidth
+                label="Platform Campaign ID"
+                value={createCampaignData.platformCampaignId}
+                onChange={(e) =>
+                  setCreateCampaignData({
+                    ...createCampaignData,
+                    platformCampaignId: e.target.value,
+                  })
+                }
+              />
+            </Grid>
+            <Grid size={{ xs: 12 }}>
+              <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+                <DatePicker
+                  label="Start Date"
+                  size="large"
+                  onChange={(date) =>
+                    setCreateCampaignData({
+                      ...createCampaignData,
+                      startDate: date.format("YYYY-MM-DD"),
+                    })
+                  }
+                  format="YYYY-MM-DD"
+                />
+                <DatePicker
+                  label="End Date"
+                  size="large"
+                  onChange={(date) =>
+                    setCreateCampaignData({
+                      ...createCampaignData,
+                      endDate: date.format("YYYY-MM-DD"),
+                    })
+                  }
+                  format="YYYY-MM-DD"
+                />
+              </Box>
             </Grid>
           </Grid>
         </DialogContent>
@@ -1029,9 +1113,17 @@ const Campaigns = () => {
           <Button onClick={() => setShowCreateDialog(false)}>Cancel</Button>
           <Button
             variant="contained"
-            onClick={() => setShowCreateDialog(false)}
+            onClick={() => {
+              setShowCreateDialog(false);
+              createCampaign();
+            }}
+            disabled={loadingCreateCampaign}
           >
-            Create Campaign
+            {loadingCreateCampaign ? (
+              <CircularProgress size={20} sx={{ color: "white" }} />
+            ) : (
+              "Create Campaign"
+            )}
           </Button>
         </DialogActions>
       </Dialog>
