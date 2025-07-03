@@ -13,9 +13,12 @@ const getPlans = async () => {
 const createStore = async (storeData) => {
   const formData = new FormData();
 
-  // Append all fields except 'logo'
   Object.entries(storeData).forEach(([key, value]) => {
-    if (key !== "logo") {
+    if (key === "logo") return;
+
+    if (typeof value === "object" && value !== null) {
+      formData.append(key, JSON.stringify(value));
+    } else {
       formData.append(key, value);
     }
   });

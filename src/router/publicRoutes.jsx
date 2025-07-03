@@ -2,14 +2,15 @@ import { useParams } from "react-router-dom";
 import { useEffect, useState, useMemo } from "react";
 import shopersService from "../services/shopersService";
 import { templateRouters } from "./publicRouter.config";
-import { Box } from "@mui/material";
+import { Box, CircularProgress } from "@mui/material";
 import NotFoundPage from "../components/pageNotFound";
-import PublicAppLoader from "../components/publicAppLoader";
 import WebsiteLayout from "../pages/templates/layout";
 import Cookies from "js-cookie";
 import { setUserData } from "../reducer/authSlice";
 import { useDispatch } from "react-redux";
 import { setCart } from "../reducer/websiteSlice";
+import templateTheme from "../pages/templates/templateTheme";
+import { ThemeProvider } from "@mui/material/styles";
 
 const PublicSites = ({ component }) => {
   const { subdomain } = useParams();
@@ -87,7 +88,7 @@ const PublicSites = ({ component }) => {
           backgroundColor: "#fff",
         }}
       >
-        <PublicAppLoader subdomain={subdomain} />
+        <CircularProgress size={50} />
       </Box>
     );
   }
@@ -104,11 +105,27 @@ const PublicSites = ({ component }) => {
   };
 
   return component ? (
-    <WebsiteLayout>
-      <Component {...componentProps} />
-    </WebsiteLayout>
+    <ThemeProvider
+      theme={templateTheme({
+        primaryColor: storeData.layout.primaryColor,
+        secondaryColor: storeData.layout.primaryColor,
+        textColor: storeData.layout.textColor,
+      })}
+    >
+      <WebsiteLayout layout={storeData.layout}>
+        <Component {...componentProps} />
+      </WebsiteLayout>
+    </ThemeProvider>
   ) : (
-    <Component {...componentProps} />
+    <ThemeProvider
+      theme={templateTheme({
+        primaryColor: storeData.layout.primaryColor,
+        secondaryColor: storeData.layout.primaryColor,
+        textColor: storeData.layout.textColor,
+      })}
+    >
+      <Component {...componentProps} />
+    </ThemeProvider>
   );
 };
 

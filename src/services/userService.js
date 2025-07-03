@@ -15,8 +15,8 @@ const getMySubscription = async () => {
   return response.data;
 };
 
-const getUserDashboard = async () => {
-  const response = await api.get("/user/getDashboardStats");
+const getUserDashboard = async (params) => {
+  const response = await api.get("/user/getDashboardStats", params);
   return response.data;
 };
 

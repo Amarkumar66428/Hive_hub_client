@@ -165,7 +165,6 @@ const categories = [
 
 // Example usage
 const ProductAdd = ({
-  editPage,
   modalOpen,
   setModalOpen,
   fetchStore,
@@ -175,11 +174,11 @@ const ProductAdd = ({
   return (
     <Box>
       <Button
-        variant={editPage ? "text" : "contained"}
-        startIcon={editPage ? null : <Add />}
+        variant="contained"
+        startIcon={<Add />}
         onClick={() => setModalOpen(true)}
         size="large"
-        sx={editPage ? addProductButtonStyle : {}}
+        sx={addProductButtonStyle}
       >
         Add Product
       </Button>

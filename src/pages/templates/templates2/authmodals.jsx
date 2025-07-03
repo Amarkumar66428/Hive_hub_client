@@ -33,6 +33,7 @@ import { setUserData } from "../../../reducer/authSlice";
 import Cookies from "js-cookie";
 
 const AuthModals = ({
+  isEdit = false,
   siteName,
   signInOpen,
   setSignInOpen,
@@ -88,6 +89,9 @@ const AuthModals = ({
 
   const handleSignInSubmit = async (e) => {
     e.preventDefault();
+    if (isEdit) {
+      return;
+    }
     try {
       setLoading(true);
       const body = {
@@ -118,6 +122,9 @@ const AuthModals = ({
 
   const handleSignUpSubmit = async (e) => {
     e.preventDefault();
+    if (isEdit) {
+      return;
+    }
     if (signUpData.password !== signUpData.confirmPassword) {
       showSnackbar("Passwords do not match", "error");
       return;
