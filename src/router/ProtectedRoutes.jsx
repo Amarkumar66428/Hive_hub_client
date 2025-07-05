@@ -1,4 +1,4 @@
-import { Navigate, useLocation } from "react-router-dom";
+import { Navigate, useLocation, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import Cookies from "js-cookie";
@@ -11,10 +11,19 @@ import { setUserData } from "../reducer/authSlice";
 import { decryptData } from "../utils/encryption";
 import AppLoading from "../pages/hiveloading";
 
-const ProtectedRoute = ({ children, role = [], subscriptionRequired = false }) => {
+const ProtectedRoute = ({
+  children,
+  role = [],
+  subscriptionRequired = false,
+}) => {
+  const { phn_token } = useParams();
+
+  if (phn_token) {
+    Cookies.set("access_token", phn_token);
+  }
+
   const location = useLocation();
   const dispatch = useDispatch();
-
   const token = Cookies.get("access_token");
   const user = useAuth();
   const plan = usePlan();
@@ -59,9 +68,9 @@ const ProtectedRoute = ({ children, role = [], subscriptionRequired = false }) =
 
   const isAuthenticated = !!token && role.includes(user?.role);
   const isSubscribed = plan?.isActive;
-  
+
   if (loading) return <AppLoading />;
-  
+
   if (!isAuthenticated) {
     return <Navigate to="/auth/signin" state={{ from: location }} replace />;
   }
