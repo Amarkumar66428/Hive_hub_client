@@ -177,6 +177,15 @@ export const appRouters = [
     isLayout: false,
   },
   {
+    path: "/user/manage-store/:type/:template/:storeId/:phn_token",
+    role: [STORE_OWNER],
+    icon: React.createElement(DesignServicesRounded),
+    component: asyncComponent(() =>
+      import("../pages/user/createStore/createStore.jsx")
+    ),
+    isLayout: false,
+  },
+  {
     path: "/user/manage-store/inventory",
     role: [STORE_OWNER],
     icon: React.createElement(DesignServicesRounded),
