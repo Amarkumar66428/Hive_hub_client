@@ -7,22 +7,16 @@ import {
   Grid,
   Tabs,
   Tab,
-  Button,
   useTheme,
   useMediaQuery,
-  Container,
   Stack,
   Chip,
-  IconButton,
   Paper,
 } from "@mui/material";
 import {
-  CalendarToday,
   TrendingUp,
   ShoppingCart,
   LocalShipping,
-  Discount,
-  AccountBalance,
   Refresh,
 } from "@mui/icons-material";
 import {
@@ -37,9 +31,8 @@ import {
   Pie,
   Cell,
 } from "recharts";
-import userService from "../../../services/userService";
 import { DatePicker } from "antd";
-import dayjs from "dayjs";
+import userService from "../../../services/userService";
 const { RangePicker } = DatePicker;
 
 const lineChartColors = [
@@ -55,12 +48,6 @@ const lineChartColors = [
 const revenueDataPie = ["#1976d2", "#9c27b0", "#4caf50", "#ff9800"];
 
 const channelDataPie = ["#1976d2", "#424242", "#4caf50"];
-
-// [
-//   { name: "Online", value: 60, color: "#1976d2" },
-//   { name: "Mobile App", value: 25, color: "#424242" },
-//   { name: "Store", value: 15, color: "#4caf50" },
-// ];
 
 const metrics = [
   {
@@ -87,12 +74,6 @@ const metrics = [
     icon: ShoppingCart,
     color: "#1976d2",
   },
-  // {
-  //   title: "Orders Net Value",
-  //   icon: AccountBalance,
-  //   color: "#9c27b0",
-  //   highlight: true,
-  // },
 ];
 
 const financialMetrics = [
@@ -111,12 +92,6 @@ const financialMetrics = [
     title: "Total Discount",
     color: "#9c27b0",
   },
-  // {
-  //   key: "ordersDiscount",
-  //   title: "Orders Discount",
-  //   value: "₹191.3K",
-  //   color: "#f44336",
-  // },
 ];
 
 const UserHome = () => {
@@ -130,11 +105,8 @@ const UserHome = () => {
   const [dates, setDates] = useState([]);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  console.log('startDate: ', startDate);
-  console.log('endDate: ', endDate);
 
   const handleChange = (values) => {
-    console.log('values: ', values);
     setDates(values);
     if (values && values.length === 2) {
       setStartDate(values[0].format("YYYY-MM-DD"));

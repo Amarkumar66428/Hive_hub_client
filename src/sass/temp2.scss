@@ -152,10 +152,6 @@
     }
 
     .new-arrivals {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 1em;
-      padding: 1em 8em;
       justify-content: center;
 
       .image-wrapper {
