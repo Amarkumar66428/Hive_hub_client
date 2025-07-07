@@ -9,7 +9,7 @@ import {
   SearchOutlined,
   ShoppingCartOutlined,
 } from "@mui/icons-material";
-import { Badge, Box, Button, InputBase } from "@mui/material";
+import { Badge, Box, Button, Grid, InputBase } from "@mui/material";
 import first_hero from "../../../assets/storePage/temp2/first_hero.webp";
 import new1 from "../../../assets/storePage/temp2/newA1.webp";
 import new2 from "../../../assets/storePage/temp2/newA2.webp";
@@ -459,19 +459,24 @@ const Templates2 = ({
                 </p>
               )}
             </div>
-            <div className="new-arrivals">
+            <Grid container className="new-arrivals" spacing={2}>
               {(products?.length > 0 ? products : newProducts)
                 ?.slice(0, 4)
                 ?.map((product) => (
-                  <ProductCard
-                    isEdit={isEdit}
+                  <Grid
+                    size={{ xs: 12, sm: 6, md: 4, lg: 3, xl: 2 }}
                     key={product._id || product.id}
-                    product={product}
-                    setSignInOpen={setSignInOpen}
-                    dummy={products?.length === 0}
-                  />
+                  >
+                    <ProductCard
+                      isEdit={isEdit}
+                      key={product._id || product.id}
+                      product={product}
+                      setSignInOpen={setSignInOpen}
+                      dummy={products?.length === 0}
+                    />
+                  </Grid>
                 ))}
-            </div>
+            </Grid>
             <div className="frame-32">
               <button className="frame-33">
                 <div className="text-wrapper-24">View All</div>
@@ -493,17 +498,22 @@ const Templates2 = ({
                 </p>
               )}
             </div>
-            <div className="new-arrivals">
+            <Grid container className="new-arrivals" spacing={2}>
               {topProducts?.map((product) => (
-                <ProductCard
-                  isEdit={isEdit}
+                <Grid
+                  size={{ xs: 12, sm: 6, md: 4, lg: 3, xl: 2 }}
                   key={product.id}
-                  product={product}
-                  setSignInOpen={setSignInOpen}
-                  dummy={true}
-                />
+                >
+                  <ProductCard
+                    isEdit={isEdit}
+                    key={product.id}
+                    product={product}
+                    setSignInOpen={setSignInOpen}
+                    dummy={true}
+                  />
+                </Grid>
               ))}
-            </div>
+            </Grid>
             <div className="frame-32">
               <button className="frame-33">
                 <div className="text-wrapper-24">View All</div>
