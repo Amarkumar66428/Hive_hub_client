@@ -78,9 +78,9 @@ const ServerError = () => {
       footer={null}
       closable={false}
       centered
+      width={isMobile ? "100%" : 480}
       style={{
-        padding: 24,
-        maxWidth: 480,
+        padding: isMobile ? 0 : 24,
         margin: "0 auto",
       }}
     >
