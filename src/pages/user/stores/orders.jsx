@@ -39,30 +39,31 @@ import {
 import storeService from "../../../services/storeService";
 import { formatDate } from "../../../utils/helper";
 import TableSkeleton from "../../../components/tableSkeleton";
+import { useSnackbar } from "../../../features/snackBar";
 
 const metrics = [
   {
     title: "Total Orders",
-    value: "21",
-    change: "+25.3% last week",
+    value: "0",
+    change: "+0% last week",
     trend: "up",
   },
   {
     title: "Order items over time",
-    value: "15",
-    change: "+18.2% last week",
+    value: "0",
+    change: "+0% last week",
     trend: "up",
   },
   {
     title: "Returns Orders",
     value: "0",
-    change: "-1.2% last week",
+    change: "+0% last week",
     trend: "down",
   },
   {
     title: "Fulfilled orders over time",
-    value: "12",
-    change: "+22.2% last week",
+    value: "0",
+    change: "+0% last week",
     trend: "up",
   },
 ];
@@ -70,6 +71,7 @@ const metrics = [
 const tabs = ["All", "Unfulfilled", "Unpaid", "Open", "Closed"];
 
 const Orders = () => {
+  const { showSnackbar } = useSnackbar();
   const [loading, setLoading] = useState(false);
   const [orders, setOrders] = useState([]);
   const [moreActionsAnchor, setMoreActionsAnchor] = useState(null);
@@ -116,6 +118,10 @@ const Orders = () => {
     fetchOrders();
   }, [currentPage, limit]);
 
+  const comingSoon = () => {
+    showSnackbar("Coming soon", "info");
+  };
+
   return (
     <>
       <Paper sx={{ p: 2, mb: 2 }}>
@@ -132,6 +138,7 @@ const Orders = () => {
               variant="outlined"
               startIcon={<ExportIcon />}
               sx={{ textTransform: "none" }}
+              onClick={comingSoon}
             >
               Export
             </Button>
@@ -148,6 +155,7 @@ const Orders = () => {
               sx={{
                 textTransform: "none",
               }}
+              onClick={comingSoon}
             >
               Create order
             </Button>
@@ -160,11 +168,21 @@ const Orders = () => {
         open={Boolean(moreActionsAnchor)}
         onClose={() => setMoreActionsAnchor(null)}
       >
-        <MenuItem onClick={() => setMoreActionsAnchor(null)}>
+        <MenuItem
+          onClick={() => {
+            setMoreActionsAnchor(null);
+            comingSoon();
+          }}
+        >
           <EmailIcon sx={{ mr: 1 }} fontSize="small" />
           Send Email
         </MenuItem>
-        <MenuItem onClick={() => setMoreActionsAnchor(null)}>
+        <MenuItem
+          onClick={() => {
+            setMoreActionsAnchor(null);
+            comingSoon();
+          }}
+        >
           <PrintIcon sx={{ mr: 1 }} fontSize="small" />
           Print
         </MenuItem>
@@ -283,14 +301,13 @@ const Orders = () => {
               <TableBody>
                 {loading ? (
                   <TableSkeleton rows={4} columns={9} showActions={true} />
+                ) : orders.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={9} align="center">
+                      <Typography variant="body2">No orders found</Typography>
+                    </TableCell>
+                  </TableRow>
                 ) : (
-                  orders.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={9} align="center">
-                        <Typography variant="body2">No orders found</Typography>
-                      </TableCell>
-                    </TableRow>
-                  ) : (
                   orders.map((order, index) => (
                     <TableRow key={index} hover>
                       <TableCell padding="checkbox">
@@ -355,9 +372,8 @@ const Orders = () => {
                           </IconButton>
                         </Box>
                       </TableCell>
-                        </TableRow>
-                      ))
-                    )
+                    </TableRow>
+                  ))
                 )}
               </TableBody>
             </Table>

@@ -38,11 +38,10 @@
       .hero-content {
         position: absolute;
         top: 0;
-        left: 0;
+        left: 7em;
         display: flex;
         flex-direction: column;
         gap: 2em;
-        padding-left: 7em;
         height: 100%;
         justify-content: center;
       }
@@ -367,194 +366,143 @@
         line-height: normal;
       }
     }
-  }
 
-  .template .text-wrapper-2 {
-    position: relative;
-    width: fit-content;
-    margin-top: -2px;
-    font-family: "Satoshi-Medium", Helvetica;
-    font-weight: 500;
-    color: #ffffff;
-    font-size: 16px;
-    letter-spacing: 0;
-    line-height: normal;
-  }
+    .text-wrapper-2 {
+      position: relative;
+      width: fit-content;
+      margin-top: -2px;
+      font-family: "Satoshi-Medium", Helvetica;
+      font-weight: 500;
+      color: #ffffff;
+      font-size: 16px;
+      letter-spacing: 0;
+      line-height: normal;
+    }
 
-  .template .frame-3 {
-    display: inline-flex;
-    flex-direction: column;
-    align-items: flex-start;
-    position: relative;
-    flex: 0 0 auto;
-  }
+    .frame-3 {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: flex-start;
+      position: relative;
+      flex: 0 0 auto;
+    }
 
-  .template .text-wrapper-3 {
-    position: relative;
-    width: fit-content;
-    margin-top: -1px;
-    font-family: "Satoshi-Bold", Helvetica;
-    font-weight: 700;
-    color: "inherit";
-    font-size: 40px;
-    letter-spacing: 0;
-    line-height: normal;
-  }
+    .text-wrapper-3 {
+      position: relative;
+      width: fit-content;
+      margin-top: -1px;
+      font-family: "Satoshi-Bold", Helvetica;
+      font-weight: 700;
+      color: "inherit";
+      font-size: 40px;
+      letter-spacing: 0;
+      line-height: normal;
+    }
 
-  .template .text-wrapper-4 {
-    position: relative;
-    width: fit-content;
-    margin-top: -2px;
-    font-family: "Satoshi-Regular", Helvetica;
-    font-weight: 400;
-    color: #00000099;
-    font-size: 16px;
-    letter-spacing: 0;
-    line-height: 22px;
-    white-space: nowrap;
-  }
+    .text-wrapper-4 {
+      position: relative;
+      width: fit-content;
+      margin-top: -2px;
+      font-family: "Satoshi-Regular", Helvetica;
+      font-weight: 400;
+      color: #00000099;
+      font-size: 16px;
+      letter-spacing: 0;
+      line-height: 22px;
+      white-space: nowrap;
+    }
 
-  .template .line {
-    position: relative;
-    align-self: stretch;
-    width: 1px;
-    object-fit: cover;
-  }
+    .span {
+      font-family: "Satoshi-Regular", Helvetica;
+      font-weight: 400;
+      color: #ffffff;
+      font-size: 14px;
+      letter-spacing: 0;
+    }
 
-  .template .span {
-    font-family: "Satoshi-Regular", Helvetica;
-    font-weight: 400;
-    color: #ffffff;
-    font-size: 14px;
-    letter-spacing: 0;
-  }
+    .text-wrapper-5 {
+      font-family: "Satoshi-Medium", Helvetica;
+      font-weight: 500;
+      text-decoration: underline;
+      cursor: pointer;
+    }
 
-  .template .text-wrapper-5 {
-    font-family: "Satoshi-Medium", Helvetica;
-    font-weight: 500;
-    text-decoration: underline;
-    cursor: pointer;
-  }
+    .text-wrapper-6 {
+      position: relative;
+      width: fit-content;
+      font-family: "Integral CF-Bold", Helvetica;
+      font-weight: 700;
+      color: "inherit";
+      font-size: 32px;
+      letter-spacing: 0;
+      line-height: normal;
+      white-space: nowrap;
+    }
 
-  .template .text-wrapper-6 {
-    position: relative;
-    width: fit-content;
-    font-family: "Integral CF-Bold", Helvetica;
-    font-weight: 700;
-    color: "inherit";
-    font-size: 32px;
-    letter-spacing: 0;
-    line-height: normal;
-    white-space: nowrap;
-  }
+    .frame-8 {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      position: relative;
+      flex: 0 0 auto;
+    }
 
-  .template .frame-8 {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    position: relative;
-    flex: 0 0 auto;
-  }
+    .text-wrapper-7 {
+      position: relative;
+      width: fit-content;
+      margin-top: -1px;
+      font-family: "Satoshi-Regular", Helvetica;
+      font-weight: 400;
+      color: #000000;
+      font-size: 16px;
+      letter-spacing: 0;
+      line-height: normal;
+    }
 
-  .template .text-wrapper-7 {
-    position: relative;
-    width: fit-content;
-    margin-top: -1px;
-    font-family: "Satoshi-Regular", Helvetica;
-    font-weight: 400;
-    color: #000000;
-    font-size: 16px;
-    letter-spacing: 0;
-    line-height: normal;
-  }
+    .frame-10 {
+      flex: 1;
+      flex-grow: 1;
+      background-color: #f0f0f0;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 16px;
+      position: relative;
+      border-radius: 62px;
+      overflow: hidden;
+      color: #000000;
+    }
 
-  .template .frame-9 {
-    position: relative;
-    width: 16px;
-    height: 16px;
-  }
+    .frame-11 {
+      position: relative;
+      width: 24px;
+      height: 24px;
+      cursor: pointer;
+    }
 
-  .template .frame-10 {
-    flex: 1;
-    flex-grow: 1;
-    background-color: #f0f0f0;
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    padding: 12px 16px;
-    position: relative;
-    border-radius: 62px;
-    overflow: hidden;
-    color: #000000;
-  }
+    .frame-12 {
+      display: inline-flex;
+      align-items: flex-start;
+      gap: 14px;
+      position: relative;
+      flex: 0 0 auto;
+    }
 
-  .template .frame-11 {
-    position: relative;
-    width: 24px;
-    height: 24px;
-    cursor: pointer;
-  }
+    .group {
+      position: absolute;
+      width: 166px;
+      height: 33px;
+      top: 44px;
+      left: 100px;
+    }
 
-  .template .frame-12 {
-    display: inline-flex;
-    align-items: flex-start;
-    gap: 14px;
-    position: relative;
-    flex: 0 0 auto;
-  }
-
-  .template .group {
-    position: absolute;
-    width: 166px;
-    height: 33px;
-    top: 44px;
-    left: 100px;
-  }
-
-  .template .zara-logo {
-    position: absolute;
-    width: 91px;
-    height: 38px;
-    top: 42px;
-    left: 372px;
-  }
-
-  .template .gucci-logo {
-    position: absolute;
-    width: 156px;
-    height: 36px;
-    top: 43px;
-    left: 569px;
-  }
-
-  .template .prada-logo {
-    position: absolute;
-    width: 194px;
-    height: 32px;
-    top: 45px;
-    left: 831px;
-    background-image: url(https://c.animaapp.com/mb9ouoro5Ao2nl/img/group-2.png);
-    background-size: 100% 100%;
-  }
-
-  .template .group-2 {
-    position: absolute;
-    width: 207px;
-    height: 33px;
-    top: 44px;
-    left: 1131px;
-  }
-
-  .template .star {
-    position: relative;
-    width: 17.58px;
-    height: 16.72px;
-  }
-
-  .template .star-2 {
-    position: relative;
-    width: 8.79px;
-    height: 16.72px;
+    .group-2 {
+      position: absolute;
+      width: 207px;
+      height: 33px;
+      top: 44px;
+      left: 1131px;
+    }
   }
 
   .template .element {
