@@ -65,8 +65,9 @@ const ManageStores = () => {
         setStore(response?.store || null);
         setProducts(response?.products || []);
       } catch (error) {
-        if (error.status === 404) {
+        if (error?.status === 404) {
           await navigate("/user/manage-store/create-store");
+          return;
         }
         console.log("Error fetching stores:", error);
       } finally {
@@ -74,7 +75,7 @@ const ManageStores = () => {
       }
     };
     fetchStore();
-  }, []);
+  }, [navigate]);
 
   const handleCopyUrl = () => {
     navigator.clipboard.writeText(
@@ -91,261 +92,259 @@ const ManageStores = () => {
     }
   }, [copied]);
 
+  if (loading) return <StorePageSkeleton />;
+  
   return (
     <Box sx={{ height: "100vh" }}>
-      {loading ? (
-        <StorePageSkeleton />
-      ) : (
-        <Container
-          maxWidth={false}
-          disableGutters
-          sx={{
-            height: "100%",
-            display: "flex",
-            flexDirection: "column",
-            p: 2,
-            gap: 2,
-          }}
-        >
-          <Grid container spacing={2}>
-            <Grid size={{ xs: 12, md: 6 }}>
-              <Card>
-                <CardContent sx={{ display: "flex", gap: 2 }}>
+      <Container
+        maxWidth={false}
+        disableGutters
+        sx={{
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
+          p: 2,
+          gap: 2,
+        }}
+      >
+        <Grid container spacing={2}>
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Card>
+              <CardContent sx={{ display: "flex", gap: 2 }}>
+                <Box
+                  sx={{
+                    flex: 1,
+                    display: "flex",
+                    gap: 2,
+                    flexDirection: "column",
+                    maxWidth: "30%",
+                  }}
+                >
                   <Box
                     sx={{
-                      flex: 1,
-                      display: "flex",
-                      gap: 2,
-                      flexDirection: "column",
-                      maxWidth: "30%",
+                      width: "100%",
+                      height: "16em",
+                      objectFit: "cover",
+                      borderRadius: 1,
+                      boxShadow: 1,
+                      cursor: "pointer",
+                    }}
+                    onClick={() => {
+                      window.open(
+                        `${window.location.origin}/hive/${store?.subdomain}`,
+                        "_blank"
+                      );
                     }}
                   >
-                    <Box
-                      sx={{
-                        width: "100%",
-                        height: "16em",
-                        objectFit: "cover",
-                        borderRadius: 1,
-                        boxShadow: 1,
-                        cursor: "pointer",
-                      }}
-                      onClick={() => {
-                        window.open(
-                          `${window.location.origin}/hive/${store?.subdomain}`,
-                          "_blank"
-                        );
-                      }}
-                    >
-                      <img src={webPage} alt="Store Preview" />
-                    </Box>
-                    <Box sx={{ display: "flex", justifyContent: "center" }}>
-                      <Button
-                        variant="contained"
-                        color="primary"
-                        fullWidth
-                        onClick={() =>
-                          navigate(`/user/manage-store/edit/1/${store?._id}`, {
-                            state: { storeData: store, products: products },
-                          })
-                        }
-                      >
-                        Edit Store
-                      </Button>
-                    </Box>
+                    <img src={webPage} alt="Store Preview" />
                   </Box>
+                  <Box sx={{ display: "flex", justifyContent: "center" }}>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      fullWidth
+                      onClick={() =>
+                        navigate(`/user/manage-store/edit/1/${store?._id}`, {
+                          state: { storeData: store, products: products },
+                        })
+                      }
+                    >
+                      Edit Store
+                    </Button>
+                  </Box>
+                </Box>
+                <Box
+                  sx={{
+                    flex: 1,
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 1.5,
+                  }}
+                >
+                  <Typography
+                    variant="h5"
+                    fontWeight={700}
+                    color="text.primary"
+                  >
+                    {store?.name || "Store Name"}
+                  </Typography>
                   <Box
                     sx={{
-                      flex: 1,
                       display: "flex",
-                      flexDirection: "column",
-                      gap: 1.5,
+                      alignItems: "center",
+                      color: "primary.main",
+                      textDecoration: "none",
+                      gap: 2,
+                      "&:hover": { textDecoration: "underline" },
                     }}
                   >
-                    <Typography
-                      variant="h5"
-                      fontWeight={700}
-                      color="text.primary"
-                    >
-                      {store?.name || "Store Name"}
-                    </Typography>
+                    <Tooltip title={store?.isApproved ? "Live" : "Pending"}>
+                      <RadioButtonCheckedOutlined
+                        fontSize="small"
+                        sx={{
+                          color: store?.isApproved
+                            ? "success.main"
+                            : "warning.main",
+                        }}
+                      />
+                    </Tooltip>
                     <Box
+                      component="a"
+                      href={`${window.location.origin}/hive/${store?.subdomain}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       sx={{
-                        display: "flex",
-                        alignItems: "center",
                         color: "primary.main",
                         textDecoration: "none",
-                        gap: 2,
                         "&:hover": { textDecoration: "underline" },
                       }}
                     >
-                      <Tooltip title={store?.isApproved ? "Live" : "Pending"}>
-                        <RadioButtonCheckedOutlined
-                          fontSize="small"
-                          sx={{
-                            color: store?.isApproved
-                              ? "success.main"
-                              : "warning.main",
-                          }}
-                        />
-                      </Tooltip>
-                      <Box
-                        component="a"
-                        href={`${window.location.origin}/hive/${store?.subdomain}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        sx={{
-                          color: "primary.main",
-                          textDecoration: "none",
-                          "&:hover": { textDecoration: "underline" },
-                        }}
-                      >
-                        {store?.subdomain
-                          ? `${window.location.origin}/hive/${store.subdomain}`
-                          : "Store URL not set"}
-                      </Box>
-                      <IconButton onClick={handleCopyUrl}>
-                        {copied ? (
-                          <CheckCircle fontSize="small" color="success" />
-                        ) : (
-                          <ContentCopy fontSize="small" />
-                        )}
-                      </IconButton>
+                      {store?.subdomain
+                        ? `${window.location.origin}/hive/${store.subdomain}`
+                        : "Store URL not set"}
                     </Box>
-
-                    {/* Divider */}
-                    <Divider sx={{ my: 1 }} />
-
-                    {/* Store Status */}
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <Typography variant="body2" color="text.secondary">
-                        Status:
-                      </Typography>
-                      <Chip
-                        label={
-                          store?.isApproved ? "Approved" : "Pending Approval"
-                        }
-                        color={store?.isApproved ? "success" : "warning"}
-                        size="small"
-                        sx={{
-                          fontWeight: 600,
-                          textTransform: "capitalize",
-                          px: 1,
-                        }}
-                      />
-                    </Box>
-
-                    {/* Created At */}
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <Typography variant="body2" color="text.secondary">
-                        Created on:
-                      </Typography>
-                      <Typography variant="body2" fontWeight={500}>
-                        {formatDate(store?.createdAt)}
-                      </Typography>
-                    </Box>
-
-                    {/* Deployed At */}
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <Typography variant="body2" color="text.secondary">
-                        Deployed on:
-                      </Typography>
-                      <Typography variant="body2" fontWeight={500}>
-                        {formatDate(store?.updatedAt)}
-                      </Typography>
-                    </Box>
+                    <IconButton onClick={handleCopyUrl}>
+                      {copied ? (
+                        <CheckCircle fontSize="small" color="success" />
+                      ) : (
+                        <ContentCopy fontSize="small" />
+                      )}
+                    </IconButton>
                   </Box>
-                </CardContent>
-              </Card>
-            </Grid>
 
-            {/* Right Panel with Store Analytics */}
-            <Grid item size={{ xs: 12, md: 6 }}>
-              <Card
-                sx={{
-                  height: "100%",
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "space-between",
-                }}
-              >
-                <CardHeader
-                  title={
-                    <Typography variant="h4" fontWeight={600}>
-                      Store Analytics
+                  {/* Divider */}
+                  <Divider sx={{ my: 1 }} />
+
+                  {/* Store Status */}
+                  <Box display="flex" alignItems="center" gap={1}>
+                    <Typography variant="body2" color="text.secondary">
+                      Status:
                     </Typography>
-                  }
-                />
-                <CardContent sx={{ mt: 1, flex: 1 }}>
-                  <Typography variant="body2" color="text.secondary">
-                    Get a deeper understanding of your project with detailed
-                    analytics including page views, unique visitors, and top
-                    pages.{" "}
-                    <Typography
-                      component="span"
+                    <Chip
+                      label={
+                        store?.isApproved ? "Approved" : "Pending Approval"
+                      }
+                      color={store?.isApproved ? "success" : "warning"}
+                      size="small"
                       sx={{
-                        color: "primary.main",
-                        cursor: "pointer",
-                        textDecoration: "underline",
-                        fontWeight: 500,
-                        "&:hover": { textDecoration: "none" },
+                        fontWeight: 600,
+                        textTransform: "capitalize",
+                        px: 1,
                       }}
-                    >
-                      Learn more
-                    </Typography>
-                  </Typography>
-                </CardContent>
-                <CardActions>
-                  <Button variant="contained" color="primary">
-                    Upgrade to Enable
-                  </Button>
-                </CardActions>
-              </Card>
-            </Grid>
-          </Grid>
+                    />
+                  </Box>
 
-          {/* Store Edit History */}
-          <Grid item size={{ xs: 12 }} sx={{ flexGrow: 1 }}>
-            <Card sx={{ height: "100%" }}>
-              <CardHeader
-                title={
-                  <Typography variant="h5" fontWeight={600}>
-                    Store Edit History
-                  </Typography>
-                }
-                sx={{ pb: 0 }}
-              />
-              <CardContent sx={{ pt: 1 }}>
-                <List disablePadding>
-                  {storeEditHistory.map((item, index) => (
-                    <Box key={index}>
-                      <ListItem
-                        secondaryAction={
-                          <Box display="flex" alignItems="center" gap={2}>
-                            <Typography
-                              variant="body2"
-                              color="text.secondary"
-                              minWidth="100px"
-                              textAlign="right"
-                            >
-                              {item.date}
-                            </Typography>
-                          </Box>
-                        }
-                      >
-                        <ListItemText
-                          primary={item.field}
-                          secondary={item.timeAgo}
-                        />
-                      </ListItem>
-                      <Divider />
-                    </Box>
-                  ))}
-                </List>
+                  {/* Created At */}
+                  <Box display="flex" alignItems="center" gap={1}>
+                    <Typography variant="body2" color="text.secondary">
+                      Created on:
+                    </Typography>
+                    <Typography variant="body2" fontWeight={500}>
+                      {formatDate(store?.createdAt)}
+                    </Typography>
+                  </Box>
+
+                  {/* Deployed At */}
+                  <Box display="flex" alignItems="center" gap={1}>
+                    <Typography variant="body2" color="text.secondary">
+                      Deployed on:
+                    </Typography>
+                    <Typography variant="body2" fontWeight={500}>
+                      {formatDate(store?.updatedAt)}
+                    </Typography>
+                  </Box>
+                </Box>
               </CardContent>
             </Card>
           </Grid>
-        </Container>
-      )}
+
+          {/* Right Panel with Store Analytics */}
+          <Grid item size={{ xs: 12, md: 6 }}>
+            <Card
+              sx={{
+                height: "100%",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+              }}
+            >
+              <CardHeader
+                title={
+                  <Typography variant="h4" fontWeight={600}>
+                    Store Analytics
+                  </Typography>
+                }
+              />
+              <CardContent sx={{ mt: 1, flex: 1 }}>
+                <Typography variant="body2" color="text.secondary">
+                  Get a deeper understanding of your project with detailed
+                  analytics including page views, unique visitors, and top
+                  pages.{" "}
+                  <Typography
+                    component="span"
+                    sx={{
+                      color: "primary.main",
+                      cursor: "pointer",
+                      textDecoration: "underline",
+                      fontWeight: 500,
+                      "&:hover": { textDecoration: "none" },
+                    }}
+                  >
+                    Learn more
+                  </Typography>
+                </Typography>
+              </CardContent>
+              <CardActions>
+                <Button variant="contained" color="primary">
+                  Upgrade to Enable
+                </Button>
+              </CardActions>
+            </Card>
+          </Grid>
+        </Grid>
+
+        {/* Store Edit History */}
+        <Grid item size={{ xs: 12 }} sx={{ flexGrow: 1 }}>
+          <Card sx={{ height: "100%" }}>
+            <CardHeader
+              title={
+                <Typography variant="h5" fontWeight={600}>
+                  Store Edit History
+                </Typography>
+              }
+              sx={{ pb: 0 }}
+            />
+            <CardContent sx={{ pt: 1 }}>
+              <List disablePadding>
+                {storeEditHistory.map((item, index) => (
+                  <Box key={index}>
+                    <ListItem
+                      secondaryAction={
+                        <Box display="flex" alignItems="center" gap={2}>
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            minWidth="100px"
+                            textAlign="right"
+                          >
+                            {item.date}
+                          </Typography>
+                        </Box>
+                      }
+                    >
+                      <ListItemText
+                        primary={item.field}
+                        secondary={item.timeAgo}
+                      />
+                    </ListItem>
+                    <Divider />
+                  </Box>
+                ))}
+              </List>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Container>
     </Box>
   );
 };

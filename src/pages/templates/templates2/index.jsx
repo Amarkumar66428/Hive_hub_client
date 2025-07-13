@@ -31,6 +31,7 @@ import Cookies from "js-cookie";
 import { UserMenu } from "./component";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+import "./temp2.scss";
 
 const layoutSection = [
   {
