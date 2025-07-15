@@ -367,10 +367,7 @@ const AddProductStepperModal = ({
         description: description.trim(),
         basePrice: parseFloat(basePrice),
         category: category.trim(),
-        tags: tags
-          .split(",")
-          .map((tag) => tag.trim())
-          .filter(Boolean),
+        tags: Array.isArray(tags) ? tags : tags?.split(",")?.map((tag) => tag.trim())?.filter(Boolean),
         attributes,
         variants,
         images: images?.map((img) => img.file).filter(Boolean),
@@ -522,7 +519,7 @@ const AddProductStepperModal = ({
               <Box sx={{ display: "flex", gap: 2 }}>
                 <TextField
                   fullWidth
-                  label="Base Price"
+                  label="Maximum Retail Price"
                   type="number"
                   value={formData?.basePrice}
                   onChange={handleChange("basePrice")}
@@ -873,7 +870,7 @@ const AddProductStepperModal = ({
                   Pricing & Inventory
                 </Typography>
                 <Typography>
-                  <strong>Base Price:</strong> ${formData?.basePrice}
+                  <strong>Maximum Retail Price:</strong> ${formData?.basePrice}
                 </Typography>
                 <Typography>
                   <strong>Tags:</strong> {formData?.tags || "None"}

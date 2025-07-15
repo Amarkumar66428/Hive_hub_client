@@ -221,9 +221,9 @@ const PostCard = memo(
                   <IconButton
                     size="small"
                     sx={{
-                      color: isFlagged ? "error.main" : "text.secondary",
+                      color: !isFlagged ? "error.main" : "text.secondary",
                       "&:hover": {
-                        bgcolor: isFlagged ? "error.50" : "grey.100",
+                        bgcolor: !isFlagged ? "error.50" : "grey.100",
                       },
                     }}
                     onClick={handleFlagPost}
@@ -462,7 +462,6 @@ const Community = () => {
   const [error, setError] = useState(null);
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
-  const [anchorEl, setAnchorEl] = useState(null);
   const [createPostModal, setCreatePostModal] = useState(false);
   const [openCommentBox, setOpenCommentBox] = useState(null);
   const [filter, setFilter] = useState("admin");
@@ -470,8 +469,7 @@ const Community = () => {
   const observerRef = useRef();
   const lastPostElementRef = useRef();
 
-  // Memoized values
-  const open = Boolean(anchorEl);
+
 
   // Fetch posts function
   const fetchPosts = useCallback(
@@ -678,42 +676,6 @@ const Community = () => {
     [currentUser._id, showSnackbar]
   );
 
-  const fetchMyPosts = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await communityService.getMyPosts(currentUser._id);
-      setPosts(response?.posts || []);
-      setHasMore(false); // Assuming my posts don't have pagination
-    } catch (error) {
-      console.error("Error fetching my posts:", error);
-      setError("Failed to load your posts");
-    } finally {
-      setLoading(false);
-    }
-  }, [currentUser._id]);
-
-  const handleMenuItemClick = useCallback(
-    (action) => {
-      setAnchorEl(null);
-
-      switch (action) {
-        case "create-post":
-          setCreatePostModal(true);
-          break;
-        case "my-posts":
-          fetchMyPosts();
-          break;
-        case "my-profile":
-          // Navigate to profile
-          break;
-        default:
-          break;
-      }
-    },
-    [fetchMyPosts]
-  );
-
   const handleRefresh = useCallback(() => {
     setPage(1);
     setHasMore(true);
@@ -790,53 +752,16 @@ const Community = () => {
               </Select>
             </FormControl>
             <Button
-              onClick={(e) => setAnchorEl(e.currentTarget)}
+              variant="contained"
+              onClick={() => setCreatePostModal(true)}
               sx={{
-                borderRadius: 3,
                 px: 2,
                 py: 1,
-                "&:hover": { bgcolor: "action.hover" },
               }}
             >
-              <Avatar
-                src="https://randomuser.me/api/portraits/women/44.jpg"
-                sx={{ width: 40, height: 40, mr: 1 }}
-              />
-              <ExpandMore />
+              Add Post
             </Button>
           </Box>
-
-          <Menu
-            anchorEl={anchorEl}
-            open={open}
-            onClose={() => setAnchorEl(null)}
-            transformOrigin={{ horizontal: "right", vertical: "top" }}
-            anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
-            PaperProps={{
-              elevation: 3,
-              sx: { mt: 1, minWidth: 200 },
-            }}
-          >
-            <MenuItem onClick={() => handleMenuItemClick("create-post")}>
-              <ListItemIcon>
-                <Add />
-              </ListItemIcon>
-              <ListItemText>Create Post</ListItemText>
-            </MenuItem>
-            <MenuItem onClick={() => handleMenuItemClick("my-posts")}>
-              <ListItemIcon>
-                <Article />
-              </ListItemIcon>
-              <ListItemText>My Posts</ListItemText>
-            </MenuItem>
-            <Divider />
-            <MenuItem onClick={() => handleMenuItemClick("my-profile")}>
-              <ListItemIcon>
-                <Person />
-              </ListItemIcon>
-              <ListItemText>My Community Profile</ListItemText>
-            </MenuItem>
-          </Menu>
         </Stack>
       </Paper>
 

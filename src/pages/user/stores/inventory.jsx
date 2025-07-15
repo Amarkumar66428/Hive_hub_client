@@ -45,26 +45,19 @@ import storeService from "../../../services/storeService";
 import TableSkeleton from "../../../components/tableSkeleton";
 import { useSnackbar } from "../../../features/snackBar";
 
-const categoryItems = [
-  { key: "sneakers", label: "Sneakers" },
-  { key: "boots", label: "Boots" },
-  { key: "sandals", label: "Sandals" },
-  { key: "formal", label: "Formal Shoes" },
-];
-
-const brandItems = [
-  { key: "zermoten", label: "Zermoten" },
-  { key: "nike", label: "Nike" },
-  { key: "adidas", label: "Adidas" },
-  { key: "puma", label: "Puma" },
-];
+// const brandItems = [
+//   { key: "zermoten", label: "Zermoten" },
+//   { key: "nike", label: "Nike" },
+//   { key: "adidas", label: "Adidas" },
+//   { key: "puma", label: "Puma" },
+// ];
 
 const sortItems = [
-  { key: "bestseller", label: "Best Seller" },
+  { key: "all", label: "All" },
   { key: "priceLow", label: "Price: Low to High" },
   { key: "priceHigh", label: "Price: High to Low" },
-  { key: "newest", label: "Newest First" },
   { key: "stockHigh", label: "Stock: High to Low" },
+  { key: "stockLow", label: "Stock: Low to High" },
 ];
 
 const InventoryManagement = () => {
@@ -75,11 +68,12 @@ const InventoryManagement = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [formValues, setFormValues] = useState({});
   const [products, setProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [categoryItems, setCategoryItems] = useState([]);
   const [filters, setFilters] = useState({
-    category: "Sneakers",
-    brand: "Zermoten",
-    sortBy: "Best Seller",
+    category: "all",
+    sortBy: "all",
   });
 
   const handleRowToggle = (productId) => {
@@ -122,8 +116,15 @@ const InventoryManagement = () => {
     try {
       setLoading(true);
       const response = await storeService.getMyInventory();
-      console.log("response: ", response);
       setProducts(response?.inventory || null);
+      setFilteredProducts(response?.inventory || null);
+      setCategoryItems((prev) => {
+        const newCategories = response?.inventory
+          ?.map((item) => item?.productId?.category)
+          .filter(Boolean);
+
+        return [...new Set([...prev, ...(newCategories || [])])];
+      });
     } catch (error) {
       console.error("Error fetching stores:", error);
     } finally {
@@ -134,6 +135,40 @@ const InventoryManagement = () => {
   useEffect(() => {
     fetchStore();
   }, []);
+
+  const handleCategoryChange = (e) => {
+    const category = e.target.value;
+    if (category === "all") {
+      setFilteredProducts(products);
+      return;
+    }
+    setFilters({ ...filters, category });
+    const filteredProducts = products.filter((product) =>
+      product?.productId?.category
+        ?.toLowerCase()
+        .includes(category.toLowerCase())
+    );
+    setFilteredProducts(filteredProducts);
+  };
+
+  const handleSortByChange = (e) => {
+    const sortBy = e.target.value;
+    setFilters({ ...filters, sortBy });
+    if (sortBy === "all") {
+      setFilteredProducts(products);
+      return;
+    }
+    const sortedProducts = [...filteredProducts].sort((a, b) => {
+      if (sortBy === "priceLow")
+        return a.productId.basePrice - b.productId.basePrice;
+      if (sortBy === "priceHigh")
+        return b.productId.basePrice - a.productId.basePrice;
+      if (sortBy === "stockHigh") return b.stock - a.stock;
+      if (sortBy === "stockLow") return a.stock - b.stock;
+      return 0;
+    });
+    setFilteredProducts(sortedProducts);
+  };
 
   return (
     <>
@@ -146,19 +181,18 @@ const InventoryManagement = () => {
               <Select
                 value={filters.category}
                 label="Category"
-                onChange={(e) =>
-                  setFilters({ ...filters, category: e.target.value })
-                }
+                onChange={handleCategoryChange}
               >
-                {categoryItems.map((item) => (
-                  <MenuItem key={item.key} value={item.label}>
-                    {item.label}
+                <MenuItem value="all">All</MenuItem>
+                {categoryItems.map((item, index) => (
+                  <MenuItem key={index} value={item}>
+                    {item}
                   </MenuItem>
                 ))}
               </Select>
             </FormControl>
 
-            <FormControl size="small" sx={{ minWidth: 120 }}>
+            {/* <FormControl size="small" sx={{ minWidth: 120 }}>
               <InputLabel>Brand</InputLabel>
               <Select
                 value={filters.brand}
@@ -173,19 +207,17 @@ const InventoryManagement = () => {
                   </MenuItem>
                 ))}
               </Select>
-            </FormControl>
+            </FormControl> */}
 
             <FormControl size="small" sx={{ minWidth: 150 }}>
               <InputLabel>Sort By</InputLabel>
               <Select
                 value={filters.sortBy}
                 label="Sort By"
-                onChange={(e) =>
-                  setFilters({ ...filters, sortBy: e.target.value })
-                }
+                onChange={handleSortByChange}
               >
                 {sortItems.map((item) => (
-                  <MenuItem key={item.key} value={item.label}>
+                  <MenuItem key={item.key} value={item.key}>
                     {item.label}
                   </MenuItem>
                 ))}
@@ -204,9 +236,8 @@ const InventoryManagement = () => {
                   <TableCell>Product</TableCell>
                   {!isMobile && (
                     <>
-                      <TableCell>ID</TableCell>
                       <TableCell>Product Name</TableCell>
-                      <TableCell>Size</TableCell>
+                      <TableCell>Category</TableCell>
                       <TableCell>Price</TableCell>
                       <TableCell>Stock</TableCell>
                     </>
@@ -222,7 +253,7 @@ const InventoryManagement = () => {
                     rows={4}
                     columns={isMobile ? 4 : 7}
                   />
-                ) : products.length === 0 ? (
+                ) : filteredProducts.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={isMobile ? 5 : 8} align="center">
                       <Typography variant="body1">
@@ -231,7 +262,7 @@ const InventoryManagement = () => {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  products.map((product) => (
+                  filteredProducts.map((product) => (
                     <ProductRow
                       key={product?._id}
                       theme={theme}
@@ -346,18 +377,14 @@ const ProductRow = ({
         {!isMobile && (
           <>
             <TableCell>
-              <Typography variant="body2" fontWeight="medium">
-                {product._id}
-              </Typography>
-            </TableCell>
-            <TableCell>
               <Typography variant="body2">
                 {product?.productId?.title}
               </Typography>
             </TableCell>
+
             <TableCell>
               <Chip
-                label={product.size || "M"}
+                label={product?.productId?.category || "--"}
                 size="small"
                 variant="outlined"
               />
@@ -505,14 +532,6 @@ const ProductRow = ({
                           </Typography>
                           <Typography variant="body2" fontWeight="medium">
                             {product._id}
-                          </Typography>
-                        </Box>
-                        <Box display="flex" justifyContent="space-between">
-                          <Typography variant="body2" color="text.secondary">
-                            Brand:
-                          </Typography>
-                          <Typography variant="body2" fontWeight="medium">
-                            {product?.productId?.brand || "--"}
                           </Typography>
                         </Box>
                         <Box display="flex" justifyContent="space-between">

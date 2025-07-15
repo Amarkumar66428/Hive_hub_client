@@ -36,6 +36,18 @@ const getMyPosts = async (userId) => {
   return response.data;
 };
 
+const deleteMyPost = async (postId) => {
+  const response = await api.delete(`/community/deleteMyPost/${postId}`);
+  return response.data;
+};
+
+const deleteMyComment = async (postId, commentId) => {
+  const response = await api.delete(
+    `community/deleteCommentAsAdmin/${postId}/${commentId}`
+  );
+  return response.data;
+};
+
 //////ADMIN
 
 const getAdminPosts = async () => {
@@ -69,6 +81,8 @@ const communityService = {
   createAdminPost,
   flagPost,
   getAdminPosts,
+  deleteMyPost,
+  deleteMyComment,
 };
 
 export default communityService;

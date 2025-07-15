@@ -174,19 +174,20 @@ const Campaigns = () => {
     endDate: "",
   });
 
+  const fetchCampaigns = async () => {
+    try {
+      setLoading(true);
+      const response = await campaignsService.getCampaigns();
+      console.log("response: ", response);
+      setCampaignsData(response?.campaigns);
+    } catch (error) {
+      setError(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchCampaigns = async () => {
-      try {
-        setLoading(true);
-        const response = await campaignsService.getCampaigns();
-        console.log("response: ", response);
-        setCampaignsData(response?.campaigns);
-      } catch (error) {
-        setError(error);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchCampaigns();
   }, []);
 
@@ -700,7 +701,12 @@ const Campaigns = () => {
           </Box>
 
           <Box sx={{ display: "flex", gap: 1 }}>
-            <Button variant="outlined" startIcon={<RefreshIcon />} size="small">
+            <Button
+              variant="outlined"
+              startIcon={<RefreshIcon />}
+              size="small"
+              onClick={fetchCampaigns}
+            >
               Sync Data
             </Button>
             <Button
@@ -881,12 +887,12 @@ const Campaigns = () => {
                       )}
                     </IconButton>
                   </Tooltip>
-                  <IconButton
+                  {/* <IconButton
                     size="small"
                     onClick={(e) => handleMenuOpen(e, campaign.id)}
                   >
                     <MoreVertIcon />
-                  </IconButton>
+                  </IconButton> */}
                 </TableCell>
               </TableRow>
             ))}
