@@ -1,21 +1,40 @@
 import React, { useEffect, useState } from "react";
+
 import {
   Container,
   Grid,
-  Card,
-  CardContent,
   CardMedia,
-  Typography,
-  Button,
-  Box,
-  Chip,
-  IconButton,
   Skeleton,
   Menu,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  Typography,
+  Box,
+  Chip,
+  Rating,
+  Button,
+  Card,
+  CardContent,
+  TextField,
   MenuItem,
+  Alert,
+  Tabs,
+  Tab,
   Paper,
+  Stack,
 } from "@mui/material";
 import {
+  Close,
+  LocalOffer,
+  Inventory,
+  Star,
+  ShoppingCart,
+  FavoriteBorder,
+  Share,
+  CheckCircle,
+  Cancel,
   MoreVert,
   Edit,
   Delete,
@@ -93,6 +112,8 @@ const Products = () => {
   const [editProduct, setEditProduct] = useState({});
   const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
+  const [productDetails, setProductDetails] = useState(null);
+  const [productDetailsModalOpen, setProductDetailsModalOpen] = useState(false);
 
   const handleEditProduct = (product) => {
     setModalOpen(true);
@@ -104,8 +125,8 @@ const Products = () => {
   };
 
   const handleViewProduct = (product) => {
-    console.log("View product:", product);
-    // Implement view product logic
+    setProductDetailsModalOpen(true);
+    setProductDetails(product || {});
   };
 
   const fetchStore = async () => {
@@ -214,6 +235,11 @@ const Products = () => {
           </Box>
         )}
       </Container>
+      <ProductDetailsModal
+        open={productDetailsModalOpen}
+        onClose={() => setProductDetailsModalOpen(false)}
+        product={productDetails}
+      />
     </>
   );
 };
@@ -278,7 +304,10 @@ const ProductCardComponent = ({ product, onEdit, onDelete, onView }) => {
             image={product?.images[0]}
             alt={product.basePrice}
             onLoad={() => setImageLoading(false)}
-            sx={{ display: imageLoading ? "none" : "block", objectFit: "contain", }}
+            sx={{
+              display: imageLoading ? "none" : "block",
+              objectFit: "contain",
+            }}
           />
         ) : (
           <Typography variant="body2" color="text.secondary">
@@ -310,6 +339,9 @@ const ProductCardComponent = ({ product, onEdit, onDelete, onView }) => {
             </Typography>
 
             <PriceContainer>
+              <Typography variant="body2" color="text.secondary">
+                MRP:
+              </Typography>
               <OriginalPrice>
                 ${product.basePrice.toFixed(2) || 0}
               </OriginalPrice>
@@ -377,5 +409,315 @@ const ProductCardComponent = ({ product, onEdit, onDelete, onView }) => {
         </MenuItem>
       </Menu>
     </ProductCard>
+  );
+};
+
+const ProductDetailsModal = ({ open, onClose, product = null }) => {
+  const [selectedTab, setSelectedTab] = useState(0);
+  const [selectedVariant, setSelectedVariant] = useState(0);
+  const [selectedImage, setSelectedImage] = useState(0);
+
+  if (!product) return null;
+
+  // Calculate price after discount
+  const calculateDiscountedPrice = (price, discount) => {
+    return price - (price * discount) / 100;
+  };
+
+  // Get current variant
+  const currentVariant =
+    product.variants?.[selectedVariant] || product.variants?.[0];
+  const finalPrice = currentVariant
+    ? calculateDiscountedPrice(currentVariant.price, currentVariant.discount)
+    : product.basePrice;
+
+  const handleTabChange = (event, newValue) => {
+    setSelectedTab(newValue);
+  };
+
+  return (
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="md"
+      fullWidth
+      PaperProps={{
+        sx: { height: "90vh", maxHeight: "900px" },
+      }}
+    >
+      <DialogTitle sx={{ m: 0, p: 2, pr: 6 }}>
+        <Typography variant="h5" component="div" fontWeight="600">
+          {product.title}
+        </Typography>
+        <IconButton
+          aria-label="close"
+          onClick={onClose}
+          sx={{
+            position: "absolute",
+            right: 8,
+            top: 8,
+            color: (theme) => theme.palette.grey[500],
+          }}
+        >
+          <Close />
+        </IconButton>
+      </DialogTitle>
+
+      <DialogContent dividers sx={{ p: 0 }}>
+        <Grid container spacing={0}>
+          {/* Left side - Images */}
+          <Grid item size={{ xs: 12, md: 6 }} sx={{ p: 3 }}>
+            <Box>
+              {/* Main Image */}
+              <Box
+                sx={{
+                  width: "100%",
+                  height: 400,
+                  backgroundColor: "grey.100",
+                  borderRadius: 2,
+                  overflow: "hidden",
+                  mb: 2,
+                }}
+              >
+                <img
+                  src={product.images?.[selectedImage] || "/placeholder.jpg"}
+                  alt={product.title}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "contain",
+                  }}
+                />
+              </Box>
+
+              {/* Thumbnail Images */}
+              {product.images?.length > 1 && (
+                <Stack direction="row" spacing={1} sx={{ overflowX: "auto" }}>
+                  {product.images.map((image, index) => (
+                    <Box
+                      key={index}
+                      onClick={() => setSelectedImage(index)}
+                      sx={{
+                        width: 80,
+                        height: 80,
+                        borderRadius: 1,
+                        overflow: "hidden",
+                        cursor: "pointer",
+                        border:
+                          selectedImage === index ? "2px solid" : "1px solid",
+                        borderColor:
+                          selectedImage === index ? "primary.main" : "grey.300",
+                      }}
+                    >
+                      <img
+                        src={image}
+                        alt={`${product.title} ${index + 1}`}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                        }}
+                      />
+                    </Box>
+                  ))}
+                </Stack>
+              )}
+            </Box>
+          </Grid>
+
+          {/* Right side - Details */}
+          <Grid item size={{ xs: 12, md: 6 }} sx={{ p: 3, backgroundColor: "grey.50" }}>
+            <Stack spacing={3}>
+              {/* Price Section */}
+              <Box>
+                <Stack direction="row" spacing={2} alignItems="baseline">
+                  <Typography variant="h4" fontWeight="700" color="primary">
+                    ${finalPrice}
+                  </Typography>
+                  {currentVariant?.discount > 0 && (
+                    <>
+                      <Typography
+                        variant="h5"
+                        color="text.secondary"
+                        sx={{ textDecoration: "line-through" }}
+                      >
+                        ${currentVariant.price.toFixed(2)}
+                      </Typography>
+                      <Chip
+                        label={`${currentVariant.discount}% OFF`}
+                        color="error"
+                        size="small"
+                        icon={<LocalOffer />}
+                      />
+                    </>
+                  )}
+                </Stack>
+              </Box>
+
+              {/* Rating */}
+              <Box display="flex" alignItems="center" gap={1}>
+                <Rating
+                  value={product.averageRating}
+                  readOnly
+                  precision={0.5}
+                />
+                <Typography variant="body2" color="text.secondary">
+                  ({product.totalReviews} reviews)
+                </Typography>
+              </Box>
+
+              {/* Description */}
+              <Box>
+                <Typography variant="body1" color="text.secondary">
+                  {product.description}
+                </Typography>
+              </Box>
+
+              {/* Variants Selection */}
+              {product.variants?.length > 0 && (
+                <Box>
+                  <Typography variant="subtitle1" fontWeight="600" gutterBottom>
+                    Select Variant
+                  </Typography>
+                  <Grid container spacing={1}>
+                    {product.variants.map((variant, index) => (
+                      <Grid item size={{ xs: 12, md: 6 }} key={index}>
+                        <Card
+                          variant={
+                            selectedVariant === index ? "elevation" : "outlined"
+                          }
+                          sx={{
+                            cursor: "pointer",
+                            borderColor:
+                              selectedVariant === index
+                                ? "primary.main"
+                                : "grey.300",
+                            borderWidth: selectedVariant === index ? 2 : 1,
+                          }}
+                          onClick={() => setSelectedVariant(index)}
+                        >
+                          <CardContent sx={{ p: 1.5 }}>
+                            <Typography variant="body2" fontWeight="600">
+                              {variant.size} / {variant.color}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                              ${variant.price.toFixed(2)}
+                            </Typography>
+                            <Stack
+                              direction="row"
+                              alignItems="center"
+                              spacing={0.5}
+                            >
+                              {variant.stock > 0 ? (
+                                <>
+                                  <CheckCircle
+                                    sx={{ fontSize: 16, color: "success.main" }}
+                                  />
+                                  <Typography
+                                    variant="caption"
+                                    color="success.main"
+                                  >
+                                    {variant.stock} in stock
+                                  </Typography>
+                                </>
+                              ) : (
+                                <>
+                                  <Cancel
+                                    sx={{ fontSize: 16, color: "error.main" }}
+                                  />
+                                  <Typography
+                                    variant="caption"
+                                    color="error.main"
+                                  >
+                                    Out of stock
+                                  </Typography>
+                                </>
+                              )}
+                            </Stack>
+                          </CardContent>
+                        </Card>
+                      </Grid>
+                    ))}
+                  </Grid>
+                </Box>
+              )}
+              {/* Stock Alert */}
+              {currentVariant &&
+                currentVariant.stock > 0 &&
+                currentVariant.stock <= 5 && (
+                  <Alert severity="warning" icon={<Inventory />}>
+                    Only {currentVariant.stock} left in stock!
+                  </Alert>
+                )}
+            </Stack>
+          </Grid>
+        </Grid>
+
+        {/* Tabs Section */}
+        <Box sx={{ borderTop: 1, borderColor: "divider" }}>
+          <Tabs
+            value={selectedTab}
+            onChange={handleTabChange}
+            aria-label="product details tabs"
+          >
+            <Tab label="Details" />
+            <Tab label="Attributes" />
+          </Tabs>
+
+          <Box sx={{ p: 3 }}>
+            {/* Details Tab */}
+            {selectedTab === 0 && (
+              <Stack spacing={2}>
+                <Box>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Category
+                  </Typography>
+                  <Typography variant="body1">{product.category}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Tags
+                  </Typography>
+                  <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
+                    {product.tags?.map((tag, index) => (
+                      <Chip
+                        key={index}
+                        label={tag}
+                        size="small"
+                        variant="outlined"
+                      />
+                    ))}
+                  </Stack>
+                </Box>
+                <Box>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Published
+                  </Typography>
+                  <Typography variant="body1">
+                    {product.isPublished ? "Yes" : "No"}
+                  </Typography>
+                </Box>
+              </Stack>
+            )}
+
+            {/* Attributes Tab */}
+            {selectedTab === 1 && (
+              <Grid container spacing={2}>
+                {Object.entries(product.attributes || {}).map(
+                  ([key, value]) => (
+                    <Grid item size={{ xs: 6 }} key={key}>
+                      <Typography variant="subtitle2" color="text.secondary">
+                        {key.charAt(0).toUpperCase() + key.slice(1)}
+                      </Typography>
+                      <Typography variant="body1">{value}</Typography>
+                    </Grid>
+                  )
+                )}
+              </Grid>
+            )}
+          </Box>
+        </Box>
+      </DialogContent>
+    </Dialog>
   );
 };

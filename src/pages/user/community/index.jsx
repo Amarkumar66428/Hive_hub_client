@@ -46,6 +46,8 @@ import {
   Refresh,
   FavoriteBorder,
   Favorite,
+  Delete,
+  MoreVert,
 } from "@mui/icons-material";
 
 import CreatePostModal from "./createPost";
@@ -79,9 +81,14 @@ const PostCard = memo(
     onCommentLike,
     openCommentBox,
     setOpenCommentBox,
+    setPosts,
   }) => {
     const [commentInput, setCommentInput] = useState("");
     const [savingComment, setSavingComment] = useState(false);
+    const { showSnackbar } = useSnackbar();
+    const [deletingPost, setDeletingPost] = useState(false);
+    const [anchorEl, setAnchorEl] = useState(null);
+    const open = Boolean(anchorEl);
 
     const handleCommentSubmit = useCallback(async () => {
       if (!commentInput.trim()) return;
@@ -102,32 +109,90 @@ const PostCard = memo(
 
     const isCommentBoxOpen = openCommentBox === post._id;
 
+    const handleDeletePost = async (postId) => {
+      try {
+        setDeletingPost(true);
+        await communityService.deleteMyPost(postId);
+        showSnackbar("Post deleted successfully", "success");
+        setPosts((prevPosts) => prevPosts.filter((p) => p._id !== postId));
+      } catch (error) {
+        console.log(error);
+        showSnackbar("Failed to delete post", "error");
+      } finally {
+        setDeletingPost(false);
+      }
+    };
+
     return (
       <Fade in timeout={300}>
         <ProductCard>
           {/* Post Header */}
           <CardContent sx={{ pb: 1 }}>
-            <Stack direction="row" spacing={2} alignItems="center" mb={2}>
-              <Avatar
-                src={post?.avatar}
-                alt={post?.authorName}
-                sx={{
-                  width: 48,
-                  height: 48,
-                  border: 2,
-                  borderColor: "divider",
-                }}
-              />
-              <Box flex={1}>
-                <Typography variant="h6" fontWeight={600} color="text.primary">
-                  {post?.authorName || "Unknown"}
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  {formatDate(post?.createdAt)}
-                </Typography>
-              </Box>
+            <Stack
+              direction="row"
+              justifyContent="space-between"
+              alignItems="start"
+            >
+              <Stack direction="row" spacing={2} alignItems="center" mb={2}>
+                <Avatar
+                  src={post?.avatar}
+                  alt={post?.authorName}
+                  sx={{
+                    width: 48,
+                    height: 48,
+                    border: 2,
+                    borderColor: "divider",
+                  }}
+                />
+                <Box flex={1}>
+                  <Typography
+                    variant="h6"
+                    fontWeight={600}
+                    color="text.primary"
+                  >
+                    {post.authorId === currentUser._id
+                      ? "You"
+                      : post?.authorName || "Unknown"}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {formatDate(post?.createdAt)}
+                  </Typography>
+                </Box>
+              </Stack>
+              <Stack
+                direction="row"
+                spacing={2}
+                alignItems="center"
+                justifyContent="flex-end"
+              >
+                {post.authorId === currentUser._id && (
+                  <IconButton onClick={(e) => setAnchorEl(e.currentTarget)}>
+                    <MoreVert />
+                  </IconButton>
+                )}
+                <Menu
+                  anchorEl={anchorEl}
+                  open={open}
+                  onClose={() => setAnchorEl(null)}
+                >
+                  <MenuItem
+                    onClick={() => handleDeletePost(post._id)}
+                    disabled={deletingPost}
+                  >
+                    <ListItemIcon>
+                      {deletingPost ? (
+                        <CircularProgress size={20} />
+                      ) : (
+                        <Delete />
+                      )}
+                    </ListItemIcon>
+                    <ListItemText>
+                      {deletingPost ? "Deleting..." : "Delete"}
+                    </ListItemText>
+                  </MenuItem>
+                </Menu>
+              </Stack>
             </Stack>
-
             {/* Post Content */}
             <Typography
               variant="h5"
@@ -291,6 +356,7 @@ const CommentsSection = memo(
             comment={comment}
             currentUser={currentUser}
             onLike={() => onCommentLike(postId, comment._id)}
+            postId={postId}
           />
         ))}
       </Stack>
@@ -299,8 +365,23 @@ const CommentsSection = memo(
 );
 
 // Memoized Comment Item
-const CommentItem = memo(({ comment, currentUser, onLike }) => {
+const CommentItem = memo(({ comment, currentUser, onLike, postId }) => {
+  const { showSnackbar } = useSnackbar();
+  const [deletingComment, setDeletingComment] = useState(false);
   const isLiked = comment.likes?.includes(currentUser._id);
+
+  const handleDeleteComment = async (postId, commentId) => {
+    try {
+      setDeletingComment(true);
+      await communityService.deleteMyComment(postId, commentId);
+      showSnackbar("Comment deleted successfully", "success");
+    } catch (error) {
+      console.log(error);
+      showSnackbar("Failed to delete comment", "error");
+    } finally {
+      setDeletingComment(false);
+    }
+  };
 
   return (
     <Paper
@@ -310,18 +391,47 @@ const CommentItem = memo(({ comment, currentUser, onLike }) => {
       <Stack direction="row" spacing={1.5}>
         <Avatar src={comment.avatar} sx={{ width: 32, height: 32 }} />
         <Box flex={1}>
-          <Stack direction="row" alignItems="center" spacing={1} mb={0.5}>
-            <Typography variant="body2" fontWeight={600}>
-              {comment.userId === currentUser._id
-                ? "You"
-                : comment.userName || "Unknown"}
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              {formatDate(comment.createdAt)}
-            </Typography>
+          <Stack
+            direction="row"
+            alignItems="center"
+            spacing={1}
+            mb={0.5}
+            justifyContent="space-between"
+          >
+            <Stack direction="row" spacing={1} alignItems="center">
+              <Typography variant="body2" fontWeight={600}>
+                {comment.userId === currentUser._id
+                  ? "You"
+                  : comment.userName || "Unknown"}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                {formatDate(comment.createdAt)}
+              </Typography>
+            </Stack>
+            {comment.userId === currentUser._id && (
+              <IconButton
+                onClick={() => handleDeleteComment(postId, comment._id)}
+                disabled={deletingComment}
+              >
+                {deletingComment ? (
+                  <CircularProgress size={18} />
+                ) : (
+                  <Delete sx={{ fontSize: "18px" }} />
+                )}
+              </IconButton>
+            )}
           </Stack>
           <Typography variant="body2" color="text.primary" mb={1}>
-            {comment.content}
+            {comment.content.split(" ").map((word, index) => {
+              if (word.startsWith("#")) {
+                return (
+                  <span key={index}>
+                    <strong>{word}</strong>{" "}
+                  </span>
+                );
+              }
+              return <span key={index}>{word} </span>;
+            })}
           </Typography>
           <Button
             size="small"
@@ -837,6 +947,7 @@ const Community = () => {
                 <PostCard
                   post={post}
                   currentUser={currentUser}
+                  setPosts={setPosts}
                   onLike={handleLike}
                   onComment={handleComment}
                   onCommentLike={handleCommentLike}
