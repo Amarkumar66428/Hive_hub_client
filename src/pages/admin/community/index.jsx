@@ -48,6 +48,7 @@ import {
   FavoriteBorder,
   Favorite,
   TurnedIn,
+  Delete,
 } from "@mui/icons-material";
 
 import CreatePostModal from "./createPost";
@@ -81,6 +82,8 @@ const PostCard = memo(
     onCommentLike,
     openCommentBox,
     setOpenCommentBox,
+    onDeleteComment,
+    deletingCommentId,
   }) => {
     const [commentInput, setCommentInput] = useState("");
     const [savingComment, setSavingComment] = useState(false);
@@ -286,6 +289,8 @@ const PostCard = memo(
                 currentUser={currentUser}
                 onCommentLike={onCommentLike}
                 postId={post._id}
+                onDeleteComment={onDeleteComment}
+                deletingCommentId={deletingCommentId}
               />
             </Paper>
           </Collapse>
@@ -297,7 +302,7 @@ const PostCard = memo(
 
 // Memoized Comments Section
 const CommentsSection = memo(
-  ({ comments, currentUser, onCommentLike, postId }) => {
+  ({ comments, currentUser, onCommentLike, postId, onDeleteComment, deletingCommentId }) => {
     if (comments.length === 0) {
       return (
         <Typography
@@ -319,6 +324,9 @@ const CommentsSection = memo(
             comment={comment}
             currentUser={currentUser}
             onLike={() => onCommentLike(postId, comment._id)}
+            postId={postId}
+            onDeleteComment={onDeleteComment}
+            deletingCommentId={deletingCommentId}
           />
         ))}
       </Stack>
@@ -327,8 +335,15 @@ const CommentsSection = memo(
 );
 
 // Memoized Comment Item
-const CommentItem = memo(({ comment, currentUser, onLike }) => {
+const CommentItem = memo(({ comment,
+  currentUser,
+  onLike,
+  postId,
+  onDeleteComment,
+  deletingCommentId,
+}) => {
   const isLiked = comment.likes?.includes(currentUser._id);
+  const isDeleting = deletingCommentId === comment._id;
 
   return (
     <Paper
@@ -338,15 +353,33 @@ const CommentItem = memo(({ comment, currentUser, onLike }) => {
       <Stack direction="row" spacing={1.5}>
         <Avatar src={comment.avatar} sx={{ width: 32, height: 32 }} />
         <Box flex={1}>
-          <Stack direction="row" alignItems="center" spacing={1} mb={0.5}>
-            <Typography variant="body2" fontWeight={600}>
-              {comment.userId === currentUser._id
-                ? "You"
-                : comment.userName || "Unknown"}
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              {formatDate(comment.createdAt)}
-            </Typography>
+          <Stack
+            direction="row"
+            alignItems="center"
+            spacing={1}
+            mb={0.5}
+            justifyContent="space-between"
+          >
+            <Stack direction="row" alignItems="center" spacing={1} mb={0.5}>
+              <Typography variant="body2" fontWeight={600}>
+                {comment.userId === currentUser._id
+                  ? "You"
+                  : comment.userName || "Unknown"}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                {formatDate(comment.createdAt)}
+              </Typography>
+            </Stack>
+            <IconButton
+              onClick={() => onDeleteComment(postId, comment._id)}
+              disabled={isDeleting}
+            >
+              {isDeleting ? (
+                <CircularProgress size={18} />
+              ) : (
+                <Delete sx={{ fontSize: "18px" }} />
+              )}
+            </IconButton>
           </Stack>
           <Typography variant="body2" color="text.primary" mb={1}>
             {comment.content}
@@ -468,8 +501,7 @@ const Community = () => {
   // Refs
   const observerRef = useRef();
   const lastPostElementRef = useRef();
-
-
+  const [deletingCommentId, setDeletingCommentId] = useState(null);
 
   // Fetch posts function
   const fetchPosts = useCallback(
@@ -682,6 +714,33 @@ const Community = () => {
     fetchPosts(1, false);
   }, [fetchPosts]);
 
+  const handleDeleteComment = useCallback(
+
+    async (postId, commentId) => {
+      try {
+        setDeletingCommentId(commentId);
+        await communityService.deletePostUserComment(postId, commentId);
+        setPosts((prev) =>
+          prev.map((post) =>
+            post._id === postId
+              ? {
+                  ...post,
+                  comments: post.comments.filter((c) => c._id !== commentId),
+                }
+              : post
+          )
+        );
+        showSnackbar("Comment deleted successfully", "success");
+      } catch (error) {
+        console.error("Error deleting comment:", error);
+        showSnackbar("Failed to delete comment", "error");
+      } finally {
+        setDeletingCommentId(null);
+      }
+    },
+    [showSnackbar]
+  );
+
   // Error state
   if (error && posts.length === 0) {
     return (
@@ -812,6 +871,8 @@ const Community = () => {
                   onCommentLike={handleCommentLike}
                   openCommentBox={openCommentBox}
                   setOpenCommentBox={setOpenCommentBox}
+                  onDeleteComment={handleDeleteComment}
+                  deletingCommentId={deletingCommentId}
                 />
               </div>
             ))}

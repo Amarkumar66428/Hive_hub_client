@@ -23,48 +23,31 @@ import {
   Select,
   MenuItem,
   Chip,
-  Switch,
   Checkbox,
-  Menu,
-  MenuList,
-  MenuItem as MenuItemComponent,
-  ListItemIcon,
-  ListItemText,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
-  Divider,
   Alert,
-  LinearProgress,
   Tooltip,
-  Badge,
-  Avatar,
   InputAdornment,
   CircularProgress,
 } from "@mui/material";
 import {
   Add as AddIcon,
   Search as SearchIcon,
-  FilterList as FilterIcon,
-  MoreVert as MoreVertIcon,
   PlayArrow as PlayIcon,
   Pause as PauseIcon,
-  Edit as EditIcon,
-  Delete as DeleteIcon,
   TrendingUp as TrendingUpIcon,
   TrendingDown as TrendingDownIcon,
-  AttachMoney as MoneyIcon,
   Visibility as VisibilityIcon,
   TouchApp as ClickIcon,
   People as PeopleIcon,
   Refresh as RefreshIcon,
   Download as DownloadIcon,
-  Settings as SettingsIcon,
   DateRange as DateRangeIcon,
   BarChart as BarChartIcon,
   PieChart as PieChartIcon,
-  Campaign as CampaignIcon,
 } from "@mui/icons-material";
 import {
   BarChart,
@@ -75,83 +58,11 @@ import {
   Tooltip as RechartsTooltip,
   Legend,
   ResponsiveContainer,
-  LineChart,
-  Line,
 } from "recharts";
 import campaignsService from "../../../services/campaigns";
 import { DatePicker } from "antd";
 import { useSnackbar } from "../../../features/snackBar";
-
-const campaigns = [
-  {
-    id: 1,
-    name: "Summer Fashion Sale 2024",
-    platform: "google",
-    status: "active",
-    budget: 5000,
-    spent: 3250,
-    impressions: 125000,
-    clicks: 3420,
-    conversions: 156,
-    cpc: 0.95,
-    ctr: 2.74,
-    conversionRate: 4.56,
-    roas: 4.2,
-    startDate: "2024-06-01",
-    endDate: "2024-07-31",
-  },
-  {
-    id: 2,
-    name: "Brand Awareness Q3",
-    platform: "facebook",
-    status: "active",
-    budget: 3000,
-    spent: 1850,
-    impressions: 89000,
-    clicks: 2150,
-    conversions: 95,
-    cpc: 0.86,
-    ctr: 2.42,
-    conversionRate: 4.42,
-    roas: 3.8,
-    startDate: "2024-07-01",
-    endDate: "2024-09-30",
-  },
-  {
-    id: 3,
-    name: "Holiday Collection Pre-Launch",
-    platform: "google",
-    status: "paused",
-    budget: 8000,
-    spent: 4200,
-    impressions: 156000,
-    clicks: 4680,
-    conversions: 234,
-    cpc: 0.9,
-    ctr: 3.0,
-    conversionRate: 5.0,
-    roas: 5.2,
-    startDate: "2024-05-15",
-    endDate: "2024-08-15",
-  },
-  {
-    id: 4,
-    name: "Retargeting Campaign - Cart Abandoners",
-    platform: "facebook",
-    status: "active",
-    budget: 2000,
-    spent: 1200,
-    impressions: 45000,
-    clicks: 1800,
-    conversions: 128,
-    cpc: 0.67,
-    ctr: 4.0,
-    conversionRate: 7.11,
-    roas: 6.5,
-    startDate: "2024-06-15",
-    endDate: "2024-08-15",
-  },
-];
+import { formatDate } from "../../../utils/helper";
 
 const Campaigns = () => {
   const { showSnackbar } = useSnackbar();
@@ -161,12 +72,11 @@ const Campaigns = () => {
   const [filterStatus, setFilterStatus] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [anchorEl, setAnchorEl] = useState(null);
-  const [selectedCampaignForMenu, setSelectedCampaignForMenu] = useState(null);
-  const [loading, setLoading] = useState(true);
+  // const [anchorEl, setAnchorEl] = useState(null);
+  // const [selectedCampaignForMenu, setSelectedCampaignForMenu] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [loadingCreateCampaign, setLoadingCreateCampaign] = useState(false);
-  const [error, setError] = useState(null);
-  const [campaignsData, setCampaignsData] = useState([]);
+  const [campaigns, setCampaigns] = useState([]);
   const [createCampaignData, setCreateCampaignData] = useState({
     type: "",
     platformCampaignId: "",
@@ -174,14 +84,20 @@ const Campaigns = () => {
     endDate: "",
   });
 
+  const [platforms, setPlatforms] = useState([]);
+  const [statusUpdating, setStatusUpdating] = useState(null);
+
   const fetchCampaigns = async () => {
     try {
       setLoading(true);
       const response = await campaignsService.getCampaigns();
-      console.log("response: ", response);
-      setCampaignsData(response?.campaigns);
+      setCampaigns(response?.campaigns);
+      setPlatforms([
+        ...new Set(response?.campaigns?.map((campaign) => campaign.type)),
+      ]);
     } catch (error) {
-      setError(error);
+      console.log("error: ", error);
+      showSnackbar("Failed to fetch campaigns", "error");
     } finally {
       setLoading(false);
     }
@@ -193,33 +109,34 @@ const Campaigns = () => {
 
   const filteredCampaigns = campaigns.filter((campaign) => {
     const matchesPlatform =
-      filterPlatform === "all" || campaign.platform === filterPlatform;
+      filterPlatform === "all" || campaign.type === filterPlatform;
     const matchesStatus =
       filterStatus === "all" || campaign.status === filterStatus;
-    const matchesSearch = campaign.name
+    const matchesSearch = campaign.type
       .toLowerCase()
       .includes(searchQuery.toLowerCase());
     return matchesPlatform && matchesStatus && matchesSearch;
   });
 
   const overviewStats = {
-    totalSpent: campaigns.reduce((sum, c) => sum + c.spent, 0),
-    totalBudget: campaigns.reduce((sum, c) => sum + c.budget, 0),
-    totalImpressions: campaigns.reduce((sum, c) => sum + c.impressions, 0),
-    totalClicks: campaigns.reduce((sum, c) => sum + c.clicks, 0),
-    totalConversions: campaigns.reduce((sum, c) => sum + c.conversions, 0),
-    avgCPC: campaigns.reduce((sum, c) => sum + c.cpc, 0) / campaigns.length,
-    avgCTR: campaigns.reduce((sum, c) => sum + c.ctr, 0) / campaigns.length,
-    avgROAS: campaigns.reduce((sum, c) => sum + c.roas, 0) / campaigns.length,
+    totalImpressions: campaigns.reduce(
+      (sum, c) => sum + c.metrics.impressions,
+      0
+    ),
+    totalClicks: campaigns.reduce((sum, c) => sum + c.metrics.clicks, 0),
+    totalConversions: campaigns.reduce(
+      (sum, c) => sum + c.metrics.conversions,
+      0
+    ),
   };
 
   // Performance chart data
   const performanceData = campaigns.map((campaign) => ({
     name:
-      campaign.name.length > 15
-        ? campaign.name.substring(0, 15) + "..."
-        : campaign.name,
-    fullName: campaign.name,
+      campaign.type.length > 6
+        ? campaign.type.substring(0, 6) + "..."
+        : campaign.type,
+    fullName: campaign.type,
     spent: campaign.spent,
     clicks: campaign.clicks / 100, // Scale down for better visualization
     conversions: campaign.conversions * 10, // Scale up for better visualization
@@ -246,7 +163,8 @@ const Campaigns = () => {
         endDate: "",
       });
     } catch (error) {
-      setError(error);
+      console.log("error: ", error);
+      showSnackbar("Failed to create campaign", "error");
     } finally {
       setLoadingCreateCampaign(false);
     }
@@ -264,41 +182,54 @@ const Campaigns = () => {
     );
   };
 
-  const handleMenuOpen = (event, campaignId) => {
-    setAnchorEl(event.currentTarget);
-    setSelectedCampaignForMenu(campaignId);
-  };
+  // const handleMenuOpen = (event, campaignId) => {
+  //   setAnchorEl(event.currentTarget);
+  //   setSelectedCampaignForMenu(campaignId);
+  // };
 
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-    setSelectedCampaignForMenu(null);
-  };
+  // const handleMenuClose = () => {
+  //   setAnchorEl(null);
+  //   setSelectedCampaignForMenu(null);
+  // };
 
-  const toggleCampaignStatus = (campaignId, currentStatus) => {
-    // API call would go here
-    console.log(`Toggling campaign ${campaignId} from ${currentStatus}`);
-    handleMenuClose();
-  };
-
-  const getPlatformIcon = (platform) => {
-    if (platform === "google") {
-      return (
-        <Avatar
-          sx={{ width: 24, height: 24, bgcolor: "#4285f4", fontSize: "12px" }}
-        >
-          G
-        </Avatar>
-      );
-    } else if (platform === "facebook") {
-      return (
-        <Avatar
-          sx={{ width: 24, height: 24, bgcolor: "#1877f2", fontSize: "12px" }}
-        >
-          F
-        </Avatar>
-      );
+  const toggleCampaignStatus = async (campaignId, currentStatus) => {
+    try {
+      setStatusUpdating(campaignId);
+      const response = await campaignsService.updateCampaignStatus(campaignId, {
+        status: currentStatus === "active" ? "paused" : "active",
+      });
+      if (response) {
+        showSnackbar("Campaign status updated successfully", "success");
+      } else {
+        showSnackbar("Failed to update campaign status", "error");
+      }
+    } catch (error) {
+      console.log("error: ", error);
+      showSnackbar("Failed to update campaign status", "error");
+    } finally {
+      setStatusUpdating(null);
     }
   };
+
+  // const getPlatformIcon = (platform) => {
+  //   if (platform === "google") {
+  //     return (
+  //       <Avatar
+  //         sx={{ width: 24, height: 24, bgcolor: "#4285f4", fontSize: "12px" }}
+  //       >
+  //         G
+  //       </Avatar>
+  //     );
+  //   } else if (platform === "facebook") {
+  //     return (
+  //       <Avatar
+  //         sx={{ width: 24, height: 24, bgcolor: "#1877f2", fontSize: "12px" }}
+  //       >
+  //         F
+  //       </Avatar>
+  //     );
+  //   }
+  // };
 
   const getStatusChip = (status) => {
     const statusConfig = {
@@ -320,43 +251,7 @@ const Campaigns = () => {
     <Box>
       {/* Overview Cards */}
       <Grid container spacing={3} sx={{ mb: 1 }}>
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <Card>
-            <CardContent>
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                }}
-              >
-                <Box>
-                  <Typography
-                    color="textSecondary"
-                    gutterBottom
-                    variant="body2"
-                  >
-                    Total Spent
-                  </Typography>
-                  <Typography variant="h4" component="div">
-                    ${overviewStats.totalSpent.toLocaleString()}
-                  </Typography>
-                  <Box sx={{ display: "flex", alignItems: "center", mt: 1 }}>
-                    <TrendingUpIcon
-                      sx={{ color: "success.main", fontSize: 16, mr: 0.5 }}
-                    />
-                    <Typography variant="body2" color="success.main">
-                      +12.5%
-                    </Typography>
-                  </Box>
-                </Box>
-                <MoneyIcon color="primary" sx={{ fontSize: 40 }} />
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
           <Card>
             <CardContent>
               <Box
@@ -392,7 +287,7 @@ const Campaigns = () => {
           </Card>
         </Grid>
 
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
           <Card>
             <CardContent>
               <Box
@@ -428,7 +323,7 @@ const Campaigns = () => {
           </Card>
         </Grid>
 
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
           <Card>
             <CardContent>
               <Box
@@ -680,8 +575,11 @@ const Campaigns = () => {
                 label="Platform"
               >
                 <MenuItem value="all">All Platforms</MenuItem>
-                <MenuItem value="google">Google Ads</MenuItem>
-                <MenuItem value="facebook">Facebook Ads</MenuItem>
+                {platforms.map((platform) => (
+                  <MenuItem key={platform} value={platform}>
+                    {platform}
+                  </MenuItem>
+                ))}
               </Select>
             </FormControl>
 
@@ -694,8 +592,7 @@ const Campaigns = () => {
               >
                 <MenuItem value="all">All Status</MenuItem>
                 <MenuItem value="active">Active</MenuItem>
-                <MenuItem value="paused">Paused</MenuItem>
-                <MenuItem value="ended">Ended</MenuItem>
+                <MenuItem value="draft">Draft</MenuItem>
               </Select>
             </FormControl>
           </Box>
@@ -703,7 +600,9 @@ const Campaigns = () => {
           <Box sx={{ display: "flex", gap: 1 }}>
             <Button
               variant="outlined"
-              startIcon={<RefreshIcon />}
+              startIcon={
+                loading ? <CircularProgress size={14} /> : <RefreshIcon />
+              }
               size="small"
               onClick={fetchCampaigns}
             >
@@ -764,138 +663,110 @@ const Campaigns = () => {
                   }}
                 />
               </TableCell>
-              <TableCell>Campaign</TableCell>
+              <TableCell>Campaign Id</TableCell>
               <TableCell>Platform</TableCell>
               <TableCell>Status</TableCell>
-              <TableCell align="right">Budget</TableCell>
-              <TableCell align="right">Spent</TableCell>
-              <TableCell align="right">Impressions</TableCell>
               <TableCell align="right">Clicks</TableCell>
-              <TableCell align="right">CTR</TableCell>
-              <TableCell align="right">CPC</TableCell>
               <TableCell align="right">Conversions</TableCell>
-              <TableCell align="right">ROAS</TableCell>
+              <TableCell align="right">Impressions</TableCell>
               <TableCell align="center">Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredCampaigns.map((campaign) => (
-              <TableRow key={campaign.id} hover>
-                <TableCell padding="checkbox">
-                  <Checkbox
-                    checked={selectedCampaigns.includes(campaign.id)}
-                    onChange={() => handleCampaignSelect(campaign.id)}
-                  />
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={10} align="center">
+                  <CircularProgress size={20} />
                 </TableCell>
-                <TableCell>
-                  <Box>
-                    <Typography variant="body2" fontWeight="medium">
-                      {campaign.name}
-                    </Typography>
-                    <Typography variant="caption" color="textSecondary">
-                      {campaign.startDate} - {campaign.endDate}
-                    </Typography>
-                  </Box>
-                </TableCell>
-                <TableCell>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    {getPlatformIcon(campaign.platform)}
-                    <Typography
-                      variant="body2"
-                      sx={{ textTransform: "capitalize" }}
-                    >
-                      {campaign.platform}
-                    </Typography>
-                  </Box>
-                </TableCell>
-                <TableCell>{getStatusChip(campaign.status)}</TableCell>
-                <TableCell align="right">
-                  <Typography variant="body2">
-                    ${campaign.budget.toLocaleString()}
+              </TableRow>
+            ) : filteredCampaigns.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={10} align="center">
+                  <Typography variant="body2" color="textSecondary">
+                    No campaigns found
                   </Typography>
                 </TableCell>
-                <TableCell align="right">
-                  <Box>
-                    <Typography variant="body2">
-                      ${campaign.spent.toLocaleString()}
-                    </Typography>
-                    <LinearProgress
-                      variant="determinate"
-                      value={(campaign.spent / campaign.budget) * 100}
-                      sx={{ mt: 0.5, height: 4 }}
+              </TableRow>
+            ) : (
+              filteredCampaigns.length > 0 &&
+              filteredCampaigns.map((campaign) => (
+                <TableRow key={campaign._id} hover>
+                  <TableCell padding="checkbox">
+                    <Checkbox
+                      checked={selectedCampaigns.includes(campaign._id)}
+                      onChange={() => handleCampaignSelect(campaign._id)}
                     />
-                  </Box>
-                </TableCell>
-                <TableCell align="right">
-                  <Typography variant="body2">
-                    {campaign.impressions.toLocaleString()}
-                  </Typography>
-                </TableCell>
-                <TableCell align="right">
-                  <Typography variant="body2">
-                    {campaign.clicks.toLocaleString()}
-                  </Typography>
-                </TableCell>
-                <TableCell align="right">
-                  <Typography variant="body2">
-                    {campaign.ctr.toFixed(2)}%
-                  </Typography>
-                </TableCell>
-                <TableCell align="right">
-                  <Typography variant="body2">
-                    ${campaign.cpc.toFixed(2)}
-                  </Typography>
-                </TableCell>
-                <TableCell align="right">
-                  <Typography variant="body2">
-                    {campaign.conversions}
-                  </Typography>
-                </TableCell>
-                <TableCell align="right">
-                  <Typography
-                    variant="body2"
-                    color={
-                      campaign.roas >= 4
-                        ? "success.main"
-                        : campaign.roas >= 2
-                        ? "warning.main"
-                        : "error.main"
-                    }
-                    fontWeight="medium"
-                  >
-                    {campaign.roas.toFixed(1)}x
-                  </Typography>
-                </TableCell>
-                <TableCell align="center">
-                  <Tooltip
-                    title={
-                      campaign.status === "active"
-                        ? "Pause Campaign"
-                        : "Start Campaign"
-                    }
-                  >
-                    <IconButton
-                      size="small"
-                      onClick={() =>
-                        toggleCampaignStatus(campaign.id, campaign.status)
+                  </TableCell>
+                  <TableCell>
+                    <Box>
+                      <Typography variant="body2" fontWeight="medium">
+                        {campaign.platformCampaignId}
+                      </Typography>
+                      <Typography variant="caption" color="textSecondary">
+                        {formatDate(campaign.createdAt)} -{" "}
+                        {formatDate(campaign.endDate)}
+                      </Typography>
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <Typography
+                        variant="body2"
+                        sx={{ textTransform: "capitalize" }}
+                      >
+                        {campaign.type}
+                      </Typography>
+                    </Box>
+                  </TableCell>
+                  <TableCell>{getStatusChip(campaign.status)}</TableCell>
+                  <TableCell align="right">
+                    <Typography variant="body2">
+                      {campaign.metrics.clicks.toLocaleString()}
+                    </Typography>
+                  </TableCell>
+                  <TableCell align="right">
+                    <Typography variant="body2">
+                      {campaign.metrics.conversions}
+                    </Typography>
+                  </TableCell>
+                  <TableCell align="right">
+                    <Typography variant="body2">
+                      {campaign.metrics.impressions.toLocaleString()}
+                    </Typography>
+                  </TableCell>
+                  <TableCell align="center">
+                    <Tooltip
+                      title={
+                        campaign.status === "active"
+                          ? "Pause Campaign"
+                          : "Start Campaign"
                       }
                     >
-                      {campaign.status === "active" ? (
-                        <PauseIcon />
-                      ) : (
-                        <PlayIcon />
-                      )}
-                    </IconButton>
-                  </Tooltip>
-                  {/* <IconButton
+                      <IconButton
+                        size="small"
+                        onClick={() =>
+                          toggleCampaignStatus(campaign._id, campaign.status)
+                        }
+                      >
+                        {statusUpdating === campaign._id ? (
+                          <CircularProgress size={14} />
+                        ) : campaign.status === "active" ? (
+                          <PauseIcon />
+                        ) : (
+                          <PlayIcon />
+                        )}
+                      </IconButton>
+                    </Tooltip>
+                    {/* <IconButton
                     size="small"
                     onClick={(e) => handleMenuOpen(e, campaign.id)}
                   >
                     <MoreVertIcon />
                   </IconButton> */}
-                </TableCell>
-              </TableRow>
-            ))}
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </TableContainer>
@@ -1024,7 +895,7 @@ const Campaigns = () => {
       )}
 
       {/* Action Menu */}
-      <Menu
+      {/* <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={handleMenuClose}
@@ -1048,7 +919,7 @@ const Campaigns = () => {
           </ListItemIcon>
           <ListItemText>Delete</ListItemText>
         </MenuItemComponent>
-      </Menu>
+      </Menu> */}
 
       {/* Create Campaign Dialog */}
       <Dialog

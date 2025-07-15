@@ -39,9 +39,18 @@ const ShoppingCart = () => {
   const [cartItems, setCartItems] = useState([]);
   const [total, setTotal] = useState(0);
   const [promoCode, setPromoCode] = useState("");
+  const [removingItem, setRemovingItem] = useState(null);
 
-  const removeItem = (id) => {
-    setCartItems((items) => items.filter((item) => item.id !== id));
+  const removeItem = async (id) => {
+    try {
+      setRemovingItem(id);
+      await shopersService.removeProductFromCart(id);
+      setCartItems((items) => items.filter((item) => item._id !== id));
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setRemovingItem(null);
+    }
   };
 
   useEffect(() => {
@@ -84,10 +93,12 @@ const ShoppingCart = () => {
               cartItems.map((item) => (
                 <CartItem
                   key={item._id}
+                  id={item._id}
                   item={item}
                   removeItem={removeItem}
                   setCartItems={setCartItems}
                   setTotal={setTotal}
+                  removingItem={removingItem}
                 />
               ))
             )}
@@ -107,7 +118,14 @@ const ShoppingCart = () => {
 
 export default ShoppingCart;
 
-const CartItem = ({ item, removeItem, setCartItems, setTotal }) => {
+const CartItem = ({
+  item,
+  removeItem,
+  setCartItems,
+  setTotal,
+  id,
+  removingItem,
+}) => {
   const [quantity, setQuantity] = useState(item?.quantity || 1);
   const [selectedVariant, setSelectedVariant] = useState(
     item?.productId?.variants?.[0] || {}
@@ -235,24 +253,25 @@ const CartItem = ({ item, removeItem, setCartItems, setTotal }) => {
                   ${selectedVariant?.price || item?.productId?.price || 0}
                 </Typography>
                 {item?.productId?.basePrice && (
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      textDecoration: "line-through",
-                      color: "text.secondary",
-                    }}
-                  >
-                    ${item?.productId?.basePrice || 0}
-                  </Typography>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <Typography variant="body2" color="text.secondary">
+                      MRP:
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        textDecoration: "line-through",
+                        color: "text.secondary",
+                      }}
+                    >
+                      ${item?.productId?.basePrice}
+                    </Typography>
+                  </Box>
                 )}
-                {item?.productId?.basePrice && (
+                {selectedVariant?.discount && (
                   <Chip
-                    label={`-${Math.round(
-                      (1 -
-                        selectedVariant?.price / item?.productId?.basePrice) *
-                        100
-                    )}%`}
-                    color="error"
+                    label={`${selectedVariant?.discount}%`}
+                    color="success"
                     size="small"
                   />
                 )}
@@ -312,9 +331,14 @@ const CartItem = ({ item, removeItem, setCartItems, setTotal }) => {
                 <IconButton
                   color="error"
                   size="small"
-                  onClick={() => removeItem(item?.productId?._id)}
+                  onClick={() => removeItem(id)}
+                  disabled={removingItem === id}
                 >
-                  <Delete />
+                  {removingItem === id ? (
+                    <CircularProgress size={16} color="error" />
+                  ) : (
+                    <Delete />
+                  )}
                 </IconButton>
               </Box>
             </Box>
@@ -341,6 +365,7 @@ const Checkout = ({ promoCode, setPromoCode, subtotal }) => {
       setAppliedPromo({ code: "SAVE10", discount: 10 });
     }
   };
+
   return (
     <Card
       sx={{
@@ -417,7 +442,7 @@ const Checkout = ({ promoCode, setPromoCode, subtotal }) => {
             >
               <Typography color="success.main">Discount:</Typography>
               <Typography color="success.main" fontWeight={600}>
-                -${discount.toFixed(2)}
+                ${discount.toFixed(2)}
               </Typography>
             </Box>
           )}
