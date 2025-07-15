@@ -70,6 +70,13 @@ const flagPost = async (postId) => {
   return response.data;
 };
 
+const deletePostUserComment = async (postId, commentId) => {
+  const response = await api.delete(
+    `community/deleteCommentAsAdmin/${postId}/${commentId}`
+  );
+  return response.data;
+};
+
 const communityService = {
   getAllCommunities,
   createPost,
@@ -83,6 +90,7 @@ const communityService = {
   getAdminPosts,
   deleteMyPost,
   deleteMyComment,
+  deletePostUserComment,
 };
 
 export default communityService;

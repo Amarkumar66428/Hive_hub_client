@@ -52,7 +52,7 @@ const ServerError = () => {
             onClick={() => dispatch(clearServerError())}
             {...commonButtonProps}
           >
-            Contact Support
+            Cancel
           </Button>
         </Stack>
       );
