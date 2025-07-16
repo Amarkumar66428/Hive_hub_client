@@ -894,10 +894,18 @@ const CommentItem = memo(
             </Stack>
             <Typography variant="body2" color="text.primary" mb={1}>
               {comment.content.split(" ").map((word, index) => {
-                if (word.startsWith("#")) {
+                if (word.startsWith("#") || word.startsWith("@")) {
                   return (
                     <span key={index}>
-                      <strong>{word}</strong>{" "}
+                      <strong
+                        style={{
+                          backgroundColor: "#bd70d840",
+                          borderRadius: "5px",
+                          padding: "0 2px",
+                        }}
+                      >
+                        {word}
+                      </strong>{" "}
                     </span>
                   );
                 }
