@@ -791,6 +791,7 @@ const PostCard = memo(
                 currentUser={currentUser}
                 onCommentLike={onCommentLike}
                 postId={post._id}
+                isPostAdmin={post?.authorId === currentUser?._id}
               />
             </Paper>
           </Collapse>
@@ -802,7 +803,7 @@ const PostCard = memo(
 
 // Memoized Comments Section
 const CommentsSection = memo(
-  ({ comments, currentUser, onCommentLike, postId }) => {
+  ({ comments, currentUser, onCommentLike, postId, isPostAdmin }) => {
     if (comments.length === 0) {
       return (
         <Typography
@@ -825,6 +826,7 @@ const CommentsSection = memo(
             currentUser={currentUser}
             onLike={() => onCommentLike(postId, comment._id)}
             postId={postId}
+            isPostAdmin={isPostAdmin}
           />
         ))}
       </Stack>
@@ -833,92 +835,94 @@ const CommentsSection = memo(
 );
 
 // Memoized Comment Item
-const CommentItem = memo(({ comment, currentUser, onLike, postId }) => {
-  const { showSnackbar } = useSnackbar();
-  const [deletingComment, setDeletingComment] = useState(false);
-  const isLiked = comment.likes?.includes(currentUser._id);
+const CommentItem = memo(
+  ({ comment, currentUser, onLike, postId, isPostAdmin }) => {
+    const { showSnackbar } = useSnackbar();
+    const [deletingComment, setDeletingComment] = useState(false);
+    const isLiked = comment.likes?.includes(currentUser._id);
 
-  const handleDeleteComment = async (postId, commentId) => {
-    try {
-      setDeletingComment(true);
-      await communityService.deleteMyComment(postId, commentId);
-      showSnackbar("Comment deleted successfully", "success");
-    } catch (error) {
-      console.log(error);
-      showSnackbar("Failed to delete comment", "error");
-    } finally {
-      setDeletingComment(false);
-    }
-  };
+    const handleDeleteComment = async (postId, commentId) => {
+      try {
+        setDeletingComment(true);
+        await communityService.deleteMyComment(postId, commentId);
+        showSnackbar("Comment deleted successfully", "success");
+      } catch (error) {
+        console.log(error);
+        showSnackbar("Failed to delete comment", "error");
+      } finally {
+        setDeletingComment(false);
+      }
+    };
 
-  return (
-    <Paper
-      elevation={0}
-      sx={{ p: 1.5, bgcolor: "background.paper", borderRadius: 2 }}
-    >
-      <Stack direction="row" spacing={1.5}>
-        <Avatar src={comment.avatar} sx={{ width: 32, height: 32 }} />
-        <Box flex={1}>
-          <Stack
-            direction="row"
-            alignItems="center"
-            spacing={1}
-            mb={0.5}
-            justifyContent="space-between"
-          >
-            <Stack direction="row" spacing={1} alignItems="center">
-              <Typography variant="body2" fontWeight={600}>
-                {comment.userId === currentUser._id
-                  ? "You"
-                  : comment.userName || "Unknown"}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                {formatDate(comment.createdAt)}
-              </Typography>
+    return (
+      <Paper
+        elevation={0}
+        sx={{ p: 1.5, bgcolor: "background.paper", borderRadius: 2 }}
+      >
+        <Stack direction="row" spacing={1.5}>
+          <Avatar src={comment.avatar} sx={{ width: 32, height: 32 }} />
+          <Box flex={1}>
+            <Stack
+              direction="row"
+              alignItems="center"
+              spacing={1}
+              mb={0.5}
+              justifyContent="space-between"
+            >
+              <Stack direction="row" spacing={1} alignItems="center">
+                <Typography variant="body2" fontWeight={600}>
+                  {comment.userId === currentUser._id
+                    ? "You"
+                    : comment.userName || "Unknown"}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {formatDate(comment.createdAt)}
+                </Typography>
+              </Stack>
+              {isPostAdmin && (
+                <IconButton
+                  onClick={() => handleDeleteComment(postId, comment._id)}
+                  disabled={deletingComment}
+                >
+                  {deletingComment ? (
+                    <CircularProgress size={18} />
+                  ) : (
+                    <Delete sx={{ fontSize: "18px" }} />
+                  )}
+                </IconButton>
+              )}
             </Stack>
-            {comment.userId === currentUser._id && (
-              <IconButton
-                onClick={() => handleDeleteComment(postId, comment._id)}
-                disabled={deletingComment}
-              >
-                {deletingComment ? (
-                  <CircularProgress size={18} />
-                ) : (
-                  <Delete sx={{ fontSize: "18px" }} />
-                )}
-              </IconButton>
-            )}
-          </Stack>
-          <Typography variant="body2" color="text.primary" mb={1}>
-            {comment.content.split(" ").map((word, index) => {
-              if (word.startsWith("#")) {
-                return (
-                  <span key={index}>
-                    <strong>{word}</strong>{" "}
-                  </span>
-                );
-              }
-              return <span key={index}>{word} </span>;
-            })}
-          </Typography>
-          <Button
-            size="small"
-            startIcon={isLiked ? <Favorite /> : <FavoriteBorder />}
-            onClick={onLike}
-            sx={{
-              minWidth: "auto",
-              px: 1,
-              color: isLiked ? "error.main" : "text.secondary",
-              "&:hover": { bgcolor: "transparent" },
-            }}
-          >
-            {comment.likes?.length || 0}
-          </Button>
-        </Box>
-      </Stack>
-    </Paper>
-  );
-});
+            <Typography variant="body2" color="text.primary" mb={1}>
+              {comment.content.split(" ").map((word, index) => {
+                if (word.startsWith("#")) {
+                  return (
+                    <span key={index}>
+                      <strong>{word}</strong>{" "}
+                    </span>
+                  );
+                }
+                return <span key={index}>{word} </span>;
+              })}
+            </Typography>
+            <Button
+              size="small"
+              startIcon={isLiked ? <Favorite /> : <FavoriteBorder />}
+              onClick={onLike}
+              sx={{
+                minWidth: "auto",
+                px: 1,
+                color: isLiked ? "error.main" : "text.secondary",
+                "&:hover": { bgcolor: "transparent" },
+              }}
+            >
+              {comment.likes?.length || 0}
+            </Button>
+          </Box>
+        </Stack>
+      </Paper>
+    );
+  }
+);
 
 // Memoized Content Component
 const ContentWithReadMore = memo(({ content, tags, maxChars = 150 }) => {
