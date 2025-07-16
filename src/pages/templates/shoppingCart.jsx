@@ -37,7 +37,6 @@ import { useNavigate, useParams } from "react-router-dom";
 const ShoppingCart = () => {
   const [loading, setLoading] = useState(true);
   const [cartItems, setCartItems] = useState([]);
-  const [total, setTotal] = useState(0);
   const [promoCode, setPromoCode] = useState("");
   const [removingItem, setRemovingItem] = useState(null);
 
@@ -56,17 +55,39 @@ const ShoppingCart = () => {
   useEffect(() => {
     const fetchCart = async () => {
       setLoading(true);
-      await shopersService
-        .getCart()
-        .then((res) => {
-          setCartItems(res.cart?.items || []);
-        })
-        .finally(() => {
-          setLoading(false);
-        });
+      try {
+        const res = await shopersService.getCart();
+        const itemsWithSelectedVariant = (res.cart?.items || []).map(
+          (item) => ({
+            ...item,
+            selectedVariant: item?.productId?.variants?.[0]?.size,
+          })
+        );
+        setCartItems(itemsWithSelectedVariant);
+      } catch (error) {
+        console.error("Failed to fetch cart:", error);
+      } finally {
+        setLoading(false);
+      }
     };
+
     fetchCart();
   }, []);
+
+  const fetchSubtotal = () => {
+    let total = 0;
+
+    cartItems.forEach((item) => {
+      const variant = item?.productId?.variants?.find(
+        (i) => i.size === item.selectedVariant
+      );
+      if (variant) {
+        total += variant.price * item.quantity;
+      }
+    });
+
+    return total;
+  };
 
   return (
     <Box
@@ -97,7 +118,6 @@ const ShoppingCart = () => {
                   item={item}
                   removeItem={removeItem}
                   setCartItems={setCartItems}
-                  setTotal={setTotal}
                   removingItem={removingItem}
                 />
               ))
@@ -107,7 +127,7 @@ const ShoppingCart = () => {
             <Checkout
               promoCode={promoCode}
               setPromoCode={setPromoCode}
-              subtotal={total}
+              subtotal={fetchSubtotal()}
             />
           </Grid>
         </Grid>
@@ -118,14 +138,7 @@ const ShoppingCart = () => {
 
 export default ShoppingCart;
 
-const CartItem = ({
-  item,
-  removeItem,
-  setCartItems,
-  setTotal,
-  id,
-  removingItem,
-}) => {
+const CartItem = ({ item, removeItem, setCartItems, id, removingItem }) => {
   const [quantity, setQuantity] = useState(item?.quantity || 1);
   const [selectedVariant, setSelectedVariant] = useState(
     item?.productId?.variants?.[0] || {}
@@ -139,22 +152,16 @@ const CartItem = ({
         i._id === item._id ? { ...i, quantity: newQuantity } : i
       )
     );
-    setTotal(
-      (prev) =>
-        prev +
-        (selectedVariant?.price || item?.productId?.price || 0) *
-          (newQuantity - item?.quantity || 0)
-    );
   };
 
-  useEffect(() => {
-    setTotal(
-      (prev) =>
-        prev +
-        (selectedVariant?.price || item?.productId?.price || 0) *
-          (item?.quantity || 0)
+  const updateVariant = (variant) => {
+    setSelectedVariant(variant);
+    setCartItems((items) =>
+      items.map((i) =>
+        i._id === item._id ? { ...i, selectedVariant: variant?.size } : i
+      )
     );
-  }, [item?.quantity]);
+  };
 
   return (
     <Card key={item.id} sx={{ mb: 3, borderRadius: 2, boxShadow: 2 }}>
@@ -211,7 +218,7 @@ const CartItem = ({
                         const variant = item.productId.variants.find(
                           (v) => v.size === e.target.value
                         );
-                        setSelectedVariant(variant);
+                        updateVariant(variant);
                       }}
                       renderValue={(selected) => {
                         const variant = item.productId.variants.find(
@@ -363,6 +370,8 @@ const Checkout = ({ promoCode, setPromoCode, subtotal }) => {
       setAppliedPromo({ code: "AMK20", discount: 20 });
     } else if (promoCode === "SAVE10") {
       setAppliedPromo({ code: "SAVE10", discount: 10 });
+    } else {
+      setAppliedPromo({ code: "", discount: 0 });
     }
   };
 

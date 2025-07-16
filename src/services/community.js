@@ -70,10 +70,22 @@ const flagPost = async (postId) => {
   return response.data;
 };
 
+const deletePostAdmin = async (postId) => {
+  const response = await api.delete(`/community/deletePostAsAdmin/${postId}`);
+  return response.data;
+};
+
 const deletePostUserComment = async (postId, commentId) => {
   const response = await api.delete(
     `community/deleteCommentAsAdmin/${postId}/${commentId}`
   );
+  return response.data;
+};
+
+const commentOnPostAdmin = async (postId, content) => {
+  const response = await api.put(`community/addCommentAsAdmin/${postId}`, {
+    content,
+  });
   return response.data;
 };
 
@@ -91,6 +103,8 @@ const communityService = {
   deleteMyPost,
   deleteMyComment,
   deletePostUserComment,
+  commentOnPostAdmin,
+  deletePostAdmin,
 };
 
 export default communityService;
