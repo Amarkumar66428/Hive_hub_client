@@ -104,7 +104,7 @@ const ProfileSettings = () => {
                     alignItems: "flex-start",
                     p: 2,
                     gap: 1,
-                    height: "100%",
+                    background: "#bd70d821",
                   }}
                 >
                   <CardHeader
