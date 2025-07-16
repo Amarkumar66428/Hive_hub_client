@@ -61,6 +61,474 @@ import useAuth from "../../../hooks/useAuth";
 const POSTS_PER_PAGE = 10;
 const INTERSECTION_THRESHOLD = 0.1;
 
+// Main Community Component
+const Community = () => {
+  const currentUser = useAuth();
+  const { showSnackbar } = useSnackbar();
+
+  // State
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [error, setError] = useState(null);
+  const [hasMore, setHasMore] = useState(true);
+  const [page, setPage] = useState(1);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [createPostModal, setCreatePostModal] = useState(false);
+  const [openCommentBox, setOpenCommentBox] = useState(null);
+  const [showAdminPosts, setShowAdminPosts] = useState(false);
+
+  // Refs
+  const observerRef = useRef();
+  const lastPostElementRef = useRef();
+
+  // Memoized values
+  const open = Boolean(anchorEl);
+
+  // Fetch posts function
+  const fetchPosts = useCallback(
+    async (pageNum = 1, isLoadMore = false) => {
+      try {
+        if (isLoadMore) {
+          setLoadingMore(true);
+        } else {
+          setLoading(true);
+          setError(null);
+        }
+
+        const params = `?page=${pageNum}&limit=${POSTS_PER_PAGE}&isAdminPost=${showAdminPosts}`;
+        const response = await communityService.getAllCommunities(params);
+
+        const newPosts = response?.posts || [];
+
+        if (isLoadMore) {
+          setPosts((prev) => [...prev, ...newPosts]);
+        } else {
+          setPosts(newPosts);
+        }
+
+        setHasMore(newPosts.length === POSTS_PER_PAGE);
+        setPage(pageNum);
+      } catch (err) {
+        console.error("Error fetching posts:", err);
+        setError("Failed to load posts. Please try again.");
+        showSnackbar("Failed to load posts", "error");
+      } finally {
+        setLoading(false);
+        setLoadingMore(false);
+      }
+    },
+    [showSnackbar, showAdminPosts]
+  );
+
+  // Intersection Observer callback
+  const handleObserver = useCallback(
+    (entries) => {
+      const target = entries[0];
+      if (target.isIntersecting && hasMore && !loadingMore && !loading) {
+        fetchPosts(page + 1, true);
+      }
+    },
+    [hasMore, loadingMore, loading, page, fetchPosts]
+  );
+
+  // Setup intersection observer
+  useEffect(() => {
+    const option = {
+      root: null,
+      rootMargin: "20px",
+      threshold: INTERSECTION_THRESHOLD,
+    };
+
+    observerRef.current = new IntersectionObserver(handleObserver, option);
+
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, [handleObserver]);
+
+  // Observe last post element
+  useEffect(() => {
+    if (lastPostElementRef.current && observerRef.current) {
+      observerRef.current.observe(lastPostElementRef.current);
+    }
+
+    return () => {
+      if (lastPostElementRef.current && observerRef.current) {
+        observerRef.current.unobserve(lastPostElementRef.current);
+      }
+    };
+  }, [posts]);
+
+  // Initial fetch
+  useEffect(() => {
+    fetchPosts(1, false);
+  }, [fetchPosts]);
+
+  // Optimized handlers
+  const handleLike = useCallback(
+    async (postId) => {
+      try {
+        // Optimistic update
+        setPosts((prev) =>
+          prev.map((post) =>
+            post._id === postId
+              ? {
+                  ...post,
+                  likes: post.likes?.includes(currentUser._id)
+                    ? post.likes.filter((id) => id !== currentUser._id)
+                    : [...(post.likes || []), currentUser._id],
+                }
+              : post
+          )
+        );
+
+        await communityService.likeOnPost(postId);
+      } catch (err) {
+        console.error("Error liking post:", err);
+        // Revert optimistic update on error
+        setPosts((prev) =>
+          prev.map((post) =>
+            post._id === postId
+              ? {
+                  ...post,
+                  likes: post.likes?.includes(currentUser._id)
+                    ? [...(post.likes || []), currentUser._id]
+                    : post.likes?.filter((id) => id !== currentUser._id) || [],
+                }
+              : post
+          )
+        );
+        showSnackbar("Failed to like post", "error");
+      }
+    },
+    [currentUser._id, showSnackbar]
+  );
+
+  const handleComment = useCallback(
+    async (postId, commentText) => {
+      try {
+        const comment = { content: commentText };
+        const response = await communityService.commentOnPost(postId, comment);
+
+        if (response) {
+          setPosts((prev) =>
+            prev.map((post) => {
+              if (post._id !== postId) return post;
+
+              const existingIds = new Set(
+                post.comments?.map((c) => c._id) || []
+              );
+              const newComments = [...(post.comments || [])];
+
+              response.post.comments?.forEach((c) => {
+                if (!existingIds.has(c._id)) {
+                  newComments.push(c);
+                }
+              });
+
+              return { ...post, comments: newComments };
+            })
+          );
+
+          showSnackbar("Comment added successfully", "success");
+        }
+      } catch (err) {
+        console.error("Error adding comment:", err);
+        showSnackbar("Failed to add comment", "error");
+      }
+    },
+    [showSnackbar]
+  );
+
+  const handleCommentLike = useCallback(
+    async (postId, commentId) => {
+      try {
+        // Optimistic update
+        setPosts((prev) =>
+          prev.map((post) =>
+            post._id === postId
+              ? {
+                  ...post,
+                  comments:
+                    post.comments?.map((comment) =>
+                      comment._id === commentId
+                        ? {
+                            ...comment,
+                            likes: comment.likes?.includes(currentUser._id)
+                              ? comment.likes.filter(
+                                  (id) => id !== currentUser._id
+                                )
+                              : [...(comment.likes || []), currentUser._id],
+                          }
+                        : comment
+                    ) || [],
+                }
+              : post
+          )
+        );
+
+        await communityService.likeOnPostComment(postId, commentId);
+      } catch (err) {
+        console.error("Error liking comment:", err);
+        showSnackbar("Failed to like comment", "error");
+      }
+    },
+    [currentUser._id, showSnackbar]
+  );
+
+  const fetchMyPosts = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await communityService.getMyPosts(currentUser._id);
+      setPosts(response?.posts || []);
+      setHasMore(false); // Assuming my posts don't have pagination
+    } catch (error) {
+      console.error("Error fetching my posts:", error);
+      setError("Failed to load your posts");
+    } finally {
+      setLoading(false);
+    }
+  }, [currentUser._id]);
+
+  const handleMenuItemClick = useCallback(
+    (action) => {
+      setAnchorEl(null);
+
+      switch (action) {
+        case "create-post":
+          setCreatePostModal(true);
+          break;
+        case "my-posts":
+          fetchMyPosts();
+          break;
+        case "my-profile":
+          // Navigate to profile
+          break;
+        default:
+          break;
+      }
+    },
+    [fetchMyPosts]
+  );
+
+  const handleRefresh = useCallback(() => {
+    setPage(1);
+    setHasMore(true);
+    fetchPosts(1, false);
+  }, [fetchPosts]);
+
+  // Error state
+  if (error && posts.length === 0) {
+    return (
+      <Container maxWidth="md" sx={{ mt: 4 }}>
+        <Alert
+          severity="error"
+          action={
+            <Button color="inherit" size="small" onClick={handleRefresh}>
+              <Refresh sx={{ mr: 1 }} />
+              Retry
+            </Button>
+          }
+        >
+          {error}
+        </Alert>
+      </Container>
+    );
+  }
+
+  return (
+    <>
+      {/* Header */}
+      <Paper
+        elevation={1}
+        sx={{
+          bgcolor: "background.paper",
+          position: "sticky",
+          top: 0,
+          zIndex: 100,
+          borderColor: "divider",
+          px: 2,
+        }}
+      >
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          alignItems="center"
+          py={2}
+        >
+          <Box>
+            <Typography
+              variant="h5"
+              fontWeight={700}
+              color="primary"
+              gutterBottom
+            >
+              Join Our Thriving Community
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Learn from real store owners, share your journey, and get inspired
+              by stories of success in the eCommerce world.
+            </Typography>
+          </Box>
+
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Checkbox
+              checked={showAdminPosts}
+              onChange={() => setShowAdminPosts(!showAdminPosts)}
+            />
+            <Typography variant="body2" color="text.secondary">
+              Premium Posts
+            </Typography>
+            <Button
+              onClick={(e) => setAnchorEl(e.currentTarget)}
+              sx={{
+                borderRadius: 3,
+                px: 2,
+                py: 1,
+                "&:hover": { bgcolor: "action.hover" },
+              }}
+            >
+              <Avatar
+                src="https://randomuser.me/api/portraits/women/44.jpg"
+                sx={{ width: 40, height: 40, mr: 1 }}
+              />
+              <ExpandMore />
+            </Button>
+          </Box>
+
+          <Menu
+            anchorEl={anchorEl}
+            open={open}
+            onClose={() => setAnchorEl(null)}
+            transformOrigin={{ horizontal: "right", vertical: "top" }}
+            anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+            PaperProps={{
+              elevation: 3,
+              sx: { mt: 1, minWidth: 200 },
+            }}
+          >
+            <MenuItem onClick={() => handleMenuItemClick("create-post")}>
+              <ListItemIcon>
+                <Add />
+              </ListItemIcon>
+              <ListItemText>Create Post</ListItemText>
+            </MenuItem>
+            <MenuItem onClick={() => handleMenuItemClick("my-posts")}>
+              <ListItemIcon>
+                <Article />
+              </ListItemIcon>
+              <ListItemText>My Posts</ListItemText>
+            </MenuItem>
+            <Divider />
+            <MenuItem onClick={() => handleMenuItemClick("my-profile")}>
+              <ListItemIcon>
+                <Person />
+              </ListItemIcon>
+              <ListItemText>My Community Profile</ListItemText>
+            </MenuItem>
+          </Menu>
+        </Stack>
+      </Paper>
+
+      {/* Content */}
+      <Container maxWidth="md" sx={{ py: 3 }}>
+        {loading && posts.length === 0 ? (
+          <Stack spacing={3}>
+            {Array.from({ length: 3 }).map((_, index) => (
+              <PostSkeleton key={index} />
+            ))}
+          </Stack>
+        ) : posts.length === 0 ? (
+          <Paper
+            elevation={0}
+            sx={{
+              textAlign: "center",
+              py: 8,
+              bgcolor: "grey.50",
+              borderRadius: 3,
+            }}
+          >
+            <Typography variant="h6" color="text.secondary" gutterBottom>
+              No posts found
+            </Typography>
+            <Typography variant="body2" color="text.secondary" mb={3}>
+              Be the first to share something with the community!
+            </Typography>
+            <Button
+              variant="contained"
+              startIcon={<Add />}
+              onClick={() => setCreatePostModal(true)}
+            >
+              Create Post
+            </Button>
+          </Paper>
+        ) : (
+          <Stack spacing={3}>
+            {posts.map((post, index) => (
+              <div
+                key={post._id}
+                ref={index === posts.length - 1 ? lastPostElementRef : null}
+              >
+                <PostCard
+                  post={post}
+                  currentUser={currentUser}
+                  setPosts={setPosts}
+                  onLike={handleLike}
+                  onComment={handleComment}
+                  onCommentLike={handleCommentLike}
+                  openCommentBox={openCommentBox}
+                  setOpenCommentBox={setOpenCommentBox}
+                />
+              </div>
+            ))}
+
+            {/* Loading more indicator */}
+            {loadingMore && (
+              <Box display="flex" justifyContent="center" py={3}>
+                <Stack alignItems="center" spacing={2}>
+                  <CircularProgress size={32} />
+                  <Typography variant="body2" color="text.secondary">
+                    Loading more posts...
+                  </Typography>
+                </Stack>
+              </Box>
+            )}
+
+            {/* End of posts indicator */}
+            {!hasMore && posts.length > 0 && (
+              <Paper
+                elevation={0}
+                sx={{
+                  textAlign: "center",
+                  py: 3,
+                  bgcolor: "grey.50",
+                  borderRadius: 2,
+                }}
+              >
+                <Typography variant="body2" color="text.secondary">
+                  🎉 You've reached the end! That's all the posts for now.
+                </Typography>
+              </Paper>
+            )}
+          </Stack>
+        )}
+      </Container>
+
+      <CreatePostModal
+        createPostModal={createPostModal}
+        setCreatePostModal={setCreatePostModal}
+        fetchPlans={() => fetchPosts(1, false)}
+      />
+    </>
+  );
+};
+
+export default memo(Community);
+
 const ProductCard = styled(Card)(({ theme }) => ({
   display: "flex",
   flexDirection: "column",
@@ -531,471 +999,3 @@ const PostSkeleton = memo(() => (
     </CardActions>
   </Card>
 ));
-
-// Main Community Component
-const Community = () => {
-  const currentUser = useAuth();
-  const { showSnackbar } = useSnackbar();
-
-  // State
-  const [posts, setPosts] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [error, setError] = useState(null);
-  const [hasMore, setHasMore] = useState(true);
-  const [page, setPage] = useState(1);
-  const [anchorEl, setAnchorEl] = useState(null);
-  const [createPostModal, setCreatePostModal] = useState(false);
-  const [openCommentBox, setOpenCommentBox] = useState(null);
-  const [showAdminPosts, setShowAdminPosts] = useState(false);
-
-  // Refs
-  const observerRef = useRef();
-  const lastPostElementRef = useRef();
-
-  // Memoized values
-  const open = Boolean(anchorEl);
-
-  // Fetch posts function
-  const fetchPosts = useCallback(
-    async (pageNum = 1, isLoadMore = false) => {
-      try {
-        if (isLoadMore) {
-          setLoadingMore(true);
-        } else {
-          setLoading(true);
-          setError(null);
-        }
-
-        const params = `?page=${pageNum}&limit=${POSTS_PER_PAGE}&isAdminPost=${showAdminPosts}`;
-        const response = await communityService.getAllCommunities(params);
-
-        const newPosts = response?.posts || [];
-
-        if (isLoadMore) {
-          setPosts((prev) => [...prev, ...newPosts]);
-        } else {
-          setPosts(newPosts);
-        }
-
-        setHasMore(newPosts.length === POSTS_PER_PAGE);
-        setPage(pageNum);
-      } catch (err) {
-        console.error("Error fetching posts:", err);
-        setError("Failed to load posts. Please try again.");
-        showSnackbar("Failed to load posts", "error");
-      } finally {
-        setLoading(false);
-        setLoadingMore(false);
-      }
-    },
-    [showSnackbar, showAdminPosts]
-  );
-
-  // Intersection Observer callback
-  const handleObserver = useCallback(
-    (entries) => {
-      const target = entries[0];
-      if (target.isIntersecting && hasMore && !loadingMore && !loading) {
-        fetchPosts(page + 1, true);
-      }
-    },
-    [hasMore, loadingMore, loading, page, fetchPosts]
-  );
-
-  // Setup intersection observer
-  useEffect(() => {
-    const option = {
-      root: null,
-      rootMargin: "20px",
-      threshold: INTERSECTION_THRESHOLD,
-    };
-
-    observerRef.current = new IntersectionObserver(handleObserver, option);
-
-    return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-      }
-    };
-  }, [handleObserver]);
-
-  // Observe last post element
-  useEffect(() => {
-    if (lastPostElementRef.current && observerRef.current) {
-      observerRef.current.observe(lastPostElementRef.current);
-    }
-
-    return () => {
-      if (lastPostElementRef.current && observerRef.current) {
-        observerRef.current.unobserve(lastPostElementRef.current);
-      }
-    };
-  }, [posts]);
-
-  // Initial fetch
-  useEffect(() => {
-    fetchPosts(1, false);
-  }, [fetchPosts]);
-
-  // Optimized handlers
-  const handleLike = useCallback(
-    async (postId) => {
-      try {
-        // Optimistic update
-        setPosts((prev) =>
-          prev.map((post) =>
-            post._id === postId
-              ? {
-                  ...post,
-                  likes: post.likes?.includes(currentUser._id)
-                    ? post.likes.filter((id) => id !== currentUser._id)
-                    : [...(post.likes || []), currentUser._id],
-                }
-              : post
-          )
-        );
-
-        await communityService.likeOnPost(postId);
-      } catch (err) {
-        console.error("Error liking post:", err);
-        // Revert optimistic update on error
-        setPosts((prev) =>
-          prev.map((post) =>
-            post._id === postId
-              ? {
-                  ...post,
-                  likes: post.likes?.includes(currentUser._id)
-                    ? [...(post.likes || []), currentUser._id]
-                    : post.likes?.filter((id) => id !== currentUser._id) || [],
-                }
-              : post
-          )
-        );
-        showSnackbar("Failed to like post", "error");
-      }
-    },
-    [currentUser._id, showSnackbar]
-  );
-
-  const handleComment = useCallback(
-    async (postId, commentText) => {
-      try {
-        const comment = { content: commentText };
-        const response = await communityService.commentOnPost(postId, comment);
-
-        if (response) {
-          setPosts((prev) =>
-            prev.map((post) => {
-              if (post._id !== postId) return post;
-
-              const existingIds = new Set(
-                post.comments?.map((c) => c._id) || []
-              );
-              const newComments = [...(post.comments || [])];
-
-              response.post.comments?.forEach((c) => {
-                if (!existingIds.has(c._id)) {
-                  newComments.push(c);
-                }
-              });
-
-              return { ...post, comments: newComments };
-            })
-          );
-
-          showSnackbar("Comment added successfully", "success");
-        }
-      } catch (err) {
-        console.error("Error adding comment:", err);
-        showSnackbar("Failed to add comment", "error");
-      }
-    },
-    [showSnackbar]
-  );
-
-  const handleCommentLike = useCallback(
-    async (postId, commentId) => {
-      try {
-        // Optimistic update
-        setPosts((prev) =>
-          prev.map((post) =>
-            post._id === postId
-              ? {
-                  ...post,
-                  comments:
-                    post.comments?.map((comment) =>
-                      comment._id === commentId
-                        ? {
-                            ...comment,
-                            likes: comment.likes?.includes(currentUser._id)
-                              ? comment.likes.filter(
-                                  (id) => id !== currentUser._id
-                                )
-                              : [...(comment.likes || []), currentUser._id],
-                          }
-                        : comment
-                    ) || [],
-                }
-              : post
-          )
-        );
-
-        await communityService.likeOnPostComment(postId, commentId);
-      } catch (err) {
-        console.error("Error liking comment:", err);
-        showSnackbar("Failed to like comment", "error");
-      }
-    },
-    [currentUser._id, showSnackbar]
-  );
-
-  const fetchMyPosts = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await communityService.getMyPosts(currentUser._id);
-      setPosts(response?.posts || []);
-      setHasMore(false); // Assuming my posts don't have pagination
-    } catch (error) {
-      console.error("Error fetching my posts:", error);
-      setError("Failed to load your posts");
-    } finally {
-      setLoading(false);
-    }
-  }, [currentUser._id]);
-
-  const handleMenuItemClick = useCallback(
-    (action) => {
-      setAnchorEl(null);
-
-      switch (action) {
-        case "create-post":
-          setCreatePostModal(true);
-          break;
-        case "my-posts":
-          fetchMyPosts();
-          break;
-        case "my-profile":
-          // Navigate to profile
-          break;
-        default:
-          break;
-      }
-    },
-    [fetchMyPosts]
-  );
-
-  const handleRefresh = useCallback(() => {
-    setPage(1);
-    setHasMore(true);
-    fetchPosts(1, false);
-  }, [fetchPosts]);
-
-  // Error state
-  if (error && posts.length === 0) {
-    return (
-      <Container maxWidth="md" sx={{ mt: 4 }}>
-        <Alert
-          severity="error"
-          action={
-            <Button color="inherit" size="small" onClick={handleRefresh}>
-              <Refresh sx={{ mr: 1 }} />
-              Retry
-            </Button>
-          }
-        >
-          {error}
-        </Alert>
-      </Container>
-    );
-  }
-
-  return (
-    <>
-      {/* Header */}
-      <Paper
-        elevation={1}
-        sx={{
-          bgcolor: "background.paper",
-          position: "sticky",
-          top: 0,
-          zIndex: 100,
-          borderColor: "divider",
-          px: 2,
-        }}
-      >
-        <Stack
-          direction="row"
-          justifyContent="space-between"
-          alignItems="center"
-          py={2}
-        >
-          <Box>
-            <Typography
-              variant="h5"
-              fontWeight={700}
-              color="primary"
-              gutterBottom
-            >
-              Join Our Thriving Community
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Learn from real store owners, share your journey, and get inspired
-              by stories of success in the eCommerce world.
-            </Typography>
-          </Box>
-
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <Checkbox
-              checked={showAdminPosts}
-              onChange={() => setShowAdminPosts(!showAdminPosts)}
-            />
-            <Typography variant="body2" color="text.secondary">
-              Premium Posts
-            </Typography>
-            <Button
-              onClick={(e) => setAnchorEl(e.currentTarget)}
-              sx={{
-                borderRadius: 3,
-                px: 2,
-                py: 1,
-                "&:hover": { bgcolor: "action.hover" },
-              }}
-            >
-              <Avatar
-                src="https://randomuser.me/api/portraits/women/44.jpg"
-                sx={{ width: 40, height: 40, mr: 1 }}
-              />
-              <ExpandMore />
-            </Button>
-          </Box>
-
-          <Menu
-            anchorEl={anchorEl}
-            open={open}
-            onClose={() => setAnchorEl(null)}
-            transformOrigin={{ horizontal: "right", vertical: "top" }}
-            anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
-            PaperProps={{
-              elevation: 3,
-              sx: { mt: 1, minWidth: 200 },
-            }}
-          >
-            <MenuItem onClick={() => handleMenuItemClick("create-post")}>
-              <ListItemIcon>
-                <Add />
-              </ListItemIcon>
-              <ListItemText>Create Post</ListItemText>
-            </MenuItem>
-            <MenuItem onClick={() => handleMenuItemClick("my-posts")}>
-              <ListItemIcon>
-                <Article />
-              </ListItemIcon>
-              <ListItemText>My Posts</ListItemText>
-            </MenuItem>
-            <Divider />
-            <MenuItem onClick={() => handleMenuItemClick("my-profile")}>
-              <ListItemIcon>
-                <Person />
-              </ListItemIcon>
-              <ListItemText>My Community Profile</ListItemText>
-            </MenuItem>
-          </Menu>
-        </Stack>
-      </Paper>
-
-      {/* Content */}
-      <Container maxWidth="md" sx={{ py: 3 }}>
-        {loading && posts.length === 0 ? (
-          <Stack spacing={3}>
-            {Array.from({ length: 3 }).map((_, index) => (
-              <PostSkeleton key={index} />
-            ))}
-          </Stack>
-        ) : posts.length === 0 ? (
-          <Paper
-            elevation={0}
-            sx={{
-              textAlign: "center",
-              py: 8,
-              bgcolor: "grey.50",
-              borderRadius: 3,
-            }}
-          >
-            <Typography variant="h6" color="text.secondary" gutterBottom>
-              No posts found
-            </Typography>
-            <Typography variant="body2" color="text.secondary" mb={3}>
-              Be the first to share something with the community!
-            </Typography>
-            <Button
-              variant="contained"
-              startIcon={<Add />}
-              onClick={() => setCreatePostModal(true)}
-            >
-              Create Post
-            </Button>
-          </Paper>
-        ) : (
-          <Stack spacing={3}>
-            {posts.map((post, index) => (
-              <div
-                key={post._id}
-                ref={index === posts.length - 1 ? lastPostElementRef : null}
-              >
-                <PostCard
-                  post={post}
-                  currentUser={currentUser}
-                  setPosts={setPosts}
-                  onLike={handleLike}
-                  onComment={handleComment}
-                  onCommentLike={handleCommentLike}
-                  openCommentBox={openCommentBox}
-                  setOpenCommentBox={setOpenCommentBox}
-                />
-              </div>
-            ))}
-
-            {/* Loading more indicator */}
-            {loadingMore && (
-              <Box display="flex" justifyContent="center" py={3}>
-                <Stack alignItems="center" spacing={2}>
-                  <CircularProgress size={32} />
-                  <Typography variant="body2" color="text.secondary">
-                    Loading more posts...
-                  </Typography>
-                </Stack>
-              </Box>
-            )}
-
-            {/* End of posts indicator */}
-            {!hasMore && posts.length > 0 && (
-              <Paper
-                elevation={0}
-                sx={{
-                  textAlign: "center",
-                  py: 3,
-                  bgcolor: "grey.50",
-                  borderRadius: 2,
-                }}
-              >
-                <Typography variant="body2" color="text.secondary">
-                  🎉 You've reached the end! That's all the posts for now.
-                </Typography>
-              </Paper>
-            )}
-          </Stack>
-        )}
-      </Container>
-
-      <CreatePostModal
-        createPostModal={createPostModal}
-        setCreatePostModal={setCreatePostModal}
-        fetchPlans={() => fetchPosts(1, false)}
-      />
-    </>
-  );
-};
-
-export default memo(Community);

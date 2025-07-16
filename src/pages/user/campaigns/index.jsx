@@ -195,8 +195,15 @@ const Campaigns = () => {
   const toggleCampaignStatus = async (campaignId, currentStatus) => {
     try {
       setStatusUpdating(campaignId);
+      setCampaigns((prev) =>
+        prev.map((campaign) =>
+          campaign._id === campaignId
+            ? { ...campaign, status: currentStatus }
+            : campaign
+        )
+      );
       const response = await campaignsService.updateCampaignStatus(campaignId, {
-        status: currentStatus === "active" ? "paused" : "active",
+        status: currentStatus,
       });
       if (response) {
         showSnackbar("Campaign status updated successfully", "success");
@@ -230,22 +237,6 @@ const Campaigns = () => {
   //     );
   //   }
   // };
-
-  const getStatusChip = (status) => {
-    const statusConfig = {
-      active: { color: "success", label: "Active" },
-      paused: { color: "warning", label: "Paused" },
-      ended: { color: "error", label: "Ended" },
-    };
-
-    return (
-      <Chip
-        label={statusConfig[status]?.label || status}
-        color={statusConfig[status]?.color || "default"}
-        size="small"
-      />
-    );
-  };
 
   const renderDashboard = () => (
     <Box>
@@ -665,7 +656,6 @@ const Campaigns = () => {
               </TableCell>
               <TableCell>Campaign Id</TableCell>
               <TableCell>Platform</TableCell>
-              <TableCell>Status</TableCell>
               <TableCell align="right">Clicks</TableCell>
               <TableCell align="right">Conversions</TableCell>
               <TableCell align="right">Impressions</TableCell>
@@ -718,7 +708,6 @@ const Campaigns = () => {
                       </Typography>
                     </Box>
                   </TableCell>
-                  <TableCell>{getStatusChip(campaign.status)}</TableCell>
                   <TableCell align="right">
                     <Typography variant="body2">
                       {campaign.metrics.clicks.toLocaleString()}
@@ -735,28 +724,26 @@ const Campaigns = () => {
                     </Typography>
                   </TableCell>
                   <TableCell align="center">
-                    <Tooltip
-                      title={
-                        campaign.status === "active"
-                          ? "Pause Campaign"
-                          : "Start Campaign"
+                    <Select
+                      value={campaign.status}
+                      onChange={(e) =>
+                        toggleCampaignStatus(campaign._id, e.target.value)
+                      }
+                      size="small"
+                      sx={{ minWidth: 120 }}
+                      startAdornment={
+                        statusUpdating === campaign._id && (
+                          <InputAdornment position="end">
+                            <CircularProgress size={16} />
+                          </InputAdornment>
+                        )
                       }
                     >
-                      <IconButton
-                        size="small"
-                        onClick={() =>
-                          toggleCampaignStatus(campaign._id, campaign.status)
-                        }
-                      >
-                        {statusUpdating === campaign._id ? (
-                          <CircularProgress size={14} />
-                        ) : campaign.status === "active" ? (
-                          <PauseIcon />
-                        ) : (
-                          <PlayIcon />
-                        )}
-                      </IconButton>
-                    </Tooltip>
+                      <MenuItem value="running">Running</MenuItem>
+                      <MenuItem value="paused">Paused</MenuItem>
+                      <MenuItem value="completed">Completed</MenuItem>
+                      <MenuItem value="draft">Draft</MenuItem>
+                    </Select>
                     {/* <IconButton
                     size="small"
                     onClick={(e) => handleMenuOpen(e, campaign.id)}

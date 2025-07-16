@@ -218,9 +218,7 @@ const AddProductStepperModal = ({
     tags: "",
     category: "",
     images: [],
-    variants: [
-      { size: "M", color: "Red", stock: 10, price: 599, discount: 10 },
-    ],
+    variants: [],
   });
 
   const [errors, setErrors] = useState({});
@@ -296,7 +294,7 @@ const AddProductStepperModal = ({
           setFormData((prev) => ({
             ...prev,
             images: [
-                {
+              {
                 file,
                 preview: e.target.result,
                 name: file.name,
@@ -339,9 +337,21 @@ const AddProductStepperModal = ({
   const updateVariant = (index, field, value) => {
     setFormData((prev) => ({
       ...prev,
-      variants: prev?.variants?.map((variant, i) =>
-        i === index ? { ...variant, [field]: value } : variant
-      ),
+      variants: prev?.variants?.map((variant, i) => {
+        if (i !== index) return variant;
+
+        const updatedVariant = { ...variant, [field]: value };
+
+        if (field === "price" && prev.basePrice) {
+          const price = parseFloat(value);
+          const basePrice = parseFloat(prev.basePrice);
+          const discount =
+            basePrice > 0 ? ((basePrice - price) / basePrice) * 100 : 0;
+          updatedVariant.discount = parseFloat(discount.toFixed(2)); // Rounded to 2 decimals
+        }
+
+        return updatedVariant;
+      }),
     }));
   };
 
@@ -367,7 +377,12 @@ const AddProductStepperModal = ({
         description: description.trim(),
         basePrice: parseFloat(basePrice),
         category: category.trim(),
-        tags: Array.isArray(tags) ? tags : tags?.split(",")?.map((tag) => tag.trim())?.filter(Boolean),
+        tags: Array.isArray(tags)
+          ? tags
+          : tags
+              ?.split(",")
+              ?.map((tag) => tag.trim())
+              ?.filter(Boolean),
         attributes,
         variants,
         images: images?.map((img) => img.file).filter(Boolean),
@@ -706,15 +721,17 @@ const AddProductStepperModal = ({
 
             {/* Display attributes as chips */}
             <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mb: 2 }}>
-              {Object.entries(formData?.attributes || {}).map(([key, value]) => (
-                <Chip
-                  key={key}
-                  label={`${key}: ${value}`}
-                  onDelete={() => removeAttribute(key)}
-                  variant="outlined"
-                  color="primary"
-                />
-              ))}
+              {Object.entries(formData?.attributes || {}).map(
+                ([key, value]) => (
+                  <Chip
+                    key={key}
+                    label={`${key}: ${value}`}
+                    onDelete={() => removeAttribute(key)}
+                    variant="outlined"
+                    color="primary"
+                  />
+                )
+              )}
             </Stack>
 
             {errors.attributes && (
@@ -743,101 +760,116 @@ const AddProductStepperModal = ({
             </Box>
 
             <Stack spacing={2}>
-              {formData?.variants?.map((variant, index) => (
+              {formData?.variants?.length === 0 ? (
                 <Paper
-                  key={index}
-                  sx={{ p: 3, border: "1px solid", borderColor: "grey.300" }}
+                  sx={{
+                    p: 3,
+                    border: "1px solid",
+                    borderColor: "grey.300",
+                    textAlign: "center",
+                  }}
                 >
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      mb: 2,
-                    }}
-                  >
-                    <Typography variant="subtitle1">
-                      Variant {index + 1}
-                    </Typography>
-                    {formData?.variants?.length > 1 && (
-                      <Button
-                        size="small"
-                        onClick={() => removeVariant(index)}
-                        color="error"
-                        startIcon={<Delete />}
-                      >
-                        Remove
-                      </Button>
-                    )}
-                  </Box>
-
-                  <Grid container spacing={2}>
-                    <Grid item size={{ xs: 6, md: 2.4 }}>
-                      <TextField
-                        fullWidth
-                        size="small"
-                        label="Size"
-                        value={variant.size}
-                        onChange={(e) =>
-                          updateVariant(index, "size", e.target.value)
-                        }
-                        placeholder="M"
-                      />
-                    </Grid>
-                    <Grid item size={{ xs: 6, md: 2.4 }}>
-                      <TextField
-                        fullWidth
-                        size="small"
-                        label="Color"
-                        value={variant.color}
-                        onChange={(e) =>
-                          updateVariant(index, "color", e.target.value)
-                        }
-                        placeholder="Red"
-                      />
-                    </Grid>
-                    <Grid item size={{ xs: 4, md: 2.4 }}>
-                      <TextField
-                        fullWidth
-                        size="small"
-                        label="Price"
-                        type="number"
-                        value={variant.price}
-                        onChange={(e) =>
-                          updateVariant(
-                            index,
-                            "price",
-                            parseFloat(e.target.value) || 0
-                          )
-                        }
-                        InputProps={{
-                          startAdornment: (
-                            <InputAdornment position="start">$</InputAdornment>
-                          ),
-                        }}
-                        placeholder="599"
-                      />
-                    </Grid>
-                    <Grid item size={{ xs: 4, md: 2.4 }}>
-                      <TextField
-                        fullWidth
-                        size="small"
-                        label="Discount %"
-                        type="number"
-                        value={variant.discount}
-                        onChange={(e) =>
-                          updateVariant(
-                            index,
-                            "discount",
-                            parseInt(e.target.value) || 0
-                          )
-                        }
-                        placeholder="10"
-                      />
-                    </Grid>
-                  </Grid>
+                  <Typography>Please add Variants</Typography>
                 </Paper>
-              ))}
+              ) : (
+                formData?.variants?.map((variant, index) => (
+                  <Paper
+                    key={index}
+                    sx={{ p: 3, border: "1px solid", borderColor: "grey.300" }}
+                  >
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        mb: 2,
+                      }}
+                    >
+                      <Typography variant="subtitle1">
+                        Variant {index + 1}
+                      </Typography>
+                      {formData?.variants?.length > 1 && (
+                        <Button
+                          size="small"
+                          onClick={() => removeVariant(index)}
+                          color="error"
+                          startIcon={<Delete />}
+                        >
+                          Remove
+                        </Button>
+                      )}
+                    </Box>
+
+                    <Grid container spacing={2}>
+                      <Grid item size={{ xs: 6, md: 2.4 }}>
+                        <TextField
+                          fullWidth
+                          size="small"
+                          label="Size"
+                          value={variant.size}
+                          onChange={(e) =>
+                            updateVariant(index, "size", e.target.value)
+                          }
+                          placeholder="M"
+                        />
+                      </Grid>
+                      <Grid item size={{ xs: 6, md: 2.4 }}>
+                        <TextField
+                          fullWidth
+                          size="small"
+                          label="Color"
+                          value={variant.color}
+                          onChange={(e) =>
+                            updateVariant(index, "color", e.target.value)
+                          }
+                          placeholder="Red"
+                        />
+                      </Grid>
+                      <Grid item size={{ xs: 4, md: 2.4 }}>
+                        <TextField
+                          fullWidth
+                          size="small"
+                          label="Price"
+                          type="number"
+                          value={variant.price}
+                          onChange={(e) =>
+                            updateVariant(
+                              index,
+                              "price",
+                              parseFloat(e.target.value)
+                            )
+                          }
+                          InputProps={{
+                            startAdornment: (
+                              <InputAdornment position="start">
+                                $
+                              </InputAdornment>
+                            ),
+                          }}
+                          placeholder="599"
+                        />
+                      </Grid>
+                      <Grid item size={{ xs: 4, md: 2.4 }}>
+                        <TextField
+                          fullWidth
+                          size="small"
+                          label="Discount %"
+                          type="number"
+                          value={variant.discount}
+                          onChange={(e) =>
+                            updateVariant(
+                              index,
+                              "discount",
+                              parseInt(e.target.value) || 0
+                            )
+                          }
+                          placeholder="10"
+                        />
+                      </Grid>
+                    </Grid>
+                  </Paper>
+                ))
+              )}
             </Stack>
           </Box>
         );

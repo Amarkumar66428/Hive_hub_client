@@ -49,6 +49,7 @@ import {
   Favorite,
   TurnedIn,
   Delete,
+  MoreVert,
 } from "@mui/icons-material";
 
 import CreatePostModal from "./createPost";
@@ -61,6 +62,443 @@ import useAuth from "../../../hooks/useAuth";
 // Constants
 const POSTS_PER_PAGE = 10;
 const INTERSECTION_THRESHOLD = 0.1;
+
+// Main Community Component
+const Community = () => {
+  const currentUser = useAuth();
+  const { showSnackbar } = useSnackbar();
+
+  // State
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [error, setError] = useState(null);
+  const [hasMore, setHasMore] = useState(true);
+  const [page, setPage] = useState(1);
+  const [createPostModal, setCreatePostModal] = useState(false);
+  const [openCommentBox, setOpenCommentBox] = useState(null);
+  const [filter, setFilter] = useState("admin");
+  // Refs
+  const observerRef = useRef();
+  const lastPostElementRef = useRef();
+  const [deletingCommentId, setDeletingCommentId] = useState(null);
+
+  // Fetch posts function
+  const fetchPosts = useCallback(
+    async (pageNum = 1, isLoadMore = false) => {
+      try {
+        if (isLoadMore) {
+          setLoadingMore(true);
+        } else {
+          setLoading(true);
+          setError(null);
+        }
+
+        let newPosts;
+        if (filter !== "admin") {
+          const params = `?page=${pageNum}&limit=${POSTS_PER_PAGE}&isAdmin=false&status=${
+            filter === "hidden" ? "hidden" : "visible"
+          }`;
+          const response = await communityService.getAllAdminPosts(params);
+          newPosts = response?.posts || [];
+        } else {
+          const response = await communityService.getAdminPosts();
+          newPosts = response?.posts || [];
+        }
+
+        if (isLoadMore) {
+          setPosts((prev) => [...prev, ...newPosts]);
+        } else {
+          setPosts(newPosts);
+        }
+
+        setHasMore(newPosts.length === POSTS_PER_PAGE);
+        setPage(pageNum);
+      } catch (err) {
+        console.error("Error fetching posts:", err);
+        setError("Failed to load posts. Please try again.");
+        showSnackbar("Failed to load posts", "error");
+      } finally {
+        setLoading(false);
+        setLoadingMore(false);
+      }
+    },
+    [filter, showSnackbar]
+  );
+
+  // Intersection Observer callback
+  const handleObserver = useCallback(
+    (entries) => {
+      const target = entries[0];
+      if (target.isIntersecting && hasMore && !loadingMore && !loading) {
+        fetchPosts(page + 1, true);
+      }
+    },
+    [hasMore, loadingMore, loading, page, fetchPosts]
+  );
+
+  // Setup intersection observer
+  useEffect(() => {
+    const option = {
+      root: null,
+      rootMargin: "20px",
+      threshold: INTERSECTION_THRESHOLD,
+    };
+
+    observerRef.current = new IntersectionObserver(handleObserver, option);
+
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, [handleObserver]);
+
+  // Observe last post element
+  useEffect(() => {
+    if (lastPostElementRef.current && observerRef.current) {
+      observerRef.current.observe(lastPostElementRef.current);
+    }
+
+    return () => {
+      if (lastPostElementRef.current && observerRef.current) {
+        observerRef.current.unobserve(lastPostElementRef.current);
+      }
+    };
+  }, [posts]);
+
+  useEffect(() => {
+    setPosts([]); // clear old posts
+    setPage(1); // reset page
+    fetchPosts(1, false);
+  }, [filter, fetchPosts]);
+
+  // Optimized handlers
+  const handleLike = useCallback(
+    async (postId) => {
+      try {
+        // Optimistic update
+        setPosts((prev) =>
+          prev.map((post) =>
+            post._id === postId
+              ? {
+                  ...post,
+                  likes: post.likes?.includes(currentUser._id)
+                    ? post.likes.filter((id) => id !== currentUser._id)
+                    : [...(post.likes || []), currentUser._id],
+                }
+              : post
+          )
+        );
+
+        // await communityService.likeOnPost(postId);
+      } catch (err) {
+        console.error("Error liking post:", err);
+        // Revert optimistic update on error
+        setPosts((prev) =>
+          prev.map((post) =>
+            post._id === postId
+              ? {
+                  ...post,
+                  likes: post.likes?.includes(currentUser._id)
+                    ? [...(post.likes || []), currentUser._id]
+                    : post.likes?.filter((id) => id !== currentUser._id) || [],
+                }
+              : post
+          )
+        );
+
+        showSnackbar("Failed to like post", "error");
+      }
+    },
+    [currentUser._id, showSnackbar]
+  );
+
+  const handleComment = useCallback(
+    async (postId, content) => {
+      try {
+        const response = await communityService.commentOnPostAdmin(
+          postId,
+          content
+        );
+
+        if (response) {
+          setPosts((prev) =>
+            prev.map((post) => {
+              if (post._id !== postId) return post;
+
+              const existingIds = new Set(
+                post.comments?.map((c) => c._id) || []
+              );
+              const newComments = [...(post.comments || [])];
+
+              response.post.comments?.forEach((c) => {
+                if (!existingIds.has(c._id)) {
+                  newComments.push(c);
+                }
+              });
+
+              return { ...post, comments: newComments };
+            })
+          );
+
+          showSnackbar("Comment added successfully", "success");
+        }
+      } catch (err) {
+        console.error("Error adding comment:", err);
+        showSnackbar("Failed to add comment", "error");
+      }
+    },
+    [showSnackbar]
+  );
+
+  const handleCommentLike = useCallback(
+    async (postId, commentId) => {
+      try {
+        // Optimistic update
+        setPosts((prev) =>
+          prev.map((post) =>
+            post._id === postId
+              ? {
+                  ...post,
+                  comments:
+                    post.comments?.map((comment) =>
+                      comment._id === commentId
+                        ? {
+                            ...comment,
+                            likes: comment.likes?.includes(currentUser._id)
+                              ? comment.likes.filter(
+                                  (id) => id !== currentUser._id
+                                )
+                              : [...(comment.likes || []), currentUser._id],
+                          }
+                        : comment
+                    ) || [],
+                }
+              : post
+          )
+        );
+
+        // await communityService.likeOnPostComment(postId, commentId);
+      } catch (err) {
+        console.error("Error liking comment:", err);
+        showSnackbar("Failed to like comment", "error");
+      }
+    },
+    [currentUser._id, showSnackbar]
+  );
+
+  const handleRefresh = useCallback(() => {
+    setPage(1);
+    setHasMore(true);
+    fetchPosts(1, false);
+  }, [fetchPosts]);
+
+  const handleDeleteComment = useCallback(
+    async (postId, commentId) => {
+      try {
+        setDeletingCommentId(commentId);
+        await communityService.deletePostUserComment(postId, commentId);
+        setPosts((prev) =>
+          prev.map((post) =>
+            post._id === postId
+              ? {
+                  ...post,
+                  comments: post.comments.filter((c) => c._id !== commentId),
+                }
+              : post
+          )
+        );
+        showSnackbar("Comment deleted successfully", "success");
+      } catch (error) {
+        console.error("Error deleting comment:", error);
+        showSnackbar("Failed to delete comment", "error");
+      } finally {
+        setDeletingCommentId(null);
+      }
+    },
+    [showSnackbar]
+  );
+
+  // Error state
+  if (error && posts.length === 0) {
+    return (
+      <Container maxWidth="md" sx={{ mt: 4 }}>
+        <Alert
+          severity="error"
+          action={
+            <Button color="inherit" size="small" onClick={handleRefresh}>
+              <Refresh sx={{ mr: 1 }} />
+              Retry
+            </Button>
+          }
+        >
+          {error}
+        </Alert>
+      </Container>
+    );
+  }
+
+  return (
+    <>
+      {/* Header */}
+      <Paper
+        elevation={1}
+        sx={{
+          bgcolor: "background.paper",
+          position: "sticky",
+          top: 0,
+          zIndex: 100,
+          borderColor: "divider",
+          px: 2,
+        }}
+      >
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          alignItems="center"
+          py={2}
+        >
+          <Box>
+            <Typography
+              variant="h5"
+              fontWeight={700}
+              color="primary"
+              gutterBottom
+            >
+              Join Our Thriving Community
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Learn from real store owners, share your journey, and get inspired
+              by stories of success in the eCommerce world.
+            </Typography>
+          </Box>
+
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <FormControl size="small" sx={{ minWidth: 120 }}>
+              <InputLabel id="select-filter-label">Filter</InputLabel>
+              <Select
+                labelId="select-filter-label"
+                id="select-filter"
+                value={filter}
+                onChange={(e) => setFilter(e.target.value)}
+                label="Filter"
+              >
+                <MenuItem value={"admin"}>Admin Posts</MenuItem>
+                <MenuItem value={"community"}>Community Posts</MenuItem>
+                <MenuItem value={"hidden"}>Hidden Posts</MenuItem>
+              </Select>
+            </FormControl>
+            <Button
+              variant="contained"
+              onClick={() => setCreatePostModal(true)}
+              sx={{
+                px: 2,
+                py: 1,
+              }}
+            >
+              Add Post
+            </Button>
+          </Box>
+        </Stack>
+      </Paper>
+
+      {/* Content */}
+      <Container maxWidth="md" sx={{ py: 3 }}>
+        {loading && posts.length === 0 ? (
+          <Stack spacing={3}>
+            {Array.from({ length: 3 }).map((_, index) => (
+              <PostSkeleton key={index} />
+            ))}
+          </Stack>
+        ) : posts.length === 0 ? (
+          <Paper
+            elevation={0}
+            sx={{
+              textAlign: "center",
+              py: 8,
+              bgcolor: "grey.50",
+              borderRadius: 3,
+            }}
+          >
+            <Typography variant="h6" color="text.secondary" gutterBottom>
+              No posts found
+            </Typography>
+            <Typography variant="body2" color="text.secondary" mb={3}>
+              Be the first to share something with the community!
+            </Typography>
+            <Button
+              variant="contained"
+              startIcon={<Add />}
+              onClick={() => setCreatePostModal(true)}
+            >
+              Create Post
+            </Button>
+          </Paper>
+        ) : (
+          <Stack spacing={3}>
+            {posts.map((post, index) => (
+              <div
+                key={post._id}
+                ref={index === posts.length - 1 ? lastPostElementRef : null}
+              >
+                <PostCard
+                  post={post}
+                  currentUser={currentUser}
+                  onLike={handleLike}
+                  onComment={handleComment}
+                  onCommentLike={handleCommentLike}
+                  openCommentBox={openCommentBox}
+                  setOpenCommentBox={setOpenCommentBox}
+                  onDeleteComment={handleDeleteComment}
+                  deletingCommentId={deletingCommentId}
+                  setPosts={setPosts}
+                />
+              </div>
+            ))}
+
+            {/* Loading more indicator */}
+            {loadingMore && (
+              <Box display="flex" justifyContent="center" py={3}>
+                <Stack alignItems="center" spacing={2}>
+                  <CircularProgress size={32} />
+                  <Typography variant="body2" color="text.secondary">
+                    Loading more posts...
+                  </Typography>
+                </Stack>
+              </Box>
+            )}
+
+            {/* End of posts indicator */}
+            {!hasMore && posts.length > 0 && (
+              <Paper
+                elevation={0}
+                sx={{
+                  textAlign: "center",
+                  py: 3,
+                  bgcolor: "grey.50",
+                  borderRadius: 2,
+                }}
+              >
+                <Typography variant="body2" color="text.secondary">
+                  🎉 You've reached the end! That's all the posts for now.
+                </Typography>
+              </Paper>
+            )}
+          </Stack>
+        )}
+      </Container>
+
+      <CreatePostModal
+        createPostModal={createPostModal}
+        setCreatePostModal={setCreatePostModal}
+        fetchPosts={fetchPosts}
+      />
+    </>
+  );
+};
+
+export default memo(Community);
 
 const ProductCard = styled(Card)(({ theme }) => ({
   display: "flex",
@@ -84,10 +522,15 @@ const PostCard = memo(
     setOpenCommentBox,
     onDeleteComment,
     deletingCommentId,
+    setPosts,
   }) => {
+    const { showSnackbar } = useSnackbar();
     const [commentInput, setCommentInput] = useState("");
     const [savingComment, setSavingComment] = useState(false);
     const [isFlagged, setIsFlagged] = useState(post?.status);
+    const [anchorEl, setAnchorEl] = useState(null);
+    const open = Boolean(anchorEl);
+    const [deletingPost, setDeletingPost] = useState(false);
 
     const handleCommentSubmit = useCallback(async () => {
       if (!commentInput.trim()) return;
@@ -117,30 +560,89 @@ const PostCard = memo(
       }
     }, [post._id, isFlagged]);
 
+    const handleDeletePost = async (postId) => {
+      try {
+        setDeletingPost(true);
+        await communityService.deletePostAdmin(postId);
+        showSnackbar("Post deleted successfully", "success");
+        setPosts((prev) => prev.filter((p) => p._id !== postId));
+      } catch (error) {
+        console.log(error);
+        showSnackbar("Failed to delete post", "error");
+      } finally {
+        setDeletingPost(false);
+      }
+    };
+
     return (
       <Fade in timeout={300}>
         <ProductCard>
           {/* Post Header */}
           <CardContent sx={{ pb: 1 }}>
-            <Stack direction="row" spacing={2} alignItems="center" mb={2}>
-              <Avatar
-                src={post?.avatar}
-                alt={post?.authorName}
-                sx={{
-                  width: 48,
-                  height: 48,
-                  border: 2,
-                  borderColor: "divider",
-                }}
-              />
-              <Box flex={1}>
-                <Typography variant="h6" fontWeight={600} color="text.primary">
-                  {post?.authorName || "Unknown"}
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  {formatDate(post?.createdAt)}
-                </Typography>
-              </Box>
+            <Stack
+              direction="row"
+              justifyContent="space-between"
+              alignItems="start"
+            >
+              <Stack direction="row" spacing={2} alignItems="center" mb={2}>
+                <Avatar
+                  src={post?.avatar}
+                  alt={post?.authorName}
+                  sx={{
+                    width: 48,
+                    height: 48,
+                    border: 2,
+                    borderColor: "divider",
+                  }}
+                />
+                <Box flex={1}>
+                  <Typography
+                    variant="h6"
+                    fontWeight={600}
+                    color="text.primary"
+                  >
+                    {post?.authorId === currentUser._id
+                      ? "HiveHub"
+                      : post?.authorName || "Unknown"}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {formatDate(post?.createdAt)}
+                  </Typography>
+                </Box>
+              </Stack>
+              <Stack
+                direction="row"
+                spacing={2}
+                alignItems="center"
+                justifyContent="flex-end"
+              >
+                {post.authorId === currentUser._id && (
+                  <IconButton onClick={(e) => setAnchorEl(e.currentTarget)}>
+                    <MoreVert />
+                  </IconButton>
+                )}
+                <Menu
+                  anchorEl={anchorEl}
+                  open={open}
+                  onClose={() => setAnchorEl(null)}
+                >
+                  <MenuItem
+                    onClick={() => handleDeletePost(post._id)}
+                    disabled={deletingPost}
+                  >
+                    <ListItemIcon>
+                      {deletingPost ? (
+                        <CircularProgress size={20} />
+                      ) : (
+                        <Delete />
+                      )}
+                    </ListItemIcon>
+                    <ListItemText>
+                      {deletingPost ? "Deleting..." : "Delete"}
+                    </ListItemText>
+                  </MenuItem>
+                </Menu>
+              </Stack>
             </Stack>
 
             {/* Post Content */}
@@ -302,7 +804,14 @@ const PostCard = memo(
 
 // Memoized Comments Section
 const CommentsSection = memo(
-  ({ comments, currentUser, onCommentLike, postId, onDeleteComment, deletingCommentId }) => {
+  ({
+    comments,
+    currentUser,
+    onCommentLike,
+    postId,
+    onDeleteComment,
+    deletingCommentId,
+  }) => {
     if (comments.length === 0) {
       return (
         <Typography
@@ -335,73 +844,76 @@ const CommentsSection = memo(
 );
 
 // Memoized Comment Item
-const CommentItem = memo(({ comment,
-  currentUser,
-  onLike,
-  postId,
-  onDeleteComment,
-  deletingCommentId,
-}) => {
-  const isLiked = comment.likes?.includes(currentUser._id);
-  const isDeleting = deletingCommentId === comment._id;
+const CommentItem = memo(
+  ({
+    comment,
+    currentUser,
+    onLike,
+    postId,
+    onDeleteComment,
+    deletingCommentId,
+  }) => {
+    const isLiked = comment.likes?.includes(currentUser._id);
+    const isDeleting = deletingCommentId === comment._id;
 
-  return (
-    <Paper
-      elevation={0}
-      sx={{ p: 1.5, bgcolor: "background.paper", borderRadius: 2 }}
-    >
-      <Stack direction="row" spacing={1.5}>
-        <Avatar src={comment.avatar} sx={{ width: 32, height: 32 }} />
-        <Box flex={1}>
-          <Stack
-            direction="row"
-            alignItems="center"
-            spacing={1}
-            mb={0.5}
-            justifyContent="space-between"
-          >
-            <Stack direction="row" alignItems="center" spacing={1} mb={0.5}>
-              <Typography variant="body2" fontWeight={600}>
-                {comment.userId === currentUser._id
-                  ? "You"
-                  : comment.userName || "Unknown"}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                {formatDate(comment.createdAt)}
-              </Typography>
-            </Stack>
-            <IconButton
-              onClick={() => onDeleteComment(postId, comment._id)}
-              disabled={isDeleting}
+    return (
+      <Paper
+        elevation={0}
+        sx={{ p: 1.5, bgcolor: "background.paper", borderRadius: 2 }}
+      >
+        <Stack direction="row" spacing={1.5}>
+          <Avatar src={comment.avatar} sx={{ width: 32, height: 32 }} />
+          <Box flex={1}>
+            <Stack
+              direction="row"
+              alignItems="center"
+              spacing={1}
+              mb={0.5}
+              justifyContent="space-between"
             >
-              {isDeleting ? (
-                <CircularProgress size={18} />
-              ) : (
-                <Delete sx={{ fontSize: "18px" }} />
-              )}
-            </IconButton>
-          </Stack>
-          <Typography variant="body2" color="text.primary" mb={1}>
-            {comment.content}
-          </Typography>
-          <Button
-            size="small"
-            startIcon={isLiked ? <Favorite /> : <FavoriteBorder />}
-            onClick={onLike}
-            sx={{
-              minWidth: "auto",
-              px: 1,
-              color: isLiked ? "error.main" : "text.secondary",
-              "&:hover": { bgcolor: "transparent" },
-            }}
-          >
-            {comment.likes?.length || 0}
-          </Button>
-        </Box>
-      </Stack>
-    </Paper>
-  );
-});
+              <Stack direction="row" alignItems="center" spacing={1} mb={0.5}>
+                <Typography variant="body2" fontWeight={600}>
+                  {comment.userId === currentUser._id
+                    ? "HiveHub"
+                    : comment.userName || "Unknown"}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {formatDate(comment.createdAt)}
+                </Typography>
+              </Stack>
+              <IconButton
+                onClick={() => onDeleteComment(postId, comment._id)}
+                disabled={isDeleting}
+              >
+                {isDeleting ? (
+                  <CircularProgress size={18} />
+                ) : (
+                  <Delete sx={{ fontSize: "18px" }} />
+                )}
+              </IconButton>
+            </Stack>
+            <Typography variant="body2" color="text.primary" mb={1}>
+              {comment.content}
+            </Typography>
+            <Button
+              size="small"
+              startIcon={isLiked ? <Favorite /> : <FavoriteBorder />}
+              onClick={onLike}
+              sx={{
+                minWidth: "auto",
+                px: 1,
+                color: isLiked ? "error.main" : "text.secondary",
+                "&:hover": { bgcolor: "transparent" },
+              }}
+            >
+              {comment.likes?.length || 0}
+            </Button>
+          </Box>
+        </Stack>
+      </Paper>
+    );
+  }
+);
 
 // Memoized Content Component
 const ContentWithReadMore = memo(({ content, tags, maxChars = 150 }) => {
@@ -482,440 +994,3 @@ const PostSkeleton = memo(() => (
     </CardActions>
   </Card>
 ));
-
-// Main Community Component
-const Community = () => {
-  const currentUser = useAuth();
-  const { showSnackbar } = useSnackbar();
-
-  // State
-  const [posts, setPosts] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [error, setError] = useState(null);
-  const [hasMore, setHasMore] = useState(true);
-  const [page, setPage] = useState(1);
-  const [createPostModal, setCreatePostModal] = useState(false);
-  const [openCommentBox, setOpenCommentBox] = useState(null);
-  const [filter, setFilter] = useState("admin");
-  // Refs
-  const observerRef = useRef();
-  const lastPostElementRef = useRef();
-  const [deletingCommentId, setDeletingCommentId] = useState(null);
-
-  // Fetch posts function
-  const fetchPosts = useCallback(
-    async (pageNum = 1, isLoadMore = false) => {
-      try {
-        if (isLoadMore) {
-          setLoadingMore(true);
-        } else {
-          setLoading(true);
-          setError(null);
-        }
-
-        let newPosts;
-        if (filter !== "admin") {
-          const params = `?page=${pageNum}&limit=${POSTS_PER_PAGE}&isAdmin=false&status=${
-            filter === "hidden" ? "hidden" : "visible"
-          }`;
-          const response = await communityService.getAllAdminPosts(params);
-          newPosts = response?.posts || [];
-        } else {
-          const response = await communityService.getAdminPosts();
-          newPosts = response?.posts || [];
-        }
-
-        if (isLoadMore) {
-          setPosts((prev) => [...prev, ...newPosts]);
-        } else {
-          setPosts(newPosts);
-        }
-
-        setHasMore(newPosts.length === POSTS_PER_PAGE);
-        setPage(pageNum);
-      } catch (err) {
-        console.error("Error fetching posts:", err);
-        setError("Failed to load posts. Please try again.");
-        showSnackbar("Failed to load posts", "error");
-      } finally {
-        setLoading(false);
-        setLoadingMore(false);
-      }
-    },
-    [filter, showSnackbar]
-  );
-
-  // Intersection Observer callback
-  const handleObserver = useCallback(
-    (entries) => {
-      const target = entries[0];
-      if (target.isIntersecting && hasMore && !loadingMore && !loading) {
-        fetchPosts(page + 1, true);
-      }
-    },
-    [hasMore, loadingMore, loading, page, fetchPosts]
-  );
-
-  // Setup intersection observer
-  useEffect(() => {
-    const option = {
-      root: null,
-      rootMargin: "20px",
-      threshold: INTERSECTION_THRESHOLD,
-    };
-
-    observerRef.current = new IntersectionObserver(handleObserver, option);
-
-    return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-      }
-    };
-  }, [handleObserver]);
-
-  // Observe last post element
-  useEffect(() => {
-    if (lastPostElementRef.current && observerRef.current) {
-      observerRef.current.observe(lastPostElementRef.current);
-    }
-
-    return () => {
-      if (lastPostElementRef.current && observerRef.current) {
-        observerRef.current.unobserve(lastPostElementRef.current);
-      }
-    };
-  }, [posts]);
-
-  useEffect(() => {
-    setPosts([]); // clear old posts
-    setPage(1); // reset page
-    fetchPosts(1, false);
-  }, [filter, fetchPosts]);
-
-  // Optimized handlers
-  const handleLike = useCallback(
-    async (postId) => {
-      try {
-        // Optimistic update
-        setPosts((prev) =>
-          prev.map((post) =>
-            post._id === postId
-              ? {
-                  ...post,
-                  likes: post.likes?.includes(currentUser._id)
-                    ? post.likes.filter((id) => id !== currentUser._id)
-                    : [...(post.likes || []), currentUser._id],
-                }
-              : post
-          )
-        );
-
-        // await communityService.likeOnPost(postId);
-      } catch (err) {
-        console.error("Error liking post:", err);
-        // Revert optimistic update on error
-        setPosts((prev) =>
-          prev.map((post) =>
-            post._id === postId
-              ? {
-                  ...post,
-                  likes: post.likes?.includes(currentUser._id)
-                    ? [...(post.likes || []), currentUser._id]
-                    : post.likes?.filter((id) => id !== currentUser._id) || [],
-                }
-              : post
-          )
-        );
-
-        showSnackbar("Failed to like post", "error");
-      }
-    },
-    [currentUser._id, showSnackbar]
-  );
-
-  const handleComment = useCallback(
-    async (postId, commentText) => {
-      return;
-
-      try {
-        const comment = { content: commentText };
-        const response = await communityService.commentOnPost(postId, comment);
-
-        if (response) {
-          setPosts((prev) =>
-            prev.map((post) => {
-              if (post._id !== postId) return post;
-
-              const existingIds = new Set(
-                post.comments?.map((c) => c._id) || []
-              );
-              const newComments = [...(post.comments || [])];
-
-              response.post.comments?.forEach((c) => {
-                if (!existingIds.has(c._id)) {
-                  newComments.push(c);
-                }
-              });
-
-              return { ...post, comments: newComments };
-            })
-          );
-
-          showSnackbar("Comment added successfully", "success");
-        }
-      } catch (err) {
-        console.error("Error adding comment:", err);
-        showSnackbar("Failed to add comment", "error");
-      }
-    },
-    [showSnackbar]
-  );
-
-  const handleCommentLike = useCallback(
-    async (postId, commentId) => {
-      try {
-        // Optimistic update
-        setPosts((prev) =>
-          prev.map((post) =>
-            post._id === postId
-              ? {
-                  ...post,
-                  comments:
-                    post.comments?.map((comment) =>
-                      comment._id === commentId
-                        ? {
-                            ...comment,
-                            likes: comment.likes?.includes(currentUser._id)
-                              ? comment.likes.filter(
-                                  (id) => id !== currentUser._id
-                                )
-                              : [...(comment.likes || []), currentUser._id],
-                          }
-                        : comment
-                    ) || [],
-                }
-              : post
-          )
-        );
-
-        // await communityService.likeOnPostComment(postId, commentId);
-      } catch (err) {
-        console.error("Error liking comment:", err);
-        showSnackbar("Failed to like comment", "error");
-      }
-    },
-    [currentUser._id, showSnackbar]
-  );
-
-  const handleRefresh = useCallback(() => {
-    setPage(1);
-    setHasMore(true);
-    fetchPosts(1, false);
-  }, [fetchPosts]);
-
-  const handleDeleteComment = useCallback(
-
-    async (postId, commentId) => {
-      try {
-        setDeletingCommentId(commentId);
-        await communityService.deletePostUserComment(postId, commentId);
-        setPosts((prev) =>
-          prev.map((post) =>
-            post._id === postId
-              ? {
-                  ...post,
-                  comments: post.comments.filter((c) => c._id !== commentId),
-                }
-              : post
-          )
-        );
-        showSnackbar("Comment deleted successfully", "success");
-      } catch (error) {
-        console.error("Error deleting comment:", error);
-        showSnackbar("Failed to delete comment", "error");
-      } finally {
-        setDeletingCommentId(null);
-      }
-    },
-    [showSnackbar]
-  );
-
-  // Error state
-  if (error && posts.length === 0) {
-    return (
-      <Container maxWidth="md" sx={{ mt: 4 }}>
-        <Alert
-          severity="error"
-          action={
-            <Button color="inherit" size="small" onClick={handleRefresh}>
-              <Refresh sx={{ mr: 1 }} />
-              Retry
-            </Button>
-          }
-        >
-          {error}
-        </Alert>
-      </Container>
-    );
-  }
-
-  return (
-    <>
-      {/* Header */}
-      <Paper
-        elevation={1}
-        sx={{
-          bgcolor: "background.paper",
-          position: "sticky",
-          top: 0,
-          zIndex: 100,
-          borderColor: "divider",
-          px: 2,
-        }}
-      >
-        <Stack
-          direction="row"
-          justifyContent="space-between"
-          alignItems="center"
-          py={2}
-        >
-          <Box>
-            <Typography
-              variant="h5"
-              fontWeight={700}
-              color="primary"
-              gutterBottom
-            >
-              Join Our Thriving Community
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Learn from real store owners, share your journey, and get inspired
-              by stories of success in the eCommerce world.
-            </Typography>
-          </Box>
-
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <FormControl size="small" sx={{ minWidth: 120 }}>
-              <InputLabel id="select-filter-label">Filter</InputLabel>
-              <Select
-                labelId="select-filter-label"
-                id="select-filter"
-                value={filter}
-                onChange={(e) => setFilter(e.target.value)}
-                label="Filter"
-              >
-                <MenuItem value={"admin"}>Admin Posts</MenuItem>
-                <MenuItem value={"community"}>Community Posts</MenuItem>
-                <MenuItem value={"hidden"}>Hidden Posts</MenuItem>
-              </Select>
-            </FormControl>
-            <Button
-              variant="contained"
-              onClick={() => setCreatePostModal(true)}
-              sx={{
-                px: 2,
-                py: 1,
-              }}
-            >
-              Add Post
-            </Button>
-          </Box>
-        </Stack>
-      </Paper>
-
-      {/* Content */}
-      <Container maxWidth="md" sx={{ py: 3 }}>
-        {loading && posts.length === 0 ? (
-          <Stack spacing={3}>
-            {Array.from({ length: 3 }).map((_, index) => (
-              <PostSkeleton key={index} />
-            ))}
-          </Stack>
-        ) : posts.length === 0 ? (
-          <Paper
-            elevation={0}
-            sx={{
-              textAlign: "center",
-              py: 8,
-              bgcolor: "grey.50",
-              borderRadius: 3,
-            }}
-          >
-            <Typography variant="h6" color="text.secondary" gutterBottom>
-              No posts found
-            </Typography>
-            <Typography variant="body2" color="text.secondary" mb={3}>
-              Be the first to share something with the community!
-            </Typography>
-            <Button
-              variant="contained"
-              startIcon={<Add />}
-              onClick={() => setCreatePostModal(true)}
-            >
-              Create Post
-            </Button>
-          </Paper>
-        ) : (
-          <Stack spacing={3}>
-            {posts.map((post, index) => (
-              <div
-                key={post._id}
-                ref={index === posts.length - 1 ? lastPostElementRef : null}
-              >
-                <PostCard
-                  post={post}
-                  currentUser={currentUser}
-                  onLike={handleLike}
-                  onComment={handleComment}
-                  onCommentLike={handleCommentLike}
-                  openCommentBox={openCommentBox}
-                  setOpenCommentBox={setOpenCommentBox}
-                  onDeleteComment={handleDeleteComment}
-                  deletingCommentId={deletingCommentId}
-                />
-              </div>
-            ))}
-
-            {/* Loading more indicator */}
-            {loadingMore && (
-              <Box display="flex" justifyContent="center" py={3}>
-                <Stack alignItems="center" spacing={2}>
-                  <CircularProgress size={32} />
-                  <Typography variant="body2" color="text.secondary">
-                    Loading more posts...
-                  </Typography>
-                </Stack>
-              </Box>
-            )}
-
-            {/* End of posts indicator */}
-            {!hasMore && posts.length > 0 && (
-              <Paper
-                elevation={0}
-                sx={{
-                  textAlign: "center",
-                  py: 3,
-                  bgcolor: "grey.50",
-                  borderRadius: 2,
-                }}
-              >
-                <Typography variant="body2" color="text.secondary">
-                  🎉 You've reached the end! That's all the posts for now.
-                </Typography>
-              </Paper>
-            )}
-          </Stack>
-        )}
-      </Container>
-
-      <CreatePostModal
-        createPostModal={createPostModal}
-        setCreatePostModal={setCreatePostModal}
-        fetchPosts={fetchPosts}
-      />
-    </>
-  );
-};
-
-export default memo(Community);
